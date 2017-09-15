@@ -146,12 +146,12 @@ protected:
 };
 
 template <typename MAP, typename VEC3>
-class LM6SurfaceImport : public SurfaceFileImport<MAP, VEC3>
+class LM6SurfaceImport : public SurfaceFileImport<MAP>
 {
 public:
 
 	using Self = LM6SurfaceImport<MAP, VEC3>;
-	using Inherit = SurfaceFileImport<MAP, VEC3>;
+	using Inherit = SurfaceFileImport<MAP>;
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
@@ -183,7 +183,7 @@ protected:
 			return false;
 		}
 
-		ChunkArray<VEC3>* position = this->position_attribute();
+		ChunkArray<VEC3>* position = this->template position_attribute<VEC3>();
 		int32 ref;
 
 		GmfGotoKwd(mesh_index, GmfVertices);

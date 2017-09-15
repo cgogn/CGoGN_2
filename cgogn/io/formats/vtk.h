@@ -1469,13 +1469,13 @@ protected:
 };
 
 template <typename MAP, typename VEC3>
-class VtkSurfaceImport : public VtkIO<MAP::PRIM_SIZE, VEC3>, public SurfaceFileImport<MAP, VEC3>
+class VtkSurfaceImport : public VtkIO<MAP::PRIM_SIZE, VEC3>, public SurfaceFileImport<MAP>
 {
 public:
 
 	using Self = VtkSurfaceImport<MAP, VEC3>;
 	using Inherit_Vtk = VtkIO<MAP::PRIM_SIZE, VEC3>;
-	using Inherit_Import = SurfaceFileImport<MAP, VEC3>;
+	using Inherit_Import = SurfaceFileImport<MAP>;
 	using DataInputGen = typename Inherit_Vtk::DataInputGen;
 	template <typename T>
 	using DataInput = typename Inherit_Vtk::template DataInput<T>;

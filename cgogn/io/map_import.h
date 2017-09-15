@@ -53,10 +53,46 @@ namespace io
 {
 
 template <typename VEC3, typename MAP>
-inline std::unique_ptr<SurfaceFileImport<MAP, VEC3>> newSurfaceImport(MAP& map, const std::string& filename);
+inline std::unique_ptr<SurfaceFileImport<MAP>> newSurfaceImport(MAP& map, const std::string& filename)
+{
+	const FileType ft = file_type(filename);
+	switch (ft)
+	{
+		case FileType::FileType_OFF : return make_unique<OffSurfaceImport<MAP, VEC3>>(map);
+		case FileType::FileType_VTK_LEGACY:
+		case FileType::FileType_VTU:
+		case FileType::FileType_VTP: return make_unique<VtkSurfaceImport<MAP, VEC3>>(map);
+		case FileType::FileType_OBJ: return make_unique<ObjSurfaceImport<MAP, VEC3>>(map);
+		case FileType::FileType_2DM: return make_unique<SMS2DMSurfaceImport<MAP, VEC3>>(map);
+		case FileType::FileType_PLY: return make_unique<PlySurfaceImport<MAP, VEC3>>(map);
+		case FileType::FileType_STL: return make_unique<StlSurfaceImport<MAP, VEC3>>(map);
+		case FileType::FileType_MSH: return make_unique<MshSurfaceImport<MAP, VEC3>>(map);
+		case FileType::FileType_MESHB: return make_unique<LM6SurfaceImport<MAP, VEC3>>(map);
+		default:
+			cgogn_log_warning("newSurfaceImport") << "SurfaceImport does not handle files with extension \"" << extension(filename) << "\".";
+			return std::unique_ptr<SurfaceFileImport<MAP>>();
+	}
+}
 
 template <typename VEC3, typename MAP>
-inline std::unique_ptr<VolumeFileImport<MAP, VEC3>> newVolumeImport(MAP& map, const std::string& filename);
+inline std::unique_ptr<VolumeFileImport<MAP, VEC3>> newVolumeImport(MAP& map, const std::string& filename)
+{
+	const FileType ft = file_type(filename);
+	switch (ft)
+	{
+		case FileType::FileType_VTK_LEGACY:
+		case FileType::FileType_VTU:		return make_unique<VtkVolumeImport<MAP, VEC3>>(map);
+		case FileType::FileType_MESHB:		return make_unique<LM6VolumeImport<MAP, VEC3>>(map);
+		case FileType::FileType_MSH:		return make_unique<MshVolumeImport<MAP, VEC3>>(map);
+		case FileType::FileType_TETGEN:		return make_unique<TetgenVolumeImport<MAP, VEC3>>(map);
+		case FileType::FileType_NASTRAN:	return make_unique<NastranVolumeImport<MAP, VEC3>>(map);
+		case FileType::FileType_AIMATSHAPE:	return make_unique<TetVolumeImport<MAP, VEC3>>(map);
+		case FileType::FileType_TETMESH:	return make_unique<TetMeshVolumeImport<MAP, VEC3>>(map);
+		default:
+			cgogn_log_warning("VolumeImport") << "VolumeImport does not handle files with extension \"" << extension(filename) << "\".";
+			return std::unique_ptr<VolumeFileImport<MAP, VEC3>>();
+	}
+}
 
 
 template <typename VEC3, typename MAP>
@@ -78,48 +114,6 @@ inline void import_volume(MAP& map, const std::string& filename)
 	{
 		if (si->import_file(filename))
 			si->create_map();
-	}
-}
-
-template <typename VEC3, typename MAP>
-inline std::unique_ptr<SurfaceFileImport<MAP, VEC3>> newSurfaceImport(MAP& map, const std::string& filename)
-{
-	const FileType ft = file_type(filename);
-	switch (ft)
-	{
-		case FileType::FileType_OFF : return make_unique<OffSurfaceImport<MAP, VEC3>>(map);
-		case FileType::FileType_VTK_LEGACY:
-		case FileType::FileType_VTU:
-		case FileType::FileType_VTP: return make_unique<VtkSurfaceImport<MAP, VEC3>>(map);
-		case FileType::FileType_OBJ: return make_unique<ObjSurfaceImport<MAP, VEC3>>(map);
-		case FileType::FileType_2DM: return make_unique<SMS2DMSurfaceImport<MAP, VEC3>>(map);
-		case FileType::FileType_PLY: return make_unique<PlySurfaceImport<MAP, VEC3>>(map);
-		case FileType::FileType_STL: return make_unique<StlSurfaceImport<MAP, VEC3>>(map);
-		case FileType::FileType_MSH: return make_unique<MshSurfaceImport<MAP, VEC3>>(map);
-		case FileType::FileType_MESHB: return make_unique<LM6SurfaceImport<MAP, VEC3>>(map);
-		default:
-			cgogn_log_warning("newSurfaceImport") << "SurfaceImport does not handle files with extension \"" << extension(filename) << "\".";
-			return std::unique_ptr<SurfaceFileImport<MAP, VEC3>>();
-	}
-}
-
-template <typename VEC3, typename MAP>
-inline std::unique_ptr<VolumeFileImport<MAP, VEC3>> newVolumeImport(MAP& map, const std::string& filename)
-{
-	const FileType ft = file_type(filename);
-	switch (ft)
-	{
-		case FileType::FileType_VTK_LEGACY:
-		case FileType::FileType_VTU:		return make_unique<VtkVolumeImport<MAP, VEC3>>(map);
-		case FileType::FileType_MESHB:		return make_unique<LM6VolumeImport<MAP, VEC3>>(map);
-		case FileType::FileType_MSH:		return make_unique<MshVolumeImport<MAP, VEC3>>(map);
-		case FileType::FileType_TETGEN:		return make_unique<TetgenVolumeImport<MAP, VEC3>>(map);
-		case FileType::FileType_NASTRAN:	return make_unique<NastranVolumeImport<MAP, VEC3>>(map);
-		case FileType::FileType_AIMATSHAPE:	return make_unique<TetVolumeImport<MAP, VEC3>>(map);
-		case FileType::FileType_TETMESH:	return make_unique<TetMeshVolumeImport<MAP, VEC3>>(map);
-		default:
-			cgogn_log_warning("VolumeImport") << "VolumeImport does not handle files with extension \"" << extension(filename) << "\".";
-			return std::unique_ptr<VolumeFileImport<MAP, VEC3>>();
 	}
 }
 

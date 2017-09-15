@@ -42,12 +42,12 @@ namespace io
 {
 
 template <typename MAP, typename VEC3>
-class OffSurfaceImport : public SurfaceFileImport<MAP, VEC3>
+class OffSurfaceImport : public SurfaceFileImport<MAP>
 {
 public:
 
 	using Self = OffSurfaceImport<MAP, VEC3>;
-	using Inherit = SurfaceFileImport<MAP, VEC3>;
+	using Inherit = SurfaceFileImport<MAP>;
 	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
@@ -83,7 +83,7 @@ protected:
 		/*const uint32 nb_edges_ =*/ this->read_uint(fp,line);
 		this->reserve(nb_faces);
 
-		ChunkArray<VEC3>* position = this->position_attribute();
+		ChunkArray<VEC3>* position = this->template position_attribute<VEC3>();
 
 		// read vertices position
 		std::vector<uint32> vertices_id;
@@ -132,7 +132,7 @@ protected:
 		const uint32 nb_vertices = swap_endianness_native_big(buffer.ui[0]);
 		const uint32 nb_faces = swap_endianness_native_big(buffer.ui[1]);
 
-		ChunkArray<VEC3>* position = this->position_attribute();
+		ChunkArray<VEC3>* position = this->template position_attribute<VEC3>();
 
 		const uint32 BUFFER_SZ = 1024 * 1024;
 		std::vector<float32> buff_pos(3*BUFFER_SZ);

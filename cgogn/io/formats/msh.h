@@ -461,13 +461,13 @@ private:
 
 
 template <typename MAP, typename VEC3>
-class MshSurfaceImport : public MshIO<VEC3>, public SurfaceFileImport<MAP, VEC3>
+class MshSurfaceImport : public MshIO<VEC3>, public SurfaceFileImport<MAP>
 {
 public:
 
 	using Self = MshSurfaceImport<MAP, VEC3>;
 	using Inherit_Msh = MshIO<VEC3>;
-	using Inherit_Import = SurfaceFileImport<MAP, VEC3>;
+	using Inherit_Import = SurfaceFileImport<MAP>;
 	using MSH_CELL_TYPES = typename Inherit_Msh::MSH_CELL_TYPES;
 	template <typename T>
 	using ChunkArray = typename Inherit_Import::template ChunkArray<T>;
@@ -487,7 +487,7 @@ protected:
 	// MshIO interface
 	virtual ChunkArray<VEC3>* msh_position_attribute() override
 	{
-		return this->position_attribute();
+		return this->template position_attribute<VEC3>();
 	}
 
 	virtual uint32 msh_insert_line_vertex_container() override
