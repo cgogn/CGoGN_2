@@ -95,11 +95,11 @@ private:
 	bool flat_rendering_;
 
 	std::mutex mut_update_;
-	bool need_vbo_update_;
+	std::condition_variable cv_update_;
+	std::atomic_bool need_update_;
 
 	std::future<void> future_;
 
-	std::atomic_bool to_stop_;
 };
 
 
@@ -143,6 +143,7 @@ Viewer::~Viewer()
 void Viewer::closeEvent(QCloseEvent*)
 {
 	to_stop_=true;
+	cv_update_.notify_all();
 	if (future_.valid())
 		future_.wait();
 	render_.reset();
@@ -158,27 +159,15 @@ Viewer::Viewer() :
 	render_(nullptr),
 	vbo_pos_(nullptr),
 	flat_rendering_(true),
-	need_vbo_update_(false)
+	need_update_(false)
 {
-	to_stop_=false;
+
 }
 
 void Viewer::keyPressEvent(QKeyEvent *ev)
 {
 	switch (ev->key())
 	{
-		case Qt::Key_0:
-		case Qt::Key_1:
-		case Qt::Key_2:
-		case Qt::Key_3:
-		case Qt::Key_4:
-		case Qt::Key_5:
-		case Qt::Key_6:
-		case Qt::Key_7:
-		case Qt::Key_8:
-			cgogn::thread_pool()->set_nb_workers(uint32(ev->key()-Qt::Key_0));
-			break;
-
 		case Qt::Key_R:
 			map_.foreach_cell([&] (Map2::Vertex v)
 			{
@@ -195,51 +184,53 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 				if (status == std::future_status::timeout)
 				break;
 			}
-			cgogn_log_info("Asyncrone")<< "let's go forever";
+			cgogn_log_info("Asyncrone")<< "let's go 20s";
 
 			future_ = cgogn::launch_thread([&] () -> void
 			{
-				std::chrono::time_point<std::chrono::system_clock> start, end;
-				start = std::chrono::system_clock::now();
+				auto start = std::chrono::system_clock::now();
+				decltype(start) end;
 
 				VertexAttribute<Vec3> vertex_normal = map_.template get_attribute<Vec3, Map2::Vertex>("normal");
-					if (!vertex_normal.is_valid())
-						vertex_normal = map_.template add_attribute<Vec3, Map2::Vertex>("normal");
+				if (!vertex_normal.is_valid())
+					vertex_normal = map_.template add_attribute<Vec3, Map2::Vertex>("normal");
 				do
 				{
-					for(int i=0;i<50;++i)
-						cgogn::geometry::compute_normal<Vec3>(map_, vertex_position_, vertex_normal);
-					for(int i=0;i<250;++i)
+					cgogn::geometry::compute_normal<Vec3>(map_, vertex_position_, vertex_normal);
+					for(int i=0;i<100;++i)
 					{
-						map_.parallel_foreach_cell([&] (Map2::Vertex v)
+						map_.foreach_cell([&] (Map2::Vertex v)
 						{
 							Vec3& P = vertex_position_[v];
 							Vec3 N = vertex_normal[v];
-							P += 0.0001*N;
+							P += 0.0002*N;
 						});
-						mut_update_.lock();
-						need_vbo_update_=true;
+						// tag vbo need update
+						need_update_=true;
+						// ask for update
 						update();
-						mut_update_.unlock();
+						// wait vbo update finished (we can write in attribute)
+						std::unique_lock<std::mutex> lk(mut_update_);
+						cv_update_.wait(lk);
 					}
-					for(int i=0;i<250;++i)
+					for(int i=0;i<100;++i)
 					{
-						map_.parallel_foreach_cell([&] (Map2::Vertex v)
+						map_.foreach_cell([&] (Map2::Vertex v)
 						{
-							Vec3& P = vertex_position_[v];
-							Vec3 N = vertex_normal[v];
-							P -= 0.0001*N;
-							});
-						mut_update_.lock();
-						need_vbo_update_=true;
-						update();
-						mut_update_.unlock();
+						   Vec3& P = vertex_position_[v];
+						   Vec3 N = vertex_normal[v];
+						   P -= 0.0002*N;
+						});
+					   // tag vbo need update
+					   need_update_=true;
+					   // ask for update
+					   update();
+					   // lock & wait vbo update finished (we can write in attribute)
+					   std::unique_lock<std::mutex> lk(mut_update_);
+					   cv_update_.wait(lk);
 					}
 					end = std::chrono::system_clock::now();
-
-				}while (! to_stop_);
-				//	(std::chrono::duration<float>(end - start).count()<20);
-
+				}while(std::chrono::duration<float>(end - start).count()<20);
 			cgogn_log_info("Asyncrone")<< "finished";
 			});
 		}
@@ -262,13 +253,18 @@ void Viewer::draw()
 	camera()->getProjectionMatrix(proj);
 	camera()->getModelViewMatrix(view);
 
-	mut_update_.lock();
-	if ( need_vbo_update_)
+	// VBO need to be sync with attribute ?
+	if ( need_update_)
 	{
+		// lock
+		std::unique_lock<std::mutex> lk(mut_update_);
+		// update
 		cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
-		need_vbo_update_ = false;
+		// tag
+		need_update_ = false;
+		// ask compute thread to continue
+		cv_update_.notify_all();
 	}
-	mut_update_.unlock();
 
 	param_flat_->bind(proj,view);
 	render_->draw(cgogn::rendering::TRIANGLES);
