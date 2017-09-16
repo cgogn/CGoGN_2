@@ -222,11 +222,7 @@ public:
 		// first check if attribute already exists
 		const uint32 index = array_index(name);
 		if (index == UNKNOWN)
-		{
-			cgogn_log_warning("get_chunk_array") << "Chunk array of name \"" << name << "\" not found.";
 			return nullptr;
-		}
-
 		return dynamic_cast<ChunkArray<T>*>(table_arrays_[index]);
 	}
 
