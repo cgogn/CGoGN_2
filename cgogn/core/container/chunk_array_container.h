@@ -1061,7 +1061,7 @@ public:
 		static_assert(is_ith_func_parameter_same<FUNC,0,uint32>::value, "Wrong function first parameter type");
 
 		using VecIndice = std::vector<uint32>;
-		using Future = std::future<typename std::result_of<FUNC(uint32,uint32)>::type>;
+		using Future = std::future<typename std::result_of<FUNC(uint32)>::type>;
 
 		ThreadPool* thread_pool = cgogn::thread_pool();
 		uint32 nb_workers = thread_pool->nb_workers();
@@ -1094,10 +1094,10 @@ public:
 				next(it);
 			}
 			// launch thread
-			futures[i].push_back(thread_pool->enqueue([&indices, &f] (uint32 th_id)
+			futures[i].push_back(thread_pool->enqueue([&indices, &f] ()
 			{
 				for (auto ind : indices)
-					f(ind, th_id);
+					f(ind);
 			}));
 			// next thread
 			if (++j == nb_workers)

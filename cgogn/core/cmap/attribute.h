@@ -278,6 +278,12 @@ public:
 			cgogn_assert(ah_ptr_ == it.ah_ptr_);
 			return index_ != it.index_;
 		}
+
+        inline int32 index()
+        {
+            return index_;
+        }
+
 	};
 
 	inline const_iterator begin() const
