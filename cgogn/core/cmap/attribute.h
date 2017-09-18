@@ -279,10 +279,10 @@ public:
 			return index_ != it.index_;
 		}
 
-        inline int32 index()
-        {
-            return index_;
-        }
+		inline uint32 index()
+		{
+			return index_;
+		}
 
 	};
 
@@ -337,7 +337,7 @@ public:
 			return index_ != it.index_;
 		}
 
-		inline int32 index()
+		inline uint32 index()
 		{
 			return index_;
 		}
