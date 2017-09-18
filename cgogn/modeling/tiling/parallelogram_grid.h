@@ -136,27 +136,31 @@ public:
 		return getAlpha(Tj_) ;
 	}
 
-	static uint sample_parallelograms(std::vector<Parallelogram>& samples, uint angular_bins, uint magnitude_bins, uint diagonal)
+	static uint sample_parallelograms(std::queue<Parallelogram>& samples, uint angular_bins, uint magnitude_bins, uint diagonal)
 	{
-		samples.clear() ;
-
 		const uint half_diagonal = diagonal / 2 ;
 
 		const double angular_step = M_PI * (1.0 / angular_bins) ;
-		for (double alpha_i = angular_step ; alpha_i < M_PI ; alpha_i += angular_step)
+		magnitude_bins = std::min(magnitude_bins,half_diagonal) ;
+		const uint mag_step = floor(half_diagonal / magnitude_bins) ;
+
+		for (uint mag_i = mag_step ; mag_i <= half_diagonal ; mag_i += mag_step)
 		{
-			for (double alpha_j = alpha_i + angular_step ; alpha_j <= M_PI ; alpha_j += angular_step)
+			for (uint mag_j = mag_step ; mag_j <= half_diagonal ; mag_j += mag_step)
 			{
-				magnitude_bins = std::min(magnitude_bins,half_diagonal) ;
-				const uint mag_step = floor(half_diagonal / magnitude_bins) ;
-				for (uint mag_i = 1 ; mag_i < half_diagonal ; mag_i += mag_step)
+				double start_alpha = M_PI/2.0 - floor(M_PI/2.0 / angular_step)*angular_step ; // M_PI/2 - n times angular_step so that smallest possible > 0
+				for (double alpha_i = start_alpha ; alpha_i <= M_PI ; alpha_i += angular_step)
 				{
-					for (uint mag_j = 1 ; mag_j < half_diagonal ; mag_j += mag_step)
+					// if x coordinate of Ti will be 0
+					if (mag_i * sin(alpha_i) < 1.0)
+						continue ;
+
+					for (double alpha_j = M_PI ; alpha_j > alpha_i ; alpha_j -= angular_step)
 					{
 						VEC p0 = VEC::Zero();
 						Parallelogram<VEC> p(p0,mag_i,alpha_i,mag_j,alpha_j) ;
-						samples.push_back(p) ;
-						std::cout << p << std::endl ;
+						//Parallelogram<VEC> p(VEC(0,0,0),VEC(25.5,-44.1673,0),VEC(44.1673,25.5,0)) ;
+						samples.push(p) ;
 					}
 				}
 			}
