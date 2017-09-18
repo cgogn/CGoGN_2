@@ -159,7 +159,6 @@ public:
 					{
 						VEC p0 = VEC::Zero();
 						Parallelogram<VEC> p(p0,mag_i,alpha_i,mag_j,alpha_j) ;
-						//Parallelogram<VEC> p(VEC(0,0,0),VEC(25.5,-44.1673,0),VEC(44.1673,25.5,0)) ;
 						samples.push(p) ;
 					}
 				}
