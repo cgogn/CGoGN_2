@@ -298,9 +298,10 @@ public:
 		return CellType(qt_attributes_[ORBIT][index]);
 	}
 
-	template <typename CellType, typename Filter>
-	inline void set_filter(const Filter& filter)
+	template <typename CellType, typename FilterFunction>
+	inline void set_filter(const FilterFunction& filter)
 	{
+		static_assert(is_func_return_same<FilterFunction, bool>::value && is_func_parameter_same<FilterFunction, CellType>::value, "Badly formed FilterFunction");
 		static const Orbit ORBIT = CellType::ORBIT;
 		qt_filters_[ORBIT] = [&] (Dart d) -> bool { return filter(CellType(d)); };
 	}
@@ -308,7 +309,6 @@ public:
 	template <typename CellType, typename DartSelectionFunction>
 	inline void build(const DartSelectionFunction& dart_select)
 	{
-		static_assert(is_func_return_same<FilterFunction, bool>::value && is_func_parameter_same<FilterFunction, CellType>::value, "Badly formed FilterFunction");
 		static_assert(is_func_return_same<DartSelectionFunction, Dart>::value && is_func_parameter_same<DartSelectionFunction, CellType>::value, "Badly formed DartSelectionFunction");
 		static const Orbit ORBIT = CellType::ORBIT;
 		if (!qt_attributes_[ORBIT].is_valid())
@@ -318,7 +318,7 @@ public:
 		qt_filters_[ORBIT] = [&] (Dart) -> bool { return true; };
 	}
 
-	template <typename CellType, typename FilterFunction>
+	template <typename CellType>
 	inline void build()
 	{
 		build<CellType>([] (CellType c) -> Dart { return c.dart; });

@@ -126,7 +126,7 @@ typename MAP::Vertex central_vertex(
 	using Vertex = typename MAP::Vertex;
 	using Scalar = typename vector_traits<VEC>::Scalar;
 
-	VEC center = centroid<VEC, MAP>(map, attribute);
+	VEC center = centroid<VEC, MAP>(map, mask, attribute);
 
 	std::vector<double> min_dist_per_thread(thread_pool()->nb_workers(), std::numeric_limits<Scalar>::max());
 	std::vector<Vertex> min_vertex_per_thread(thread_pool()->nb_workers());
