@@ -349,7 +349,7 @@ public:
 
 protected:
 
-	ChunkArrayContainer const* chunk_array_cont_;
+	const ChunkArrayContainer* chunk_array_cont_;
 	TChunkArray*               chunk_array_;
 	Orbit                      orbit_;
 };
