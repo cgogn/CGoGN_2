@@ -109,6 +109,24 @@ public:
 	}
 
 	/**
+	 * @brief getMagI returns the magnitude of the first vector
+	 * @return magnitude of the first vector
+	 */
+	typename VEC::Scalar getMagI() const
+	{
+		return Ti_.norm() ;
+	}
+
+	/**
+	 * @brief getMagJ returns the magnitude of the second vector
+	 * @return magnitude of the second vector
+	 */
+	typename VEC::Scalar getMagJ() const
+	{
+		return Tj_.norm() ;
+	}
+
+	/**
 	 * @brief getAlpha returns the angle between the negative y-axis and the vector, in counterclockwise direction
 	 * @param T the vector
 	 * @return an angle in [[0 M_PI]]
@@ -136,7 +154,7 @@ public:
 		return getAlpha(Tj_) ;
 	}
 
-	static uint sample_parallelograms(std::queue<Parallelogram>& samples, uint angular_bins, uint magnitude_bins, uint diagonal)
+	static uint sample_parallelograms(std::queue<Parallelogram>& samples, uint angular_bins, uint magnitude_bins, uint pos_bins, uint diagonal)
 	{
 		const uint half_diagonal = diagonal / 2 ;
 
@@ -157,9 +175,26 @@ public:
 
 					for (double alpha_j = M_PI ; alpha_j > alpha_i ; alpha_j -= angular_step)
 					{
-						VEC p0 = VEC::Zero();
-						Parallelogram<VEC> p(p0,mag_i,alpha_i,mag_j,alpha_j) ;
-						samples.push(p) ;
+						if (!almost_equal_absolute(alpha_i,alpha_j,std::min(angular_step,M_PI/16.0))) // If alpha_i and alpha_j are too close
+						{
+							const double move_i = double(mag_i)/pos_bins ;
+							const double move_j = double(mag_j)/pos_bins ;
+							/*if (move_i < 4 || move_j < 4 )
+								continue ;*/
+
+							VEC p0 = VEC::Zero();
+							for (uint pi = 0 ; pi < pos_bins ; ++pi)
+							{
+								p0[1] = 0 ;
+								for (uint pj = 0 ; pj < pos_bins ; ++pj)
+								{
+									Parallelogram<VEC> p(p0,mag_i,alpha_i,mag_j,alpha_j) ;
+									samples.push(p) ;
+									p0[1] += move_j ;
+								}
+								p0[0] += move_i ;
+							}
+						}
 					}
 				}
 			}
@@ -172,18 +207,13 @@ public:
 	{
 		o << "p0(" ;
 		for (std::size_t i = 0ul ; i < VEC::SizeAtCompileTime - 1ul ; ++i )
-			o << p.p_[i] << ",";
-		o << p.p_[VEC::SizeAtCompileTime -1ul] << "), " ;
+			o << p.getRefPos()[i] << ",";
+		o << p.p_[VEC::SizeAtCompileTime -1ul] << ")," ;
 
-		o << "Ti(" ;
-		for (std::size_t i = 0ul ; i < VEC::SizeAtCompileTime - 1ul ; ++i )
-			o << p.Ti_[i] << ",";
-		o << p.Ti_[VEC::SizeAtCompileTime -1ul] << "), " ;
-
-		o << "Tj(" ;
-		for (std::size_t i = 0ul ; i < VEC::SizeAtCompileTime - 1ul ; ++i )
-			o << p.Tj_[i] << ",";
-		o << p.Tj_[VEC::SizeAtCompileTime -1ul] << ")" ;
+		o << "Ti(mag=" << p.getTi().norm() ;
+		o << ",alpha=" << p.getAlphaI() << ")," ;
+		o << "Tj(mag=" << p.getTj().norm() ;
+		o << ",alpha=" << p.getAlphaJ() << ")";
 
 		return o;
 	}
@@ -282,7 +312,7 @@ public:
 	 *
 	 * @post the map is embedded with a VertexAttribute called "position".
 	 */
-	void embed_with_parallelograms(const Parallelogram<VEC>& p)
+	Dart embed_with_parallelograms(const Parallelogram<VEC>& p)
 	{
 		cgogn_assert(area_.contains(p.getRefPos())) ;
 		p_ = p ;
@@ -374,6 +404,8 @@ public:
 		//        uint nbF = map_.template nb_cells<Face::ORBIT>();
 		//        std::cout << "Nb Vertices: " << nbV << std::endl ;
 		//        std::cout << "Nb Faces: " << nbF << std::endl ;
+
+		return dart_;
 	}
 
 	//    Orient sew_FaceEdge(MapBuilder& mbuild, /*const DartAttribute<DartDir>& dart_orientation,*/ const Face& f0, const Edge& e0)
@@ -475,6 +507,8 @@ private:
 		position[Vertex(d1)] = p0 + p_.getTi() ;
 		position[Vertex(d2)] = position[d1] + p_.getTj() ;
 		position[Vertex(d3)] = p0 + p_.getTj() ;
+
+
 
 		geometry::AABB<VEC> bbox(p0) ;
 		bbox.add_point(position[d1]) ;
