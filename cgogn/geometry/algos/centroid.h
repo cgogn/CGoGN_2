@@ -35,11 +35,11 @@ namespace geometry
 {
 
 template <typename VEC, typename CellType, typename MAP>
-inline VEC centroid(
+inline auto centroid(
 	const MAP& map,
 	const CellType c,
 	const typename MAP::template VertexAttribute<VEC>& attribute
-)
+) -> typename std::enable_if<is_cell_type<CellType>::value, VEC>::type
 {
 	VEC result;
 	set_zero(result);
@@ -79,11 +79,11 @@ inline void compute_centroid(
 }
 
 template <typename VEC, typename MAP, typename MASK>
-inline VEC centroid(
+inline auto centroid(
 	const MAP& map,
 	const MASK& mask,
 	const typename MAP::template VertexAttribute<VEC>& attribute
-)
+) -> typename std::enable_if<!is_cell_type<MASK>::value, VEC>::type
 {
 	std::vector<VEC> sum_per_thread(thread_pool()->nb_workers());
 	for (VEC& v :sum_per_thread) { set_zero(v); }
@@ -93,7 +93,7 @@ inline VEC centroid(
 	{
 		uint32 thread_index = current_thread_index();
 
-		position_sum_per_thread[thread_index] += attribute[v];
+		sum_per_thread[thread_index] += attribute[v];
 		++nb_vertices_per_thread[thread_index];
 	},
 	mask);
