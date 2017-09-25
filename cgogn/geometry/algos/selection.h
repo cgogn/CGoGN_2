@@ -45,6 +45,8 @@ public:
 	using Scalar = typename vector_traits<VEC3>::Scalar;
 	virtual void collect(const Dart v_center) = 0;
 
+	virtual ~CollectorGen() {}
+
 	template <typename CellType>
 	inline std::size_t size() const
 	{
@@ -76,7 +78,6 @@ public:
 		for (Dart d : border_)
 			f(d);
 	}
-	virtual ~CollectorGen() {}
 
 	void clear()
 	{
