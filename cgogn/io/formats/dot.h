@@ -87,9 +87,9 @@ protected:
 				this->edges_vertex_indices_.push_back(nb1);
 				this->edges_vertex_indices_.push_back(nb2);
 
-				Scalar Cx = std::atof(it->str().c_str()); ++it;
-				Scalar Cy = std::atof(it->str().c_str()); ++it;
-				Scalar Cz = std::atof(it->str().c_str()); ++it;
+				Scalar Cx = Scalar(std::atof(it->str().c_str())); ++it;
+				Scalar Cy = Scalar(std::atof(it->str().c_str())); ++it;
+				Scalar Cz = Scalar(std::atof(it->str().c_str())); ++it;
 				++it; ++it;
 
 				VEC3 pos{Cx, Cy, Cz};
