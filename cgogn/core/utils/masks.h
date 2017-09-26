@@ -260,7 +260,7 @@ public:
 
 		inline bool operator!=(const_iterator it) const
 		{
-			cgogn_assert(ah_ptr_ == it.ah_ptr_);
+			cgogn_assert(qt_ptr_ == it.qt_ptr_);
 			return index_ != it.index_;
 		}
 	};
