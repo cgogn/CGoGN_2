@@ -46,10 +46,13 @@ public:
 	using Inherit = CellTraversor;
 	using Self = CollectorGen<VEC3>;
 
+	using Scalar = typename vector_traits<VEC3>::Scalar;
 	using const_iterator = std::vector<Dart>::const_iterator;
 
-	using Scalar = typename vector_traits<VEC3>::Scalar;
-	virtual void collect(const Dart v_center) = 0;
+	inline CollectorGen() : Inherit()
+	{}
+
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CollectorGen);
 
 	virtual ~CollectorGen() {}
 
@@ -71,6 +74,8 @@ public:
 		return cells_[CellType::ORBIT].size();
 	}
 
+	virtual void collect(const Dart v_center) = 0;
+
 	inline const std::vector<Dart>& cells(cgogn::Orbit orbit) const
 	{
 		return cells_[orbit];
@@ -89,9 +94,9 @@ public:
 			f(d);
 	}
 
-	void clear()
+	inline void clear()
 	{
-		for (auto& cells_vector : this->cells_)
+		for (auto& cells_vector : cells_)
 		{
 			cells_vector.clear();
 			cells_vector.reserve(256u);
@@ -178,7 +183,7 @@ public:
 		{
 			this->cells_[Edge::ORBIT].push_back(nv.dart);
 			this->cells_[Face::ORBIT].push_back(nv.dart);
-			this->border_.push_back(this->map_.phi1(nv.dart));
+			this->border_.push_back(this->map_.phi_1(nv.dart));
 		});
 	}
 
@@ -186,9 +191,7 @@ public:
 	{
 		Scalar result = 0;
 		for (Dart d : this->cells_[Face::ORBIT])
-		{
 			result += geometry::area<VEC3>(this->map_, Face(d), position);
-		}
 		return result;
 	}
 };
@@ -243,11 +246,8 @@ public:
 				this->map_.foreach_dart_of_orbit(e, [&] (Dart dd) -> bool
 				{
 					if (!dm.is_marked(dd))
-					{
 						all_in = false;
-						return false;
-					}
-					return true;
+					return all_in;
 				});
 				if (all_in)
 					this->cells_[Edge::ORBIT].push_back(d);
@@ -259,11 +259,8 @@ public:
 				this->map_.foreach_dart_of_orbit(f, [&] (Dart dd) -> bool
 				{
 					if (!dm.is_marked(dd))
-					{
 						all_in = false;
-						return false;
-					}
-					return true;
+					return all_in;
 				});
 				if (all_in)
 					this->cells_[Face::ORBIT].push_back(d);
@@ -276,27 +273,28 @@ public:
 		uint32 i = 0;
 		while (i < this->cells_[Vertex::ORBIT].size())
 		{
-			Dart vd = this->cells_[Vertex::ORBIT][i];
-			this->map_.foreach_dart_of_orbit(Vertex(vd), [&] (Dart d)
+			Vertex v = Vertex(this->cells_[Vertex::ORBIT][i]);
+			this->map_.foreach_adjacent_vertex_through_edge(v, [&] (Vertex av)
 			{
 				// check if the neighbor vertex through the edge is in the sphere
 				// if it is in the sphere and has not been marked yet, put it in the queue
-				Dart d2 = this->map_.phi2(d);
-				if (in_sphere(position_[Vertex(d2)], center_position, radius_))
+				if (in_sphere(position_[av], center_position, radius_))
 				{
-					if (!dm.is_marked(d2))
+					if (!dm.is_marked(av.dart))
 					{
-						this->cells_[Vertex::ORBIT].push_back(d2);
-						mark_vertex(Vertex(d2));
+						this->cells_[Vertex::ORBIT].push_back(av.dart);
+						mark_vertex(av);
 					}
 				}
-				// if it is not in the sphere, put the dart in the border list
+				// if it is not in the sphere, put the dart (pointing out of the sphere) in the border list
 				else
-					this->border_.push_back(d);
+					this->border_.push_back(this->map_.phi2(av.dart));
 			});
 
 			++i;
 		}
+
+		this->traversed_cells_ |= orbit_mask<Vertex>() | orbit_mask<Edge>() | orbit_mask<Face>();
 	}
 
 	Scalar area(const typename MAP::template VertexAttribute<VEC3>& position) const override
