@@ -132,7 +132,7 @@ protected:
 		const uint32 nb_vertices = swap_endianness_native_big(buffer.ui[0]);
 		const uint32 nb_faces = swap_endianness_native_big(buffer.ui[1]);
 
-		ChunkArray<VEC3>* position = this->template position_attribute<VEC3>();
+		ChunkArray<VEC3>* position = this->template add_vertex_attribute<VEC3>("position");
 
 		const uint32 BUFFER_SZ = 1024 * 1024;
 		std::vector<float32> buff_pos(3*BUFFER_SZ);
