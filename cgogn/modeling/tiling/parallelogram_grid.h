@@ -18,10 +18,11 @@ namespace modeling
  * @brief The Parallelogram class.
  * Defines a parallelogram by a point and two vectors.
  */
-template <typename VEC>
+template <typename T, uint VECSIZE>
 class Parallelogram
 {
 private:
+	using VEC = Eigen::Matrix<T,VECSIZE,1> ;
 	VEC p_ ;
 	VEC Ti_ ;
 	VEC Tj_ ;
@@ -33,9 +34,9 @@ public:
 	{
 		p_ = VEC::Zero() ;
 		Ti_ = VEC::Zero() ;
-		Ti_[0] = 1.0 ;
+		Ti_[0] = T(1) ;
 		Tj_ = VEC::Zero() ;
-		Tj_[1] = 1.0 ;
+		Tj_[1] = T(1) ;
 	}
 
 	/**
@@ -71,7 +72,7 @@ public:
 	 * @pre 0 < alpha_i < M_PI
 	 * @pre alpha_i < alpha_j <= M_PI
 	 */
-	Parallelogram(const VEC& p, const double& mag_i, const double& alpha_i, const double& mag_j, const double& alpha_j )
+	Parallelogram(const VEC& p, const T& mag_i, const T& alpha_i, const T& mag_j, const T& alpha_j )
 	{
 		VEC Ti = VEC::Zero() ,Tj = VEC::Zero() ;
 		Ti[0] = mag_i*sin(alpha_i) ;
@@ -112,7 +113,7 @@ public:
 	 * @brief getMagI returns the magnitude of the first vector
 	 * @return magnitude of the first vector
 	 */
-	typename VEC::Scalar getMagI() const
+	T getMagI() const
 	{
 		return Ti_.norm() ;
 	}
@@ -121,26 +122,26 @@ public:
 	 * @brief getMagJ returns the magnitude of the second vector
 	 * @return magnitude of the second vector
 	 */
-	typename VEC::Scalar getMagJ() const
+	T getMagJ() const
 	{
 		return Tj_.norm() ;
 	}
 
 	/**
 	 * @brief getAlpha returns the angle between the negative y-axis and the vector, in counterclockwise direction
-	 * @param T the vector
+	 * @param v the vector
 	 * @return an angle in [[0 M_PI]]
 	 */
-	static double getAlpha(const VEC& T)
+	static T getAlpha(const VEC& v)
 	{
-		return acos(-T[1] / T.norm()) ;
+		return acos(-v[1] / v.norm()) ;
 	}
 
 	/**
 	 * @brief getAlphaI returns the angle of the first vector Ti using #getAlpha
 	 * @return an angle in ]]0 M_PI[[
 	 */
-	double getAlphaI() const
+	T getAlphaI() const
 	{
 		return getAlpha(Ti_) ;
 	}
@@ -149,16 +150,25 @@ public:
 	 * @brief getAlphaJ returns the angle of the second vector Tj using #getAlpha
 	 * @return an angle in ]]0 M_PI]]
 	 */
-	double getAlphaJ() const
+	T getAlphaJ() const
 	{
 		return getAlpha(Tj_) ;
 	}
 
-	static uint sample_parallelograms(std::queue<Parallelogram>& samples, uint angular_bins, uint magnitude_bins, uint pos_bins, uint diagonal)
+	/**
+	 * @brief nb_scalars returns the amount of scalars needed for the internal representation of a parallelogram
+	 * @return the amount of scalars needed for the internal representation of a parallelogram
+	 */
+	constexpr static uint nb_scalars()
+	{
+		return 3 * VEC::SizeAtCompileTime ;
+	}
+
+	static uint sample_parallelograms_uniform(std::queue<Parallelogram>& samples, uint angular_bins, uint magnitude_bins, uint pos_bins, uint diagonal)
 	{
 		const uint half_diagonal = diagonal / 2 ;
 
-		const double angular_step = M_PI * (1.0 / angular_bins) ;
+		const T angular_step = M_PI * (1.0 / angular_bins) ;
 		magnitude_bins = std::min(magnitude_bins,half_diagonal) ;
 		const uint mag_step = floor(half_diagonal / magnitude_bins) ;
 
@@ -166,29 +176,29 @@ public:
 		{
 			for (uint mag_j = mag_step ; mag_j <= half_diagonal ; mag_j += mag_step)
 			{
-				double start_alpha = M_PI/2.0 - floor(M_PI/2.0 / angular_step)*angular_step ; // M_PI/2 - n times angular_step so that smallest possible > 0
-				for (double alpha_i = start_alpha ; alpha_i <= M_PI ; alpha_i += angular_step)
+				T start_alpha = M_PI/2.0 - floor(M_PI/2.0 / angular_step)*angular_step ; // M_PI/2 - n times angular_step so that smallest possible > 0
+				for (T alpha_i = start_alpha ; alpha_i <= M_PI ; alpha_i += angular_step)
 				{
 					// if x coordinate of Ti will be 0
 					if (mag_i * sin(alpha_i) < 1.0)
 						continue ;
 
-					for (double alpha_j = M_PI ; alpha_j > alpha_i ; alpha_j -= angular_step)
+					for (T alpha_j = M_PI ; alpha_j > alpha_i ; alpha_j -= angular_step)
 					{
 						if (!almost_equal_absolute(alpha_i,alpha_j,std::min(angular_step,M_PI/16.0))) // If alpha_i and alpha_j are too close
 						{
-							const double move_i = double(mag_i)/pos_bins ;
-							const double move_j = double(mag_j)/pos_bins ;
-							/*if (move_i < 4 || move_j < 4 )
-								continue ;*/
+							const T move_i = T(mag_i-1)/pos_bins ;
+							const T move_j = T(mag_j-1)/pos_bins ;
+							if (move_i < 2 || move_j < 2 )
+								continue ;
 
 							VEC p0 = VEC::Zero();
 							for (uint pi = 0 ; pi < pos_bins ; ++pi)
 							{
-								p0[1] = 0 ;
+								p0[1] = 0.0 ;
 								for (uint pj = 0 ; pj < pos_bins ; ++pj)
 								{
-									Parallelogram<VEC> p(p0,mag_i,alpha_i,mag_j,alpha_j) ;
+									Parallelogram<T,VECSIZE> p(p0,mag_i,alpha_i,mag_j,alpha_j) ;
 									samples.push(p) ;
 									p0[1] += move_j ;
 								}
@@ -203,7 +213,7 @@ public:
 		return samples.size() ;
 	}
 
-	inline friend std::ostream& operator<<(std::ostream& o, const Parallelogram<VEC>& p)
+	inline friend std::ostream& operator<<(std::ostream& o, const Parallelogram<T,VECSIZE>& p)
 	{
 		o << "p0(" ;
 		for (std::size_t i = 0ul ; i < VEC::SizeAtCompileTime - 1ul ; ++i )
@@ -231,9 +241,11 @@ private:
 
 	bool is_valid() const
 	{
-		bool res = Ti_[0] > 0 && Tj_[0] >= 0 ;
-		res &= (res == (getAlphaJ() > getAlphaI())) ;
-		res &= !almost_equal_absolute(Ti_.norm(),0.0) && !almost_equal_absolute(Tj_.norm(),0.0) ;
+		bool res = true ;
+		res &= Ti_[0] > T(0) && Tj_[0] >= T(0) ; // positive X coordinates
+		res &= (res == (getAlphaJ() > getAlphaI())) ; // 2nd vector above 1st.
+		//res &= !almost_equal_absolute(Ti_.norm(),T(0)) && !almost_equal_absolute(Tj_.norm(),T(0)) ; // non-zero vectors
+
 		return res ;
 	}
 };
@@ -280,7 +292,7 @@ protected:
 	Dart dart_ ;
 	const geometry::AABB<VEC>& area_ ;
 
-	Parallelogram<VEC> p_ ;
+	Parallelogram<typename VEC::Scalar,VEC::SizeAtCompileTime> p_ ;
 
 	DartAttribute<DartOrient> dart_orientation_ ;
 	VertexAttribute<VEC> vertex_position_ ;
@@ -312,7 +324,7 @@ public:
 	 *
 	 * @post the map is embedded with a VertexAttribute called "position".
 	 */
-	Dart embed_with_parallelograms(const Parallelogram<VEC>& p)
+	Dart embed_with_parallelograms(const Parallelogram<typename VEC::Scalar, VEC::SizeAtCompileTime>& p)
 	{
 		cgogn_assert(area_.contains(p.getRefPos())) ;
 		p_ = p ;
