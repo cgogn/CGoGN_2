@@ -43,11 +43,11 @@ namespace io
 {
 
 template <typename VEC3>
-class DotGraphImport : public GraphFileImport<VEC3>
+class DotGraphImport : public GraphFileImport
 {
 public:
 	using Self = DotGraphImport<VEC3>;
-	using Inherit = GraphFileImport<VEC3>;
+	using Inherit = GraphFileImport;
 	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
@@ -61,8 +61,8 @@ protected:
 	{
 		std::ifstream fp(filename.c_str(), std::ios::in);
 
-		ChunkArray<VEC3>* position = this->position_attribute();
-		ChunkArray<Scalar>* radius = this->radius_attribute();
+		ChunkArray<VEC3>* position = this->template add_vertex_attribute<VEC3>("position");
+		ChunkArray<Scalar>* radius = this->template add_vertex_attribute<Scalar>("radius");
 
 
 		std::regex re("[->;:\\s\\t\"\\n()]+"); // label\=\"("); //"[[:digit:]]+--[[:digit:]]+\\s+\\[label=

@@ -72,8 +72,7 @@ public:
 		faces_nb_edges_(),
 		faces_vertex_indices_(),
 		map_(map),
-		mbuild_(map),
-		position_attribute_(nullptr)
+		mbuild_(map)
 	{
 		map_.clear_and_remove_attributes();
 	}
@@ -110,22 +109,12 @@ public:
 	{
 		ChunkArrayGen* att = in_data.add_attribute(vertex_container(), att_name);
 		in_data.to_chunk_array(att);
-		if (att_name == "position")
-			position_attribute_ = att;
 	}
 
 	template<typename T>
 	inline ChunkArray<T>* add_vertex_attribute(const std::string& att_name)
 	{
 		return vertex_container().template add_chunk_array<T>(att_name);
-	}
-
-	template<typename T>
-	inline ChunkArray<T>* position_attribute()
-	{
-		if (position_attribute_ == nullptr)
-			position_attribute_ = add_vertex_attribute<T>("position");
-		return dynamic_cast<ChunkArray<T>*>(position_attribute_);
 	}
 
 	inline void add_face_attribute(const DataInputGen& in_data, const std::string& att_name)
@@ -290,7 +279,6 @@ protected:
 
 	MAP&              map_;
 	MapBuilder        mbuild_;
-	ChunkArrayGen* position_attribute_;
 };
 
 template <typename MAP>

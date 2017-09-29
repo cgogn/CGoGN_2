@@ -929,6 +929,9 @@ public:
 	template <typename T>
 	using DataInput = cgogn::io::DataInput<PRIM_SIZE, T>;
 	using Scalar = typename VEC3::Scalar;
+	template <typename T>
+	using ChunkArray = MapBaseData::ChunkArray<T>;
+
 
 	inline VtkIO() {}
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(VtkIO);
@@ -937,7 +940,7 @@ public:
 protected:
 
 	FileType          vtk_file_type_;
-	DataInput<VEC3>   positions_;
+	ChunkArray<VEC3>*   positions_;
 	DataInput<uint32> cells_;
 	DataInput<int32>  cell_types_;
 	DataInput<uint32> offsets_;
@@ -1014,7 +1017,7 @@ protected:
 					auto pos = DataInputGen::template newDataIO<PRIM_SIZE, VEC3>(type_str, 3);
 					pos->read_n(fp, nb_vertices, !ascii_file, big_endian);
 					this->add_vertex_attribute(*pos,"position");
-					this->positions_ = *dynamic_cast_unique_ptr<DataInput<VEC3>>(pos->simplify());
+					this->positions_ = this->vertex_container().template get_chunk_array("position");
 				}
 				else
 				{
@@ -1277,7 +1280,8 @@ protected:
 					auto pos = DataInputGen::template newDataIO<PRIM_SIZE, VEC3>(type, nb_comp);
 					pos->read_n(*mem_stream, nb_vertices,binary,!little_endian);
 					this->add_vertex_attribute(*pos,"position");
-					this->positions_ = *dynamic_cast_unique_ptr<DataInput<VEC3>>(pos->simplify());
+					this->positions_ = this->vertex_container().template get_chunk_array("position");
+
 				}
 				else
 				{
@@ -1611,13 +1615,13 @@ private:
 };
 
 template <typename MAP, typename VEC3>
-class VtkVolumeImport : public VtkIO<MAP::PRIM_SIZE, VEC3>, public VolumeFileImport<MAP, VEC3>
+class VtkVolumeImport : public VtkIO<MAP::PRIM_SIZE, VEC3>, public VolumeFileImport<MAP>
 {
 public:
 
 	using Self = VtkVolumeImport<MAP, VEC3>;
 	using Inherit_Vtk = VtkIO<MAP::PRIM_SIZE, VEC3>;
-	using Inherit_Import = VolumeFileImport<MAP, VEC3>;
+	using Inherit_Import = VolumeFileImport<MAP>;
 	using DataInputGen = typename Inherit_Vtk::DataInputGen;
 	template <typename T>
 	using DataInput = typename Inherit_Vtk::template DataInput<T>;
@@ -1721,28 +1725,32 @@ protected:
 					std::swap(ids[curr_offset+6], ids[curr_offset+7]);
 					type_vol[i] = VTK_CELL_TYPES::VTK_HEXAHEDRON;
 				}
-				this->add_hexa(ids[curr_offset+0], ids[curr_offset+1], ids[curr_offset+2], ids[curr_offset+3], ids[curr_offset+4], ids[curr_offset+5], ids[curr_offset+6], ids[curr_offset+7], true);
+				this->reorient_hexa(*(this->positions_), ids[curr_offset+0], ids[curr_offset+1], ids[curr_offset+2], ids[curr_offset+3], ids[curr_offset+4], ids[curr_offset+5], ids[curr_offset+6], ids[curr_offset+7]);
+				this->add_hexa(ids[curr_offset+0], ids[curr_offset+1], ids[curr_offset+2], ids[curr_offset+3], ids[curr_offset+4], ids[curr_offset+5], ids[curr_offset+6], ids[curr_offset+7]);
 				curr_offset += 8u;
 			}
 			else
 			{
 				if (type_vol[i] == VTK_CELL_TYPES::VTK_TETRA)
 				{
-					this->add_tetra(ids[curr_offset+0], ids[curr_offset+1], ids[curr_offset+2], ids[curr_offset+3], true);
+					//this->reorient_tetra(position, ids[curr_offset+0], ids[curr_offset+1], ids[curr_offset+2], ids[curr_offset+3]);
+					this->add_tetra(ids[curr_offset+0], ids[curr_offset+1], ids[curr_offset+2], ids[curr_offset+3]);
 					curr_offset += 4u;
 				}
 				else
 				{
 					if (type_vol[i] == VTK_CELL_TYPES::VTK_PYRAMID)
 					{
-						this->add_pyramid(ids[curr_offset+0], ids[curr_offset+1], ids[curr_offset+2], ids[curr_offset+3], ids[curr_offset+4], true);
+						//this->reorient_pyramid(position, ids[curr_offset+0], ids[curr_offset+1], ids[curr_offset+2], ids[curr_offset+3], ids[curr_offset+4]);
+						this->add_pyramid(ids[curr_offset+0], ids[curr_offset+1], ids[curr_offset+2], ids[curr_offset+3], ids[curr_offset+4]);
 						curr_offset += 5u;
 					}
 					else
 					{
 						if (type_vol[i] == VTK_CELL_TYPES::VTK_WEDGE)
 						{
-							this->add_triangular_prism(ids[curr_offset+0], ids[curr_offset+1], ids[curr_offset+2], ids[curr_offset+3], ids[curr_offset+4], ids[curr_offset+5], true);
+							//this->reorient_triangular_prism(position, ids[curr_offset+0], ids[curr_offset+1], ids[curr_offset+2], ids[curr_offset+3], ids[curr_offset+4], ids[curr_offset+5]);
+							this->add_triangular_prism(ids[curr_offset+0], ids[curr_offset+1], ids[curr_offset+2], ids[curr_offset+3], ids[curr_offset+4], ids[curr_offset+5]);
 							curr_offset += 6u;
 						}
 					}
@@ -1763,13 +1771,13 @@ protected:
 };
 
 template <typename VEC3>
-class VtkGraphImport : public VtkIO<UndirectedGraph::PRIM_SIZE, VEC3>, public GraphFileImport<VEC3>
+class VtkGraphImport : public VtkIO<UndirectedGraph::PRIM_SIZE, VEC3>, public GraphFileImport
 {
 public:
 
 	using Self = VtkGraphImport<VEC3>;
 	using Inherit_Vtk = VtkIO<UndirectedGraph::PRIM_SIZE, VEC3>;
-	using Inherit_Import = GraphFileImport<VEC3>;
+	using Inherit_Import = GraphFileImport;
 	using DataInputGen = typename Inherit_Vtk::DataInputGen;
 	template <typename T>
 	using DataInput = typename Inherit_Vtk::template DataInput<T>;

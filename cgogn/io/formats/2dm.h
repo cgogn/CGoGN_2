@@ -59,7 +59,7 @@ protected:
 	{
 		std::ifstream fp(filename.c_str(), std::ios::in);
 
-		ChunkArray<VEC3>* position = this->template position_attribute<VEC3>();
+		ChunkArray<VEC3>* position = this->template add_vertex_attribute<VEC3>("position");
 
 		std::string line, tag;
 

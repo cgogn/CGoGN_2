@@ -83,7 +83,7 @@ protected:
 		/*const uint32 nb_edges_ =*/ this->read_uint(fp,line);
 		this->reserve(nb_faces);
 
-		ChunkArray<VEC3>* position = this->template position_attribute<VEC3>();
+		ChunkArray<VEC3>* position = this->template add_vertex_attribute<VEC3>("position");
 
 		// read vertices position
 		std::vector<uint32> vertices_id;
