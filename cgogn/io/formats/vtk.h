@@ -1017,7 +1017,6 @@ protected:
 					auto pos = DataInputGen::template newDataIO<PRIM_SIZE, VEC3>(type_str, 3);
 					pos->read_n(fp, nb_vertices, !ascii_file, big_endian);
 					this->add_vertex_attribute(*pos,"position");
-					this->positions_ = this->vertex_container().template get_chunk_array("position");
 				}
 				else
 				{
@@ -1280,8 +1279,6 @@ protected:
 					auto pos = DataInputGen::template newDataIO<PRIM_SIZE, VEC3>(type, nb_comp);
 					pos->read_n(*mem_stream, nb_vertices,binary,!little_endian);
 					this->add_vertex_attribute(*pos,"position");
-					this->positions_ = this->vertex_container().template get_chunk_array("position");
-
 				}
 				else
 				{
@@ -1484,6 +1481,10 @@ public:
 	template <typename T>
 	using DataInput = typename Inherit_Vtk::template DataInput<T>;
 
+	template <typename T>
+	using ChunkArray = typename Inherit_Import::template ChunkArray<T>;
+	using ChunkArrayGen = typename Inherit_Import::ChunkArrayGen;
+
 	inline VtkSurfaceImport(MAP& map) : Inherit_Import(map) {}
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(VtkSurfaceImport);
 	virtual ~VtkSurfaceImport() override {}
@@ -1510,7 +1511,10 @@ protected:
 	virtual void add_vertex_attribute(const DataInputGen& attribute_data, const std::string& attribute_name) override
 	{
 		cgogn_log_info("VtkSurfaceImport::add_vertex_attribute") << "Adding a vertex attribute named \"" << attribute_name << "\".";
-		this->Inherit_Import::add_vertex_attribute(attribute_data, attribute_name);
+		ChunkArrayGen* att = Inherit_Import::add_vertex_attribute(attribute_data, attribute_name);
+
+		if(attribute_name == "position")
+			this->positions_ = dynamic_cast<ChunkArray<VEC3>*>(att);
 	}
 
 	virtual void add_cell_attribute(const DataInputGen& attribute_data, const std::string& attribute_name) override
@@ -1627,6 +1631,7 @@ public:
 	using DataInput = typename Inherit_Vtk::template DataInput<T>;
 	template <typename T>
 	using ChunkArray = typename Inherit_Import::template ChunkArray<T>;
+	using ChunkArrayGen = typename Inherit_Import::ChunkArrayGen;
 
 	inline VtkVolumeImport(MAP& map) : Inherit_Import(map) {}
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(VtkVolumeImport);
@@ -1761,7 +1766,10 @@ protected:
 
 	virtual void add_vertex_attribute(const DataInputGen& attribute_data, const std::string& attribute_name) override
 	{
-		Inherit_Import::add_vertex_attribute(attribute_data, attribute_name);
+		ChunkArrayGen* att = Inherit_Import::add_vertex_attribute(attribute_data, attribute_name);
+
+		if(attribute_name == "position")
+			this->positions_ = dynamic_cast<ChunkArray<VEC3>*>(att);
 	}
 
 	virtual void add_cell_attribute(const DataInputGen& attribute_data, const std::string& attribute_name) override
@@ -1781,6 +1789,7 @@ public:
 	using DataInputGen = typename Inherit_Vtk::DataInputGen;
 	template <typename T>
 	using DataInput = typename Inherit_Vtk::template DataInput<T>;
+	using ChunkArrayGen = typename Inherit_Import::ChunkArrayGen;
 
 	virtual ~VtkGraphImport() override
 	{}
@@ -1797,7 +1806,10 @@ protected:
 	virtual void add_vertex_attribute(const DataInputGen& attribute_data, const std::string& attribute_name) override
 	{
 		cgogn_log_info("VtkGraphImport::add_vertex_attribute") << "Adding a vertex attribute named \"" << attribute_name << "\".";
-		Inherit_Import::add_vertex_attribute(attribute_data, attribute_name);
+		ChunkArrayGen* att = Inherit_Import::add_vertex_attribute(attribute_data, attribute_name);
+
+		if(attribute_name == "position")
+			this->positions_ = dynamic_cast<ChunkArray<VEC3>*>(att);
 	}
 
 	virtual void add_cell_attribute(const DataInputGen& attribute_data, const std::string& attribute_name) override

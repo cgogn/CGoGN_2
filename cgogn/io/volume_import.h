@@ -111,14 +111,14 @@ namespace cgogn
 namespace io
 {
 
-template <typename MAP, typename VEC3>
+template <typename MAP>
 class VolumeImport
 {
 public:
 
 	static_assert(MAP::DIMENSION == 3, "Must use map of dimension 3 in volume import");
 
-	using Self = VolumeImport<MAP, VEC3>;
+	using Self = VolumeImport<MAP>;
 
 	using ChunkArrayContainer = MapBaseData::ChunkArrayContainer<uint32>;
 	using ChunkArrayGen = MapBaseData::ChunkArrayGen;
@@ -141,8 +141,7 @@ public:
 		volumes_types_(),
 		volumes_vertex_indices_(),
 		map_(map),
-		mbuild_(map),
-		position_attribute_(nullptr)
+		mbuild_(map)
 	{
 		map_.clear_and_remove_attributes();
 	}
@@ -170,25 +169,17 @@ public:
 		return volume_container().template insert_lines<1>();
 	}
 
-	inline void add_vertex_attribute(const DataInputGen& in_data, const std::string& att_name)
+	inline ChunkArrayGen* add_vertex_attribute(const DataInputGen& in_data, const std::string& att_name)
 	{
 		ChunkArrayGen* att = in_data.add_attribute(vertex_container(), att_name);
 		in_data.to_chunk_array(att);
-		if (att_name == "position")
-			position_attribute_ = dynamic_cast<ChunkArray<VEC3>*>(att);
+		return att;
 	}
 
 	template<typename T>
 	inline ChunkArray<T>* add_vertex_attribute(const std::string& att_name)
 	{
 		return vertex_container().template add_chunk_array<T>(att_name);
-	}
-
-	inline ChunkArray<VEC3>* position_attribute()
-	{
-		if (position_attribute_ == nullptr)
-			position_attribute_ = add_vertex_attribute<VEC3>("position");
-		return position_attribute_;
 	}
 
 	inline void add_volume_attribute(const DataInputGen& in_data, const std::string& att_name)
@@ -208,10 +199,8 @@ public:
 		volumes_vertex_indices_.reserve(8u * nb_volumes);
 	}
 
-	void add_hexa(uint32 p0, uint32 p1, uint32 p2, uint32 p3, uint32 p4, uint32 p5, uint32 p6, uint32 p7, bool check_orientation)
+	void add_hexa(uint32 p0, uint32 p1, uint32 p2, uint32 p3, uint32 p4, uint32 p5, uint32 p6, uint32 p7)
 	{
-		if (check_orientation)
-			this->reorient_hexa(p0, p1, p2, p3, p4, p5, p6, p7);
 		this->volumes_types_.push_back(VolumeType::Hexa);
 		this->volumes_vertex_indices_.push_back(p0);
 		this->volumes_vertex_indices_.push_back(p1);
@@ -223,10 +212,8 @@ public:
 		this->volumes_vertex_indices_.push_back(p7);
 	}
 
-	void add_tetra(uint32 p0, uint32 p1, uint32 p2, uint32 p3, bool check_orientation)
+	void add_tetra(uint32 p0, uint32 p1, uint32 p2, uint32 p3)
 	{
-		if (check_orientation)
-			this->reorient_tetra(p0, p1, p2, p3);
 		this->volumes_types_.push_back(VolumeType::Tetra);
 		this->volumes_vertex_indices_.push_back(p0);
 		this->volumes_vertex_indices_.push_back(p1);
@@ -234,11 +221,9 @@ public:
 		this->volumes_vertex_indices_.push_back(p3);
 	}
 
-	void add_pyramid(uint32 p0, uint32 p1, uint32 p2, uint32 p3, uint32 p4, bool check_orientation)
+	void add_pyramid(uint32 p0, uint32 p1, uint32 p2, uint32 p3, uint32 p4)
 	{
 		this->volumes_types_.push_back(VolumeType::Pyramid);
-		if (check_orientation)
-			this->reorient_pyramid(p0, p1, p2, p3, p4);
 		this->volumes_vertex_indices_.push_back(p0);
 		this->volumes_vertex_indices_.push_back(p1);
 		this->volumes_vertex_indices_.push_back(p2);
@@ -246,10 +231,8 @@ public:
 		this->volumes_vertex_indices_.push_back(p4);
 	}
 
-	void add_triangular_prism(uint32 p0, uint32 p1, uint32 p2, uint32 p3, uint32 p4, uint32 p5, bool check_orientation)
+	void add_triangular_prism(uint32 p0, uint32 p1, uint32 p2, uint32 p3, uint32 p4, uint32 p5)
 	{
-		if (check_orientation)
-			this->reorient_triangular_prism(p0, p1, p2, p3, p4, p5);
 		this->volumes_types_.push_back(VolumeType::TriangularPrism);
 		this->volumes_vertex_indices_.push_back(p0);
 		this->volumes_vertex_indices_.push_back(p1);
@@ -589,10 +572,10 @@ public:
 
 protected:
 
-	inline void reorient_hexa(uint32& p0, uint32& p1, uint32& p2, uint32& p3, uint32& p4, uint32& p5, uint32& p6, uint32& p7)
+	template <typename T>
+	inline void reorient_hexa(const ChunkArray<T>& pos, uint32& p0, uint32& p1, uint32& p2, uint32& p3, uint32& p4, uint32& p5, uint32& p6, uint32& p7)
 	{
-		const auto& pos = *position_attribute_;
-		if (geometry::test_orientation_3D(pos[p4], pos[p0], pos[p1], pos[p2]) == geometry::Orientation3D::OVER)
+		if (geometry::test_orientation_3D<T>(pos[p4], pos[p0], pos[p1], pos[p2]) == geometry::Orientation3D::OVER)
 		{
 			std::swap(p0, p3);
 			std::swap(p1, p2);
@@ -601,24 +584,24 @@ protected:
 		}
 	}
 
-	inline void reorient_tetra(uint32& p0, uint32& p1, uint32& p2, uint32& p3)
+	template <typename T>
+	inline void reorient_tetra(const ChunkArray<T>& pos, uint32& p0, uint32& p1, uint32& p2, uint32& p3)
 	{
-		const auto& pos = *position_attribute_;
-		if (geometry::test_orientation_3D(pos[p0], pos[p1], pos[p2], pos[p3]) == geometry::Orientation3D::OVER)
+		if (geometry::test_orientation_3D<T>(pos[p0], pos[p1], pos[p2], pos[p3]) == geometry::Orientation3D::OVER)
 			std::swap(p1, p2);
 	}
 
-	inline void reorient_pyramid(uint32& p0, uint32& p1, uint32& p2, uint32& p3, uint32& p4)
+	template <typename T>
+	inline void reorient_pyramid(const ChunkArray<T>& pos, uint32& p0, uint32& p1, uint32& p2, uint32& p3, uint32& p4)
 	{
-		const auto& pos = *position_attribute_;
-		if (geometry::test_orientation_3D(pos[p4], pos[p0], pos[p1], pos[p2]) == geometry::Orientation3D::OVER)
+		if (geometry::test_orientation_3D<T>(pos[p4], pos[p0], pos[p1], pos[p2]) == geometry::Orientation3D::OVER)
 			std::swap(p1, p3);
 	}
 
-	inline void reorient_triangular_prism(uint32& p0, uint32& p1, uint32& p2, uint32& p3, uint32& p4, uint32& p5)
+	template <typename T>
+	inline void reorient_triangular_prism(const ChunkArray<T>& pos, uint32& p0, uint32& p1, uint32& p2, uint32& p3, uint32& p4, uint32& p5)
 	{
-		const auto& pos = *position_attribute_;
-		if (geometry::test_orientation_3D(pos[p3], pos[p0], pos[p1], pos[p2]) == geometry::Orientation3D::OVER)
+		if (geometry::test_orientation_3D<T>(pos[p3], pos[p0], pos[p1], pos[p2]) == geometry::Orientation3D::OVER)
 		{
 			std::swap(p1, p2);
 			std::swap(p4, p5);
@@ -632,14 +615,14 @@ private:
 
 	MAP&              map_;
 	MapBuilder        mbuild_;
-	ChunkArray<VEC3>* position_attribute_;
+
 };
 
-template <typename MAP, typename VEC3>
-class VolumeFileImport : public VolumeImport<MAP, VEC3>, public FileImport
+template <typename MAP>
+class VolumeFileImport : public VolumeImport<MAP>, public FileImport
 {
-	using Self = VolumeFileImport<MAP, VEC3>;
-	using Inherit_Import = VolumeImport<MAP, VEC3>;
+	using Self = VolumeFileImport<MAP>;
+	using Inherit_Import = VolumeImport<MAP>;
 	using Inherit_File = FileImport;
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(VolumeFileImport);
@@ -650,10 +633,8 @@ public:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_VOLUME_IMPORT_CPP_))
-extern template class CGOGN_IO_API VolumeImport<CMap3, Eigen::Vector3d>;
-extern template class CGOGN_IO_API VolumeImport<CMap3, Eigen::Vector3f>;
-extern template class CGOGN_IO_API VolumeFileImport<CMap3, Eigen::Vector3d>;
-extern template class CGOGN_IO_API VolumeFileImport<CMap3, Eigen::Vector3f>;
+extern template class CGOGN_IO_API VolumeImport<CMap3>;
+extern template class CGOGN_IO_API VolumeFileImport<CMap3>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_VOLUME_IMPORT_CPP_))
 
 } // namespace io

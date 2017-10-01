@@ -214,10 +214,11 @@ public:
 		edges_vertex_indices_.push_back(p1);
 	}
 
-	inline void add_vertex_attribute(const DataInputGen& in_data, const std::string& att_name)
+	inline ChunkArrayGen* add_vertex_attribute(const DataInputGen& in_data, const std::string& att_name)
 	{
 		ChunkArrayGen* att = in_data.add_attribute(vertex_attributes_, att_name);
 		in_data.to_chunk_array(att);
+		return att;
 	}
 
 	inline void add_edge_attribute(const DataInputGen& in_data, const std::string& att_name)

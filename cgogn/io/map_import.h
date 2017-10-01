@@ -75,7 +75,7 @@ inline std::unique_ptr<SurfaceFileImport<MAP>> newSurfaceImport(MAP& map, const 
 }
 
 template <typename VEC3, typename MAP>
-inline std::unique_ptr<VolumeFileImport<MAP, VEC3>> newVolumeImport(MAP& map, const std::string& filename)
+inline std::unique_ptr<VolumeFileImport<MAP>> newVolumeImport(MAP& map, const std::string& filename)
 {
 	const FileType ft = file_type(filename);
 	switch (ft)
@@ -90,7 +90,7 @@ inline std::unique_ptr<VolumeFileImport<MAP, VEC3>> newVolumeImport(MAP& map, co
 		case FileType::FileType_TETMESH:	return make_unique<TetMeshVolumeImport<MAP, VEC3>>(map);
 		default:
 			cgogn_log_warning("VolumeImport") << "VolumeImport does not handle files with extension \"" << extension(filename) << "\".";
-			return std::unique_ptr<VolumeFileImport<MAP, VEC3>>();
+			return std::unique_ptr<VolumeFileImport<MAP>>();
 	}
 }
 

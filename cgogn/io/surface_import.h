@@ -105,10 +105,11 @@ public:
 		vertex_container().template copy_line(dest, src, false, false);
 	}
 
-	inline void add_vertex_attribute(const DataInputGen& in_data, const std::string& att_name)
+	inline ChunkArrayGen* add_vertex_attribute(const DataInputGen& in_data, const std::string& att_name)
 	{
 		ChunkArrayGen* att = in_data.add_attribute(vertex_container(), att_name);
 		in_data.to_chunk_array(att);
+		return att;
 	}
 
 	template<typename T>

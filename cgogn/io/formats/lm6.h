@@ -35,12 +35,14 @@ namespace io
 {
 
 template <typename MAP, typename VEC3>
-class LM6VolumeImport : public VolumeFileImport<MAP, VEC3>
+class LM6VolumeImport : public VolumeFileImport<MAP>
 {
 public:
 
 	using Self = LM6VolumeImport<MAP, VEC3>;
-	using Inherit = VolumeFileImport<MAP, VEC3>;
+	using Inherit = VolumeFileImport<MAP>;
+	using Scalar = typename VEC3::Scalar;
+
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
@@ -74,7 +76,7 @@ protected:
 			return false;
 		}
 
-		ChunkArray<VEC3>* position = this->position_attribute();
+		ChunkArray<VEC3>* position = this->template add_vertex_attribute<VEC3>("position");
 		int32 ref;
 
 		GmfGotoKwd(mesh_index, GmfVertices);
@@ -97,7 +99,7 @@ protected:
 				(void) GmfGetLin(mesh_index, GmfTetrahedra, &ids[0],&ids[1], &ids[2], &ids[3], &ref);
 				for (auto& id : ids)
 					--id;
-				this->add_tetra(ids[0],ids[1], ids[2], ids[3], false);
+				this->add_tetra(ids[0], ids[1], ids[2], ids[3]);
 			}
 		}
 
@@ -110,7 +112,7 @@ protected:
 				(void) GmfGetLin(mesh_index, GmfHexahedra, &ids[0],&ids[1], &ids[2], &ids[3], &ids[4], &ids[5], &ids[6], &ids[7], &ref);
 				for (auto& id : ids)
 					--id;
-				this->add_hexa(ids[0],ids[1], ids[5], ids[4], ids[3],ids[2], ids[6], ids[7], false);
+				this->add_hexa(ids[0],ids[1], ids[5], ids[4], ids[3],ids[2], ids[6], ids[7]);
 			}
 		}
 
@@ -123,7 +125,7 @@ protected:
 				(void) GmfGetLin(mesh_index, GmfPrisms, &ids[0],&ids[1], &ids[2], &ids[3], &ids[4], &ids[5], &ref);
 				for (auto& id : ids)
 					--id;
-				this->add_triangular_prism(ids[0],ids[1], ids[2], ids[3], ids[4],ids[5], false);
+				this->add_triangular_prism(ids[0], ids[1], ids[2], ids[3], ids[4], ids[5]);
 			}
 		}
 
@@ -136,7 +138,7 @@ protected:
 				(void) GmfGetLin(mesh_index, GmfPyramids, &ids[0],&ids[1], &ids[2], &ids[3], &ids[4], &ref);
 				for (auto& id : ids)
 					--id;
-				this->add_pyramid(ids[0],ids[1], ids[2], ids[3], ids[4], false);
+				this->add_pyramid(ids[0],ids[1], ids[2], ids[3], ids[4]);
 			}
 		}
 
@@ -152,6 +154,7 @@ public:
 
 	using Self = LM6SurfaceImport<MAP, VEC3>;
 	using Inherit = SurfaceFileImport<MAP>;
+
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
@@ -183,7 +186,7 @@ protected:
 			return false;
 		}
 
-		ChunkArray<VEC3>* position = this->template position_attribute<VEC3>();
+		ChunkArray<VEC3>* position = this->template add_vertex_attribute<VEC3>("position");
 		int32 ref;
 
 		GmfGotoKwd(mesh_index, GmfVertices);
