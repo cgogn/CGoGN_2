@@ -1,5 +1,5 @@
 
-#include <cgogn/core/utils/parallel_foreach_elt.h>
+#include <cgogn/core/utils/parallel_foreach_element.h>
 
 #include <list>
 #include <vector>
@@ -143,7 +143,7 @@ int test3()
 		z = y.second;
 		w = x;
 	});
-
+	return 0;
 }
 
 
