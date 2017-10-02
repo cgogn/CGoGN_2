@@ -7,18 +7,10 @@
 #include <set>
 
 
-
 using namespace cgogn::numerics;
-
-
-int test1();
-int test2();
-int test3();
-int test4();
 
 int test1()
 {
-
 	std::list<uint32> l(1000000);
 
 	std::vector<float> v(1000000);
@@ -29,7 +21,7 @@ int test1()
 
 	std::map<int32,float> m;
 	for (int32 i=0; i<1000000; ++i)
-		m[i] = 0.1*i;
+		m[i] = 0.1f*i;
 
 
 	// with list and ref access
@@ -60,8 +52,7 @@ int test1()
 //			std::cout << "Nooo" <<std::endl;
 //	});
 
-
-
+	
 
 	// with vector
 	cgogn::parallel_foreach_element(v, [](float& x)
@@ -87,25 +78,24 @@ int test1()
 	return 0;
 }
 
-
+// traversal of 2 containers
 int test2()
 {
-
 	std::vector<int32> v(1000000);
 
-	std::map<int32,float> m;
-	for (int32 i=0; i<900000; ++i)
-		m[i] = 0.1*i;
+	std::map<int32, float> m;
+	for (int32 i = 0; i < 900000; ++i)
+		m[i] = 0.1f*i;
 
 
 	const std::vector<int32>& vc = v;
 
-	// traversal of 2 containers
-	cgogn::parallel_foreach_element(v, m, [](const int32& x, std::pair<const int32,float>& y)
+	cgogn::parallel_foreach_element(vc, m, [](const int32& x, std::pair<const int32, float>& y)
 	{
 		y.second += 0.00001f*x;
 	});
 
+// DO NOT COMPILE : x must be const&
 //	cgogn::parallel_foreach_element(vc, m, [](int32& x, std::pair<const int32,float>& y)
 //	{
 //		y.second += 0.00001f*x;
@@ -125,11 +115,43 @@ int test2()
 }
 
 
+// traversal of 3 and 4 containers
+int test3()
+{
+	std::vector<int32> v(1000000);
+
+	std::list<double> l(800000);
+
+	std::map<int32, float> m;
+	for (int32 i = 0; i < 900000; ++i)
+		m[i] = 0.1f*i;
+
+	std::set<uint32> s;
+	for (uint32 i = 0; i < 850000; ++i)
+		s.insert(i * 2);
+
+	cgogn::parallel_foreach_element(v, m, l, [](int32 x, std::pair<const int32, float>& y, double& z)
+	{
+		y.second += 0.00001f*x;
+		z = y.second;
+	});
+
+	// warning function parameter for set element must be const& or val.
+	cgogn::parallel_foreach_element(v, m, l, s, [](const int32& x, std::pair<const int32, float>& y, double& z, uint32 w)
+	{
+		y.second += 0.00001f*x;
+		z = y.second;
+		w = x;
+	});
+
+}
+
 
 
 int main()
 {
 	test1();
 	test2();
+	test3();
 	return 0;
 }

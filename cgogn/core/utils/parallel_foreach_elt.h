@@ -26,6 +26,8 @@
 
 #include <vector>
 #include <type_traits>
+#include <utility>
+
 
 #include <cgogn/core/utils/thread.h>
 #include <cgogn/core/utils/thread_pool.h>
@@ -37,7 +39,7 @@ namespace cgogn
 template <typename CONT, typename FUNC>
 void parallel_foreach_element(CONT& cont, const FUNC& f)
 {
-	using iterELt = decltype(cont.begin());
+	using IterElt = decltype(cont.begin());
 	using T_ELT = decltype(*(cont.begin()));
 	using PF  = func_ith_parameter_type<FUNC,0>;
 	using PFR = typename std::remove_reference<PF>::type;
@@ -50,7 +52,7 @@ void parallel_foreach_element(CONT& cont, const FUNC& f)
 				  "Wrong function parameter type");
 
 
-	using VectItELt = std::vector<iterELt>;
+	using VectItELt = std::vector<IterElt>;
 	using Future = std::future<typename std::result_of<FUNC(T_ELT)>::type>;
 
 	ThreadPool* thread_pool = cgogn::thread_pool();
@@ -70,10 +72,10 @@ void parallel_foreach_element(CONT& cont, const FUNC& f)
 	futures[0].reserve(nb_workers);
 	futures[1].reserve(nb_workers);
 
-	Buffers<iterELt> buffs;
+	Buffers<IterElt> buffs;
 
-	iterELt it = cont.begin();
-	iterELt last = cont.end();
+	IterElt it = cont.begin();
+	IterElt last = cont.end();
 
 	uint32 i = 0u; // buffer id (0/1)
 	uint32 j = 0u; // thread id (0..nb_workers)
@@ -120,14 +122,12 @@ void parallel_foreach_element(CONT& cont, const FUNC& f)
 
 
 
-
-
-
+/*
 template <typename CONT_A, typename CONT_B, typename FUNC>
 void parallel_foreach_element(CONT_A& cont_a, CONT_B& cont_b, const FUNC& f)
 {
-	using iterELtA = decltype(cont_a.begin());
-	using iterELtB = decltype(cont_b.begin());
+	using IterEltA = decltype(cont_a.begin());
+	using IterEltB = decltype(cont_b.begin());
 	using T_ELT_A = decltype(*(cont_a.begin()));
 	using T_ELT_B = decltype(*(cont_b.begin()));
 	using PFA  = func_ith_parameter_type<FUNC,0>;
@@ -149,7 +149,7 @@ void parallel_foreach_element(CONT_A& cont_a, CONT_B& cont_b, const FUNC& f)
 				  "Wrong function second parameter type");
 
 
-	using iterPair = std::pair<iterELtA,iterELtB>;
+	using iterPair = std::pair<IterEltA,IterEltB>;
 
 	using VectItELt = std::vector<iterPair>;
 	using Future = std::future<typename std::result_of<FUNC(T_ELT_A,T_ELT_B)>::type>;
@@ -181,11 +181,11 @@ void parallel_foreach_element(CONT_A& cont_a, CONT_B& cont_b, const FUNC& f)
 
 	Buffers<iterPair> buffs;
 
-	iterELtA it = cont_a.begin();
-	iterELtA last = cont_a.end();
+	IterEltA it = cont_a.begin();
+	IterEltA last = cont_a.end();
 
-	iterELtB it2 = cont_b.begin();
-	iterELtB last2 = cont_b.end();
+	IterEltB it2 = cont_b.begin();
+	IterEltB last2 = cont_b.end();
 
 	uint32 i = 0u; // buffer id (0/1)
 	uint32 j = 0u; // thread id (0..nb_workers)
@@ -229,6 +229,257 @@ void parallel_foreach_element(CONT_A& cont_a, CONT_B& cont_b, const FUNC& f)
 	for (auto& b : elts_buffers[1u])
 		buffs.release_buffer(b);
 }
+*/
+
+
+
+
+
+namespace internal
+{
+	template <typename FUNC, int ITH, typename CONT, typename T_ELT >
+	struct pfe_check_func_param
+	{
+		using PF = func_ith_parameter_type<FUNC, ITH>;
+		using PFR = typename std::remove_reference<PF>::type;
+		using TP1 = typename std::remove_cv<PFR>::type;
+		using TP2 = typename std::remove_cv<typename std::remove_reference<T_ELT>::type>::type;
+
+		constexpr static bool value = std::is_same<TP1, TP2>::value &&
+			(((std::is_const<PFR>::value || !std::is_reference<PF>::value) && std::is_const<CONT>::value) || (!std::is_const<CONT>::value));
+
+		static void print()
+		{
+			std::cout << std::boolalpha << std::is_const<PFR>::value << " / " << std::is_reference<PF>::value << " / " << std::is_const<CONT>::value << std::endl;
+			std::cout << typeid(CONT).name() << std::endl;
+
+		}
+	};
+
+
+	template < typename PFP, typename FUNC>
+	void parallel_foreach_elements(PFP p, const FUNC& f)
+	{
+		using Iterators = typename PFP::Iterators;
+
+		using Future = std::future<void>;
+		using VectItELt = std::vector<Iterators>;
+
+		ThreadPool* thread_pool = cgogn::thread_pool();
+		uint32 nb_workers = thread_pool->nb_workers();
+
+		std::array<std::vector<VectItELt*>, 2> elts_buffers;
+		std::array<std::vector<Future>, 2> futures;
+		elts_buffers[0].reserve(nb_workers);
+		elts_buffers[1].reserve(nb_workers);
+		futures[0].reserve(nb_workers);
+		futures[1].reserve(nb_workers);
+
+		Buffers<Iterators> buffs;
+		Iterators its = p.begin();
+		Iterators ends = p.end();
+		uint32 i = 0u; // buffer id (0/1)
+		uint32 j = 0u; // thread id (0..nb_workers)
+
+		while (PFP::diff(its, ends))
+		{
+			// fill buffer
+			elts_buffers[i].push_back(buffs.buffer());
+			VectItELt& elts = *elts_buffers[i].back();
+			elts.reserve(PARALLEL_BUFFER_SIZE);
+			for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && PFP::diff(its, ends); p.next(its), ++k)
+			{
+				elts.push_back(its);
+			}
+			// launch thread
+			futures[i].push_back(thread_pool->enqueue([&elts, &f]()
+			{
+				for (auto e : elts)
+					PFP::call(f, e);
+			}));
+			// next thread
+			if (++j == nb_workers)
+			{	// again from 0 & change buffer
+				j = 0;
+				i = (i + 1u) % 2u;
+				for (auto& fu : futures[i])
+					fu.wait();
+				for (auto& b : elts_buffers[i])
+					buffs.release_buffer(b);
+				futures[i].clear();
+				elts_buffers[i].clear();
+			}
+		}
+
+		// clean all at end
+		for (auto& fu : futures[0u])
+			fu.wait();
+		for (auto& b : elts_buffers[0u])
+			buffs.release_buffer(b);
+		for (auto& fu : futures[1u])
+			fu.wait();
+		for (auto& b : elts_buffers[1u])
+			buffs.release_buffer(b);
+	}
+
+}
+
+#define CONT(I) std::get<I>(c_)
+
+template < typename A, typename B, typename FUNC>
+void parallel_foreach_element(A& a, B& b, const FUNC& f)
+{
+	struct pfe_param
+	{
+		std::tuple<A*, B*> c_;
+
+		using Iterators = std::tuple<
+			decltype(CONT(0)->begin()),
+			decltype(CONT(1)->begin())>;
+
+		inline void next(Iterators& its)
+		{
+			++(std::get<0>(its));
+			++(std::get<1>(its));
+		}
+
+		static inline bool diff(const Iterators& its, const Iterators& jts)
+		{
+			return
+				(std::get<1>(its) != std::get<1>(jts)) &&
+				(std::get<0>(its) != std::get<0>(jts));
+		}
+
+		Iterators begin()
+		{
+			return std::make_tuple(CONT(0)->begin(), CONT(1)->begin());
+		}
+
+		Iterators end()
+		{
+			return std::make_tuple(CONT(0)->end(), CONT(1)->end());
+		}
+
+		static void call(const FUNC& f, const Iterators& its)
+		{
+			static_assert(internal::pfe_check_func_param < FUNC, 0, A, decltype(*(CONT(0)->begin()))>::value, "wrong first param type");
+			static_assert(internal::pfe_check_func_param < FUNC, 1, B, decltype(*(CONT(1)->begin()))>::value, "wrong second param type");
+			f(*(std::get<0>(its)), *(std::get<1>(its)));
+		}
+	};
+
+
+	pfe_param p = { std::make_tuple(&a, &b) };
+	internal::parallel_foreach_elements(p, f);
+}
+
+template < typename A, typename B, typename C, typename FUNC>
+void parallel_foreach_element(A& a, B& b, C& c, const FUNC& f)
+{
+	struct pfe_param
+	{
+		std::tuple<A*, B*, C*> c_;
+
+		using Iterators = std::tuple<
+			decltype(CONT(0)->begin()),
+			decltype(CONT(1)->begin()),
+			decltype(CONT(2)->begin())>;
+
+		inline void next(Iterators& its)
+		{
+			++(std::get<0>(its));
+			++(std::get<1>(its));
+			++(std::get<2>(its));
+		}
+
+		static inline bool diff(const Iterators& its, const Iterators& jts)
+		{
+			return
+				(std::get<2>(its) != std::get<2>(jts)) &&
+				(std::get<1>(its) != std::get<1>(jts)) &&
+				(std::get<0>(its) != std::get<0>(jts));
+		}
+
+		Iterators begin()
+		{
+			return std::make_tuple(CONT(0)->begin(), CONT(1)->begin(), CONT(2)->begin());
+		}
+
+		Iterators end()
+		{
+			return std::make_tuple(CONT(0)->end(), CONT(1)->end(), CONT(2)->end());
+		}
+
+		static void call(const FUNC& f, const Iterators& its)
+		{
+			static_assert(internal::pfe_check_func_param < FUNC, 0, A, decltype(*(CONT(0)->begin()))>::value, "wrong first param type");
+			static_assert(internal::pfe_check_func_param < FUNC, 1, B, decltype(*(CONT(1)->begin()))>::value, "wrong second param type");
+			static_assert(internal::pfe_check_func_param < FUNC, 2, C, decltype(*(CONT(2)->begin()))>::value, "wrong third param type");
+			f(*(std::get<0>(its)), *(std::get<1>(its)), *(std::get<2>(its)));
+		}
+	};
+	
+	pfe_param p = { std::make_tuple(&a, &b, &c) };
+	internal::parallel_foreach_elements(p, f);
+}
+
+
+
+
+template < typename A, typename B, typename C, typename D, typename FUNC>
+void parallel_foreach_element(A& a, B& b, C& c, D& d, const FUNC& f)
+{
+	struct pfe_param
+	{
+		std::tuple<A*, B*, C* ,D*> c_;
+
+		using Iterators = std::tuple<
+			decltype(CONT(0)->begin()),
+			decltype(CONT(1)->begin()),
+			decltype(CONT(2)->begin()),
+			decltype(CONT(3)->begin())>;
+
+		inline void next(Iterators& its)
+		{
+			++(std::get<0>(its));
+			++(std::get<1>(its));
+			++(std::get<2>(its));
+			++(std::get<3>(its));
+		}
+
+		static inline bool diff(const Iterators& its, const Iterators& jts)
+		{
+			return
+				(std::get<3>(its) != std::get<3>(jts)) &&
+				(std::get<2>(its) != std::get<2>(jts)) &&
+				(std::get<1>(its) != std::get<1>(jts)) &&
+				(std::get<0>(its) != std::get<0>(jts));
+		}
+
+		Iterators begin()
+		{
+			return std::make_tuple(CONT(0)->begin(), CONT(1)->begin(), CONT(2)->begin(), CONT(3)->begin());
+		}
+
+		Iterators end()
+		{
+			return std::make_tuple(CONT(0)->end(), CONT(1)->end(), CONT(2)->end(), CONT(3)->end());
+		}
+
+		static void call(const FUNC& f, const Iterators& its)
+		{
+			static_assert(internal::pfe_check_func_param < FUNC, 0, A, decltype(*(CONT(0)->begin()))>::value, "wrong first param type");
+			static_assert(internal::pfe_check_func_param < FUNC, 1, B, decltype(*(CONT(1)->begin()))>::value, "wrong second param type");
+			static_assert(internal::pfe_check_func_param < FUNC, 2, C, decltype(*(CONT(2)->begin()))>::value, "wrong third param type");
+			static_assert(internal::pfe_check_func_param < FUNC, 3, D, decltype(*(CONT(3)->begin()))>::value, "wrong fourth param type");
+			f(*(std::get<0>(its)), *(std::get<1>(its)), *(std::get<2>(its)), *(std::get<3>(its)));
+		}
+	};
+
+	pfe_param p = { std::make_tuple(&a, &b, &c, &d) };
+	internal::parallel_foreach_elements(p, f);
+}
+#undef CONT
 
 
 } // namespace cgogn
