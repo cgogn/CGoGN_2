@@ -55,21 +55,20 @@ inline void picking_internal_face(
 	using Scalar = typename vector_traits<VEC3>::Scalar;
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
+	using Triplet = typename std::tuple<Face, VEC3, Scalar>;
 
 	VEC3 AB = B - A ;
 	cgogn_message_assert(AB.squaredNorm() > 0.0, "line must be defined by 2 different points");
 	AB.normalize();
 
 	// thread data
-	using Triplet = typename std::vector<std::tuple<Face, VEC3, Scalar>>;
 	uint32 nb_threads = thread_pool()->nb_workers();
-
-	std::vector<Triplet> selected_th(nb_threads);
+	std::vector<std::vector<Triplet>> selected_th(nb_threads);
 	std::vector<std::vector<uint32>> ear_indices_th(nb_threads);
 
 	m.parallel_foreach_cell([&] (Face f)
 	{
-		uint32 th =cgogn::current_thread_index();
+		uint32 th = current_thread_index();
 		VEC3 inter;
 		if (m.codegree(f) == 3)
 		{
@@ -83,8 +82,8 @@ inline void picking_internal_face(
 		{
 			std::vector<uint32>& ear_indices = ear_indices_th[th];
 			ear_indices.clear();
-			cgogn::geometry::append_ear_triangulation<VEC3>(m, f, position, ear_indices);
-			for(std::size_t i = 0; i < ear_indices.size(); i += 3)
+			append_ear_triangulation<VEC3>(m, f, position, ear_indices);
+			for (std::size_t i = 0; i < ear_indices.size(); i += 3)
 			{
 				const VEC3& p1 = position[ear_indices[i]];
 				const VEC3& p2 = position[ear_indices[i+1]];
@@ -98,7 +97,7 @@ inline void picking_internal_face(
 		}
 	});
 
-	// merging thread result
+	// merging threads results
 	for (uint32 i = 0; i < nb_threads; ++i)
 	{
 		for (auto x : selected_th[i])
@@ -106,7 +105,7 @@ inline void picking_internal_face(
 	}
 
 	// sorting function
-	auto dist_sort = [] (const std::tuple<Face, VEC3, Scalar>& f1, const std::tuple<Face, VEC3, Scalar>& f2) -> bool
+	auto dist_sort = [] (const Triplet& f1, const Triplet& f2) -> bool
 	{
 		return std::get<2>(f1) < std::get<2>(f2);
 	};
@@ -125,11 +124,12 @@ bool picking(
 )
 {
 	using Scalar = typename vector_traits<VEC3>::Scalar;
+	using Face = typename MAP::Face;
+	using Triplet = typename std::tuple<Face, VEC3, Scalar>;
 
-	typename std::vector<std::tuple<typename MAP::Face, VEC3, Scalar>> sel;
+	std::vector<Triplet> sel;
 	picking_internal_face<VEC3>(m, position, A, B, sel);
 
-	DartMarkerStore<MAP> dm(m);
 	selected.clear();
 	for (const auto& fs : sel)
 		selected.push_back(std::get<0>(fs));
@@ -149,8 +149,9 @@ bool picking(
 	using Scalar = typename vector_traits<VEC3>::Scalar;
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
+	using Triplet = typename std::tuple<Face, VEC3, Scalar>;
 
-	typename std::vector<std::tuple<Face, VEC3, Scalar>> sel;
+	std::vector<Triplet> sel;
 	picking_internal_face<VEC3>(m, position, A, B, sel);
 
 	DartMarkerStore<MAP> dm(m);
@@ -196,8 +197,9 @@ bool picking(
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
 	using Face = typename MAP::Face;
+	using Triplet = typename std::tuple<Face, VEC3, Scalar>;
 
-	typename std::vector<std::tuple<Face, VEC3, Scalar>> sel;
+	std::vector<Triplet> sel;
 	picking_internal_face<VEC3>(m, position, A, B, sel);
 
 	DartMarkerStore<MAP> dm(m);
@@ -221,6 +223,7 @@ bool picking(
 				closest_edge = e;
 			}
 		});
+
 		if (!dm.is_marked(closest_edge.dart))
 		{
 			dm.mark_orbit(closest_edge);
@@ -240,13 +243,12 @@ bool picking(
 	typename std::vector<typename MAP::Volume>& selected
 )
 {
-	// here used Face2 for selecting the 2 volumes incident to selected faces
-
 	using Scalar = typename vector_traits<VEC3>::Scalar;
 	using Face = typename MAP::Face;
 	using Volume = typename MAP::Volume;
+	using Triplet = typename std::tuple<Face, VEC3, Scalar>;
 
-	typename std::vector<std::tuple<Face, VEC3, Scalar>> sel;
+	std::vector<Triplet> sel;
 	picking_internal_face<VEC3>(m, position, A, B, sel);
 
 	selected.clear();

@@ -174,18 +174,14 @@ std::future<void> ThreadPool::enqueue(const F& f, Args&&... args)
 	return res;
 }
 
-
-
 /**
  * launch an external thread
  */
 template <class F, class... Args>
 std::future<void> launch_thread(const F& f, Args&&... args)
 {
-	return external_thread_pool()->enqueue(f,args...);
+	return external_thread_pool()->enqueue(f, args...);
 }
-
-
 
 } // namespace cgogn
 
