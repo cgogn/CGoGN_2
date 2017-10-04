@@ -38,12 +38,12 @@ namespace io
 {
 
 template <typename MAP, typename VEC3>
-class TetMeshVolumeImport : public VolumeFileImport<MAP, VEC3>
+class TetMeshVolumeImport : public VolumeFileImport<MAP>
 {
 public:
 
 	using Self = TetMeshVolumeImport<MAP, VEC3>;
-	using Inherit = VolumeFileImport<MAP, VEC3>;
+	using Inherit = VolumeFileImport<MAP>;
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
@@ -55,7 +55,7 @@ protected:
 
 	virtual bool import_file_impl(const std::string& filename) override
 	{
-		ChunkArray<VEC3>* position = this->position_attribute();
+		ChunkArray<VEC3>* position = this->template add_vertex_attribute<VEC3>("position");
 		std::ifstream fp(filename, std::ios::in);
 
 		std::string line;
@@ -120,9 +120,13 @@ protected:
 			std::array<uint32, 4> ids;
 
 			for (auto& id : ids)
+			{
 				iss >> id;
+				--id;
+			}
 
-			this->add_tetra(ids[0] - 1, ids[1] - 1, ids[2] - 1, ids[3] - 1, true);
+			this->template reorient_tetra<VEC3>(*position, ids[0], ids[1], ids[2], ids[3]);
+			this->add_tetra(ids[0], ids[1], ids[2], ids[3]);
 		}
 
 		return true;

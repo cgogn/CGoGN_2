@@ -35,13 +35,11 @@ namespace cgogn
 namespace io
 {
 
-template <typename VEC3>
 class GraphImport
 {
 public:
 
-	using Self = GraphImport<VEC3>;
-	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
+	using Self = GraphImport;
 
 	using ChunkArrayContainer = MapBaseData::ChunkArrayContainer<uint32>;
 	using ChunkArrayGen = MapBaseData::ChunkArrayGen;
@@ -57,9 +55,7 @@ public:
 		edges_nb_vertices_(),
 		edges_vertex_indices_(),
 		vertex_attributes_(),
-		edge_attributes_(),
-		position_attribute_(nullptr),
-		radius_attribute_(nullptr)
+		edge_attributes_()
 	{}
 
 	virtual ~GraphImport()
@@ -67,15 +63,7 @@ public:
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(GraphImport);
 
-	virtual void clear()
-	{
-		edges_nb_vertices_.clear();
-		edges_vertex_indices_.clear();
-		vertex_attributes_.remove_chunk_arrays();
-		edge_attributes_.remove_chunk_arrays();
-		position_attribute_ = nullptr;
-		radius_attribute_ = nullptr;
-	}
+	virtual void clear();
 
 	template <typename Map>
 	void create(Map& map)
@@ -226,14 +214,11 @@ public:
 		edges_vertex_indices_.push_back(p1);
 	}
 
-	inline void add_vertex_attribute(const DataInputGen& in_data, const std::string& att_name)
+	inline ChunkArrayGen* add_vertex_attribute(const DataInputGen& in_data, const std::string& att_name)
 	{
 		ChunkArrayGen* att = in_data.add_attribute(vertex_attributes_, att_name);
 		in_data.to_chunk_array(att);
-		if (att_name == "position")
-			position_attribute_ = dynamic_cast<ChunkArray<VEC3>*>(att);
-		else if (att_name == "radius")
-			radius_attribute_ = dynamic_cast<ChunkArray<Scalar>*>(att);
+		return att;
 	}
 
 	inline void add_edge_attribute(const DataInputGen& in_data, const std::string& att_name)
@@ -254,22 +239,6 @@ public:
 		return edge_attributes_.template add_chunk_array<T>(att_name);
 	}
 
-	inline ChunkArray<VEC3>* position_attribute()
-	{
-		if (position_attribute_ == nullptr)
-			return (position_attribute_ = add_vertex_attribute<VEC3>("position"));
-		else
-			return position_attribute_;
-	}
-
-	inline ChunkArray<Scalar>* radius_attribute()
-	{
-		if (radius_attribute_ == nullptr)
-			return (radius_attribute_ = add_vertex_attribute<Scalar>("radius"));
-		else
-			return radius_attribute_;
-	}
-
 private:
 
 	inline uint32 nb_edges() const
@@ -283,19 +252,16 @@ protected:
 	std::vector<uint32> edges_vertex_indices_;
 	ChunkArrayContainer vertex_attributes_;
 	ChunkArrayContainer edge_attributes_;
-	ChunkArray<VEC3>* position_attribute_;
-	ChunkArray<Scalar>* radius_attribute_;
 };
 
 ///
 /// \class GraphFileImport
 /// Imports a skeleton from a file
 ///
-template <typename VEC3>
-class GraphFileImport : public GraphImport<VEC3>, public FileImport
+class GraphFileImport : public GraphImport, public FileImport
 {
-	using Self = GraphFileImport<VEC3>;
-	using Inherit1 = GraphImport<VEC3>;
+	using Self = GraphFileImport;
+	using Inherit1 = GraphImport;
 	using Inherit2 = FileImport;
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(GraphFileImport);
@@ -308,13 +274,6 @@ public:
 	virtual ~GraphFileImport()
 	{}
 };
-
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_GRAPH_IMPORT_CPP_))
-extern template class CGOGN_IO_API GraphImport<Eigen::Vector3f>;
-extern template class CGOGN_IO_API GraphImport<Eigen::Vector3d>;
-extern template class CGOGN_IO_API GraphFileImport<Eigen::Vector3f>;
-extern template class CGOGN_IO_API GraphFileImport<Eigen::Vector3d>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_GRAPH_IMPORT_CPP_))
 
 } // namespace io
 

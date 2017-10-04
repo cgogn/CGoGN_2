@@ -39,12 +39,12 @@ namespace io
 {
 
 template <typename MAP, typename VEC3>
-class TetgenVolumeImport : public VolumeFileImport<MAP, VEC3>
+class TetgenVolumeImport : public VolumeFileImport<MAP>
 {
 public:
 
 	using Self = TetgenVolumeImport<MAP, VEC3>;
-	using Inherit = VolumeFileImport<MAP, VEC3>;
+	using Inherit = VolumeFileImport<MAP>;
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
@@ -59,7 +59,7 @@ protected:
 		const std::string node_filename = filename.substr(0, filename.rfind('.')) + ".node";
 		const std::string ele_filename = filename.substr(0, filename.rfind('.')) + ".ele";
 
-		ChunkArray<VEC3>* position = this->position_attribute();
+		ChunkArray<VEC3>* position = this->template add_vertex_attribute<VEC3>("position");
 		std::ifstream node_file(node_filename, std::ios::in);
 		if (!node_file.good())
 		{
@@ -145,7 +145,8 @@ protected:
 			for (auto& id : ids)
 				id = old_new_ids_map[id];
 
-			this->add_tetra(ids[0], ids[1], ids[2], ids[3], true);
+			this->template reorient_tetra<VEC3>(*position, ids[0], ids[1], ids[2], ids[3]);
+			this->add_tetra(ids[0], ids[1], ids[2], ids[3]);
 		}
 		return true;
 	}

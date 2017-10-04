@@ -8,6 +8,7 @@ find_package(tinyxml2 REQUIRED)
 find_package(Zlib REQUIRED NO_CMAKE_ENVIRONMENT_PATH)
 
 set(HEADER_FILES
+	data_io.h
 	surface_import.h
 	volume_import.h
 	map_import.h
