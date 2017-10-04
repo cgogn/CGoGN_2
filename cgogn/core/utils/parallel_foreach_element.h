@@ -35,7 +35,11 @@
 
 namespace cgogn
 {
-
+/**
+ * @brief apply f function on each element of a container in parallel
+ * @param cont container
+ * @param f function with 1 params (contents of the container)
+ */
 template <typename CONT, typename FUNC>
 void parallel_foreach_element(CONT& cont, const FUNC& f)
 {
@@ -122,119 +126,6 @@ void parallel_foreach_element(CONT& cont, const FUNC& f)
 
 
 
-/*
-template <typename CONT_A, typename CONT_B, typename FUNC>
-void parallel_foreach_element(CONT_A& cont_a, CONT_B& cont_b, const FUNC& f)
-{
-	using IterEltA = decltype(cont_a.begin());
-	using IterEltB = decltype(cont_b.begin());
-	using T_ELT_A = decltype(*(cont_a.begin()));
-	using T_ELT_B = decltype(*(cont_b.begin()));
-	using PFA  = func_ith_parameter_type<FUNC,0>;
-	using PFRA = typename std::remove_reference<PFA>::type;
-	using TPA1 = typename std::remove_cv<PFRA>::type;
-	using TPA2 = typename std::remove_cv<typename std::remove_reference<T_ELT_A>::type>::type;
-
-	static_assert(std::is_same<TPA1,TPA2>::value &&
-				  (((std::is_const<PFRA>::value || !std::is_reference<PFA>::value) && std::is_const<CONT_A>::value)||(!std::is_const<CONT_A>::value)),
-				  "Wrong function first parameter type");
-
-	using PFB  = func_ith_parameter_type<FUNC,1>;
-	using PFRB = typename std::remove_reference<PFB>::type;
-	using TPB1 = typename std::remove_cv<PFRB>::type;
-	using TPB2 = typename std::remove_cv<typename std::remove_reference<T_ELT_B>::type>::type;
-
-	static_assert(std::is_same<TPB1,TPB2>::value &&
-				  (((std::is_const<PFRB>::value || !std::is_reference<PFB>::value) && std::is_const<CONT_B>::value)||(!std::is_const<CONT_B>::value)),
-				  "Wrong function second parameter type");
-
-
-	using iterPair = std::pair<IterEltA,IterEltB>;
-
-	using VectItELt = std::vector<iterPair>;
-	using Future = std::future<typename std::result_of<FUNC(T_ELT_A,T_ELT_B)>::type>;
-
-	ThreadPool* thread_pool = cgogn::thread_pool();
-	uint32 nb_workers = thread_pool->nb_workers();
-
-	if (nb_workers == 0)
-	{
-		auto it=cont_a.begin();
-		auto jt=cont_b.begin();
-		auto end_a=cont_a.end();
-		auto end_b=cont_b.end();
-		while (it != end_a && jt != end_b)
-		{
-			f(*it,*jt);
-			it++;
-			jt++;
-		}
-		return;
-	}
-
-	std::array<std::vector<VectItELt*>, 2> elts_buffers;
-	std::array<std::vector<Future>, 2> futures;
-	elts_buffers[0].reserve(nb_workers);
-	elts_buffers[1].reserve(nb_workers);
-	futures[0].reserve(nb_workers);
-	futures[1].reserve(nb_workers);
-
-	Buffers<iterPair> buffs;
-
-	IterEltA it = cont_a.begin();
-	IterEltA last = cont_a.end();
-
-	IterEltB it2 = cont_b.begin();
-	IterEltB last2 = cont_b.end();
-
-	uint32 i = 0u; // buffer id (0/1)
-	uint32 j = 0u; // thread id (0..nb_workers)
-	while (it != last && it2 != last2)
-	{
-		// fill buffer
-		elts_buffers[i].push_back(buffs.buffer());
-		VectItELt& elts = *elts_buffers[i].back();
-		elts.reserve(PARALLEL_BUFFER_SIZE);
-		for (unsigned k = 0u; k < PARALLEL_BUFFER_SIZE && it!= last && it2 != last2; ++it,++it2,++k)
-		{
-			elts.push_back(std::make_pair(it,it2));
-		}
-		// launch thread
-		futures[i].push_back(thread_pool->enqueue([&elts, &f] ()
-		{
-			for (auto e : elts)
-				f(*(e.first),*(e.second));
-		}));
-		// next thread
-		if (++j == nb_workers)
-		{	// again from 0 & change buffer
-			j = 0;
-			i = (i+1u) % 2u;
-			for (auto& fu : futures[i])
-				fu.wait();
-			for (auto& b : elts_buffers[i])
-				buffs.release_buffer(b);
-			futures[i].clear();
-			elts_buffers[i].clear();
-		}
-	}
-
-	// clean all at end
-	for (auto& fu : futures[0u])
-		fu.wait();
-	for (auto& b : elts_buffers[0u])
-		buffs.release_buffer(b);
-	for (auto& fu : futures[1u])
-		fu.wait();
-	for (auto& b : elts_buffers[1u])
-		buffs.release_buffer(b);
-}
-*/
-
-
-
-
-
 namespace internal
 {
 	template <typename FUNC, int ITH, typename CONT, typename T_ELT >
@@ -267,6 +158,19 @@ namespace internal
 
 		ThreadPool* thread_pool = cgogn::thread_pool();
 		uint32 nb_workers = thread_pool->nb_workers();
+
+		// mono-thread case
+		if (nb_workers == 0)
+		{
+			Iterators its = p.begin();
+			Iterators ends = p.end();
+			while (PFP::diff(its, ends))
+			{
+				PFP::call(f, its);
+				p.next(its);
+			}
+			return;
+		}
 
 		std::array<std::vector<VectItELt*>, 2> elts_buffers;
 		std::array<std::vector<Future>, 2> futures;
@@ -326,6 +230,12 @@ namespace internal
 
 #define CONT(I) std::get<I>(c_)
 
+/**
+ * @brief apply f function on each element of 2 containers in parallel
+ * @param a container
+ * @param b container
+ * @param f function with 2 params (contents of each container)
+ */
 template < typename A, typename B, typename FUNC>
 void parallel_foreach_element(A& a, B& b, const FUNC& f)
 {
@@ -373,6 +283,13 @@ void parallel_foreach_element(A& a, B& b, const FUNC& f)
 	internal::parallel_foreach_elements(p, f);
 }
 
+/**
+ * @brief apply f function on each element of 3 containers in parallel
+ * @param a container
+ * @param b container
+ * @param c container
+ * @param f function with 3 params (contents of each container)
+ */
 template < typename A, typename B, typename C, typename FUNC>
 void parallel_foreach_element(A& a, B& b, C& c, const FUNC& f)
 {
@@ -425,7 +342,14 @@ void parallel_foreach_element(A& a, B& b, C& c, const FUNC& f)
 
 
 
-
+/**
+ * @brief apply f function on each element of 4 containers in parallel
+ * @param a container
+ * @param b container
+ * @param c container
+ * @param d container
+ * @param f function with 4 params (contents of each container)
+ */
 template < typename A, typename B, typename C, typename D, typename FUNC>
 void parallel_foreach_element(A& a, B& b, C& c, D& d, const FUNC& f)
 {

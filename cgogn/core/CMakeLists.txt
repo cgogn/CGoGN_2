@@ -60,7 +60,7 @@ set(HEADER_UTILS
 	utils/numerics.h
 	utils/type_traits.h
 	utils/timer.h
-	utils/parallel_foreach_elt.h
+	utils/parallel_foreach_element.h
 )
 
 set(HEADER_FILES dll.h ${HEADER_BASIC} ${HEADER_CMAP} ${HEADER_CONTAINER} ${HEADER_GRAPH} ${HEADER_UTILS})
