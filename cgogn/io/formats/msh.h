@@ -178,7 +178,7 @@ protected:
 
 	bool import_legacy_msh_file(std::istream& data_stream)
 	{
-		ChunkArray<VEC3>* position = this->msh_position_attribute();
+		position_ = this->msh_position_attribute();
 		std::map<uint32,uint32> old_new_indices;
 		std::string line;
 		std::string word;
@@ -192,7 +192,7 @@ protected:
 			getline_safe(data_stream,line);
 
 			const uint32 new_index = this->msh_insert_line_vertex_container();
-			auto& v = position->operator[](new_index);
+			auto& v = position_->operator[](new_index);
 			uint32 old_index;
 			std::istringstream iss(line);
 			iss >> old_index >> v[0] >> v[1] >> v[2];
@@ -236,7 +236,7 @@ protected:
 
 	inline bool import_ascii_msh_file(std::istream& data_stream)
 	{
-		ChunkArray<VEC3>* position = this->msh_position_attribute();
+		position_ = this->msh_position_attribute();
 		std::map<uint32,uint32> old_new_indices;
 		std::string line;
 		std::string word;
@@ -259,7 +259,7 @@ protected:
 			getline_safe(data_stream,line);
 
 			const uint32 new_index = this->msh_insert_line_vertex_container();
-			auto& v = position->operator[](new_index);
+			auto& v = position_->operator[](new_index);
 			uint32 old_index;
 			std::istringstream iss(line);
 			iss >> old_index >> v[0] >> v[1] >> v[2];
@@ -308,7 +308,7 @@ protected:
 
 	inline bool import_binary_msh_file(std::istream& data_stream)
 	{
-		ChunkArray<VEC3>* position = this->msh_position_attribute();
+		position_ = this->msh_position_attribute();
 		std::map<uint32,uint32> old_new_indices;
 		std::string line;
 		line.reserve(512);
@@ -331,7 +331,7 @@ protected:
 		for (auto it = buff.begin(), end = buff.end(); it != end ; )
 		{
 			const uint32 new_index = this->msh_insert_line_vertex_container();
-			auto& v = position->operator[](new_index);
+			auto& v = position_->operator[](new_index);
 			using LocScalar = decltype(v[0]);
 			uint32 old_index = *reinterpret_cast<uint32*>(&(*it));
 			it+=4;
@@ -457,17 +457,20 @@ private:
 	int32       file_type_;
 	int32       float_size_; // sizeof(double) normally since the doc says "currently only data-size = sizeof(double) is supported"
 	bool        swap_endianness_;
+
+protected:
+	ChunkArray<VEC3>* position_;
 };
 
 
 template <typename MAP, typename VEC3>
-class MshSurfaceImport : public MshIO<VEC3>, public SurfaceFileImport<MAP, VEC3>
+class MshSurfaceImport : public MshIO<VEC3>, public SurfaceFileImport<MAP>
 {
 public:
 
 	using Self = MshSurfaceImport<MAP, VEC3>;
 	using Inherit_Msh = MshIO<VEC3>;
-	using Inherit_Import = SurfaceFileImport<MAP, VEC3>;
+	using Inherit_Import = SurfaceFileImport<MAP>;
 	using MSH_CELL_TYPES = typename Inherit_Msh::MSH_CELL_TYPES;
 	template <typename T>
 	using ChunkArray = typename Inherit_Import::template ChunkArray<T>;
@@ -487,7 +490,7 @@ protected:
 	// MshIO interface
 	virtual ChunkArray<VEC3>* msh_position_attribute() override
 	{
-		return this->position_attribute();
+		return this->template add_vertex_attribute<VEC3>("position");
 	}
 
 	virtual uint32 msh_insert_line_vertex_container() override
@@ -522,13 +525,14 @@ protected:
 };
 
 template <typename MAP, typename VEC3>
-class MshVolumeImport : public MshIO<VEC3>, public VolumeFileImport<MAP, VEC3>
+class MshVolumeImport : public MshIO<VEC3>, public VolumeFileImport<MAP>
 {
 public:
 
 	using Self = MshVolumeImport<MAP, VEC3>;
 	using Inherit_Msh = MshIO<VEC3>;
-	using Inherit_Import = VolumeFileImport<MAP, VEC3>;
+	using Inherit_Import = VolumeFileImport<MAP>;
+	using Scalar = typename VEC3::Scalar;
 	using MSH_CELL_TYPES = typename Inherit_Msh::MSH_CELL_TYPES;
 	template <typename T>
 	using ChunkArray = typename Inherit_Import::template ChunkArray<T>;
@@ -568,7 +572,7 @@ protected:
 	// MshIO interface
 	virtual ChunkArray<VEC3>* msh_position_attribute() override
 	{
-		return this->position_attribute();
+		return this->template add_vertex_attribute<VEC3>("position");
 	}
 
 	virtual uint32 msh_insert_line_vertex_container() override
@@ -588,22 +592,30 @@ protected:
 
 	virtual void msh_add_tetra(uint32 p0, uint32 p1, uint32 p2, uint32 p3, bool check_orientation) override
 	{
-		this->add_tetra(p0,p1,p2,p3,check_orientation);
+		if(check_orientation)
+			this->template reorient_tetra<VEC3>(*(this->position_), p0, p1, p2, p3);
+		this->add_tetra(p0,p1,p2,p3);
 	}
 
 	virtual void msh_add_hexa(uint32 p0, uint32 p1, uint32 p2, uint32 p3, uint32 p4, uint32 p5, uint32 p6, uint32 p7, bool check_orientation) override
 	{
-		this->add_hexa(p0,p1,p2,p3,p4,p5,p6,p7,check_orientation);
+		if(check_orientation)
+			this->template reorient_hexa<VEC3>(*(this->position_), p0, p1, p2, p3, p4, p5, p6, p7);
+		this->add_hexa(p0,p1,p2,p3,p4,p5,p6,p7);
 	}
 
 	virtual void msh_add_pyramid(uint32 p0, uint32 p1, uint32 p2, uint32 p3, uint32 p4, bool check_orientation) override
 	{
-		this->add_pyramid(p0,p1,p2,p3,p4,check_orientation);
+		if(check_orientation)
+			this->template reorient_pyramid<VEC3>(*(this->position_), p0, p1, p2, p3, p4);
+		this->add_pyramid(p0,p1,p2,p3,p4);
 	}
 
 	virtual void msh_add_triangular_prism(uint32 p0, uint32 p1, uint32 p2, uint32 p3, uint32 p4, uint32 p5, bool check_orientation) override
 	{
-		this->add_triangular_prism(p0,p1,p2,p3,p4,p5,check_orientation);
+		if(check_orientation)
+			this->template reorient_triangular_prism<VEC3>(*(this->position_), p0, p1, p2, p3, p4, p5);
+		this->add_triangular_prism(p0,p1,p2,p3,p4,p5);
 	}
 
 	virtual void msh_add_connector(uint32 p0, uint32 p1, uint32 p2, uint32 p3) override
@@ -629,10 +641,10 @@ protected:
 
 	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& option) override
 	{
-		ChunkArrayGen const* pos = this->position_attribute(Vertex::ORBIT);
+		ChunkArrayGen const* position = this->position_attribute(Vertex::ORBIT);
 		const std::string endianness = cgogn::internal::cgogn_is_little_endian ? "LittleEndian" : "BigEndian";
 		const std::string format = (option.binary_?"binary" :"ascii");
-		std::string scalar_type = pos->nested_type_name();
+		std::string scalar_type = position->nested_type_name();
 		scalar_type[0] = std::toupper(scalar_type[0], std::locale());
 
 		// 1. vertices
@@ -642,7 +654,7 @@ protected:
 		map.foreach_cell([&](Vertex v)
 		{
 			output << vertices_counter++ << " ";
-			pos->export_element(map.embedding(v), output, false, false);
+			position->export_element(map.embedding(v), output, false, false);
 			output << std::endl;
 		}, *(this->cell_cache_));
 		output << "$ENDNOD" << std::endl;
@@ -688,10 +700,10 @@ protected:
 	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& option) override
 	{
 		unused_parameters(option);
-		ChunkArrayGen const* pos = this->position_attribute(Vertex::ORBIT);
+		ChunkArrayGen const* position = this->position_attribute(Vertex::ORBIT);
 //		const std::string endianness = cgogn::internal::cgogn_is_little_endian ? "LittleEndian" : "BigEndian";
 //		const std::string format = (option.binary_?"binary" :"ascii");
-//		std::string scalar_type = pos->nested_type_name();
+//		std::string scalar_type = position->nested_type_name();
 //		scalar_type[0] = std::toupper(scalar_type[0], std::locale());
 
 		// 1. vertices
@@ -701,7 +713,7 @@ protected:
 		map.foreach_cell([&](Vertex v)
 		{
 			output << vertices_counter++ << " ";
-			pos->export_element(map.embedding(v), output, false, false);
+			position->export_element(map.embedding(v), output, false, false);
 			output << std::endl;
 		}, *(this->cell_cache_));
 		output << "$ENDNOD" << std::endl;
