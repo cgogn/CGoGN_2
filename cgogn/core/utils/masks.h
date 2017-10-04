@@ -98,7 +98,7 @@ protected:
 	uint32 traversed_cells_;
 };
 
-template<typename MAP>
+template <typename MAP>
 class QuickTraversor : public CellTraversor
 {
 public:
@@ -106,9 +106,7 @@ public:
 	using Inherit = CellTraversor;
 	using Self = QuickTraversor<MAP>;
 
-	using QTAttribute = Attribute_T<Dart>;
-	using iterator = typename QTAttribute::iterator;
-	using const_iterator = typename QTAttribute::const_iterator;
+	using const_iterator = typename Attribute_T<Dart>::const_iterator;
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(QuickTraversor);
 
@@ -133,13 +131,6 @@ public:
 	}
 
 	template <typename CellType>
-	inline iterator begin()
-	{
-		static const Orbit ORBIT = CellType::ORBIT;
-		return qt_attributes_[ORBIT].begin();
-	}
-
-	template <typename CellType>
 	inline const_iterator end() const
 	{
 		static const Orbit ORBIT = CellType::ORBIT;
@@ -147,49 +138,232 @@ public:
 	}
 
 	template <typename CellType>
-	inline iterator end()
+	inline CellType cell_from_index(uint32 index)
 	{
 		static const Orbit ORBIT = CellType::ORBIT;
-		return qt_attributes_[ORBIT].end();
+		cgogn_message_assert(is_traversed<CellType>(), "Try to get a cell on a QuickTraversor that has not been built");
+		return CellType(qt_attributes_[ORBIT][index]);
+	}
+
+	template <typename CellType, typename DartSelectionFunction>
+	inline void build(const DartSelectionFunction& dart_select)
+	{
+		static_assert(is_func_return_same<DartSelectionFunction, Dart>::value && is_func_parameter_same<DartSelectionFunction, CellType>::value, "Badly formed DartSelectionFunction");
+		static const Orbit ORBIT = CellType::ORBIT;
+		if (!qt_attributes_[ORBIT].is_valid())
+			qt_attributes_[ORBIT] = map_.template add_attribute<Dart, ORBIT>(std::string("qt_att_nb_") + std::to_string(qt_counter_++));
+		map_.foreach_cell([&] (CellType c) { qt_attributes_[ORBIT][c.dart] = dart_select(c); });
+		traversed_cells_ |= orbit_mask<CellType>();
 	}
 
 	template <typename CellType>
 	inline void build()
 	{
+		build<CellType>([] (CellType c) -> Dart { return c.dart; });
+	}
+
+	template <typename CellType, typename DartSelectionFunction>
+	inline void update(CellType c, const DartSelectionFunction& dart_select)
+	{
+		static_assert(is_func_return_same<DartSelectionFunction, Dart>::value && is_func_parameter_same<DartSelectionFunction, CellType>::value, "Badly formed DartSelectionFunction");
 		static const Orbit ORBIT = CellType::ORBIT;
-		if (!qt_attributes_[ORBIT].is_valid())
-			map_.template add_attribute<Dart, ORBIT>(std::string("qt_att_nb_") + std::to_string(qt_counter_++));
-		map_.foreach_cell([this] (CellType c) { qt_attributes_[ORBIT][c.dart] = c.dart; });
-		traversed_cells_ |= orbit_mask<CellType>();
+        cgogn_message_assert(is_traversed<CellType>(), "Try to update a cell on a QuickTraversor that has not been built");
+		qt_attributes_[ORBIT][c.dart] = dart_select(c);
 	}
 
 	template <typename CellType>
 	inline void update(CellType c)
 	{
-		static const Orbit ORBIT = CellType::ORBIT;
-		qt_attributes_[ORBIT][c.dart] = c.dart;
+		update(c, [] (CellType c) -> Dart { return c.dart; });
 	}
 
 private:
 
 	MAP& map_;
-	std::array<QTAttribute, NB_ORBITS> qt_attributes_;
+	std::array<Attribute_T<Dart>, NB_ORBITS> qt_attributes_;
 	static uint32 qt_counter_;
 };
 
-template<typename MAP>
+template <typename MAP>
 uint32 QuickTraversor<MAP>::qt_counter_ = 0u;
+
+template <typename MAP>
+class FilteredQuickTraversor : public CellTraversor
+{
+public:
+
+	using Inherit = CellTraversor;
+	using Self = FilteredQuickTraversor<MAP>;
+
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(FilteredQuickTraversor);
+
+	inline FilteredQuickTraversor(MAP& map) : Inherit(),
+		map_(map)
+	{}
+
+	virtual ~FilteredQuickTraversor() override
+	{
+		for (auto& qta : qt_attributes_)
+		{
+			if (qta.is_valid())
+				map_.remove_attribute(qta);
+		}
+	}
+
+	class const_iterator
+	{
+	public:
+
+		const Self* const qt_ptr_;
+		Orbit orbit_;
+		const Attribute_T<Dart>::ChunkArrayContainer& ca_cont_;
+		uint32 index_;
+
+		inline const_iterator(const Self* qt, Orbit orbit, uint32 i) :
+			qt_ptr_(qt),
+			orbit_(orbit),
+			index_(i)
+		{
+			ca_cont_ = qt_ptr_->map_.attribute_container(orbit);
+		}
+
+		inline const_iterator(const const_iterator& it) :
+			qt_ptr_(it.qt_ptr_),
+			orbit_(it.orbit_),
+			ca_cont_(it.ca_cont_),
+			index_(it.index_)
+		{}
+
+		inline const_iterator& operator=(const const_iterator& it)
+		{
+			qt_ptr_ = it.qt_ptr_;
+			orbit_ = it.orbit_;
+			ca_cont_ = it.ca_cont_;
+			index_ = it.index_;
+			return *this;
+		}
+
+		inline const_iterator& operator++()
+		{
+			uint32 end = ca_cont_.end();
+			do
+			{
+				ca_cont_.next(index_);
+			} while (index_ != end && !qt_ptr_->qt_filters_[orbit_](this->operator*()));
+			return *this;
+		}
+
+		inline Dart operator*() const
+		{
+			return qt_ptr_->qt_attributes_[orbit_]->operator[](index_);
+		}
+
+		inline bool operator!=(const_iterator it) const
+		{
+			cgogn_assert(qt_ptr_ == it.qt_ptr_);
+			return index_ != it.index_;
+		}
+	};
+
+	template <typename CellType>
+	inline const_iterator begin() const
+	{
+		static const Orbit ORBIT = CellType::ORBIT;
+		const_iterator it(
+			&qt_attributes_[ORBIT],
+			map_.template attribute_container<ORBIT>(),
+			map_.template attribute_container<ORBIT>().begin()
+		);
+		if (!qt_filters_[ORBIT](*it))
+			++it;
+		return it;
+	}
+
+	template <typename CellType>
+	inline const_iterator end() const
+	{
+		static const Orbit ORBIT = CellType::ORBIT;
+		return const_iterator(
+			&qt_attributes_[ORBIT],
+			map_.template attribute_container<ORBIT>(),
+			map_.template attribute_container<ORBIT>().end()
+		);
+	}
+
+	template <typename CellType>
+	inline CellType cell_from_index(uint32 index)
+	{
+		static const Orbit ORBIT = CellType::ORBIT;
+		cgogn_message_assert(is_traversed<CellType>(), "Try to get a cell on a QuickTraversor that has not been built");
+		return CellType(qt_attributes_[ORBIT][index]);
+	}
+
+	template <typename CellType, typename FilterFunction>
+	inline void set_filter(const FilterFunction& filter)
+	{
+		static_assert(is_func_return_same<FilterFunction, bool>::value && is_func_parameter_same<FilterFunction, CellType>::value, "Badly formed FilterFunction");
+		static const Orbit ORBIT = CellType::ORBIT;
+		qt_filters_[ORBIT] = [&] (Dart d) -> bool { return filter(CellType(d)); };
+	}
+
+	template <typename CellType, typename DartSelectionFunction>
+	inline void build(const DartSelectionFunction& dart_select)
+	{
+		static_assert(is_func_return_same<DartSelectionFunction, Dart>::value && is_func_parameter_same<DartSelectionFunction, CellType>::value, "Badly formed DartSelectionFunction");
+		static const Orbit ORBIT = CellType::ORBIT;
+		if (!qt_attributes_[ORBIT].is_valid())
+			qt_attributes_[ORBIT] = map_.template add_attribute<Dart, ORBIT>(std::string("fqt_att_nb_") + std::to_string(fqt_counter_++));
+		map_.foreach_cell([&] (CellType c) { qt_attributes_[ORBIT][c.dart] = dart_select(c); });
+		traversed_cells_ |= orbit_mask<CellType>();
+		qt_filters_[ORBIT] = [&] (Dart) -> bool { return true; };
+	}
+
+	template <typename CellType>
+	inline void build()
+	{
+		build<CellType>([] (CellType c) -> Dart { return c.dart; });
+	}
+
+	template <typename CellType, typename DartSelectionFunction>
+	inline void update(CellType c, const DartSelectionFunction& dart_select)
+	{
+		static_assert(is_func_return_same<DartSelectionFunction, Dart>::value && is_func_parameter_same<DartSelectionFunction, CellType>::value, "Badly formed DartSelectionFunction");
+		static const Orbit ORBIT = CellType::ORBIT;
+		cgogn_message_assert(is_traversed<CellType>(), "Try to update a cell on a QuickTraversor that has not been built");
+		qt_attributes_[ORBIT][c.dart] = dart_select(c);
+	}
+
+	template <typename CellType>
+	inline void update(CellType c)
+	{
+		update(c, [] (CellType c) -> Dart { return c.dart; });
+	}
+
+private:
+
+	MAP& map_;
+	std::array<Attribute_T<Dart>, NB_ORBITS> qt_attributes_;
+	std::array<std::function<bool(Dart)>, NB_ORBITS> qt_filters_;
+	static uint32 fqt_counter_;
+};
+
+template <typename MAP>
+uint32 FilteredQuickTraversor<MAP>::fqt_counter_ = 0u;
 
 template <typename MAP>
 class CellCache : public CellTraversor
 {
 public:
 
-	using iterator = std::vector<Dart>::iterator;
+	using Inherit = CellTraversor;
+	using Self = CellCache<MAP>;
+
 	using const_iterator = std::vector<Dart>::const_iterator;
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CellCache);
-	inline CellCache(const MAP& m) : map_(m)
+
+	inline CellCache(const MAP& m) : Inherit(),
+		map_(m)
 	{}
 
 	template <typename CellType>
@@ -199,19 +373,7 @@ public:
 	}
 
 	template <typename CellType>
-	inline iterator begin()
-	{
-		return cells_[CellType::ORBIT].begin();
-	}
-
-	template <typename CellType>
 	inline const_iterator end() const
-	{
-		return cells_[CellType::ORBIT].end();
-	}
-
-	template <typename CellType>
-	inline iterator end()
 	{
 		return cells_[CellType::ORBIT].end();
 	}
@@ -222,20 +384,33 @@ public:
 		return cells_[CellType::ORBIT].size();
 	}
 
-	template <typename CellType>
-	inline void build()
+	template <typename CellType, typename MASK, typename DartSelectionFunction>
+	inline void build(const MASK& mask, const DartSelectionFunction& dart_select)
 	{
-		this->build<CellType>([] (CellType) { return true; });
-	}
-
-	template <typename CellType, typename FilterFunction>
-	inline void build(const FilterFunction& filter)
-	{
+		static_assert(is_func_return_same<DartSelectionFunction, Dart>::value && is_func_parameter_same<DartSelectionFunction, CellType>::value, "Badly formed DartSelectionFunction");
 		static const Orbit ORBIT = CellType::ORBIT;
 		cells_[ORBIT].clear();
 		cells_[ORBIT].reserve(4096u);
-		map_.foreach_cell([&] (CellType c) { cells_[ORBIT].push_back(c.dart); }, filter);
+		map_.foreach_cell([&] (CellType c) { cells_[ORBIT].push_back(dart_select(c)); }, mask);
 		traversed_cells_ |= orbit_mask<CellType>();
+	}
+
+	template <typename CellType, typename MASK>
+	inline void build(const MASK& mask)
+	{
+		this->build<CellType>(
+			mask,
+			[] (CellType c) -> Dart { return c.dart; }
+		);
+	}
+
+	template <typename CellType>
+	inline void build()
+	{
+		this->build<CellType>(
+			[] (CellType) { return true; },
+			[] (CellType c) -> Dart { return c.dart; }
+		);
 	}
 
 private:
@@ -249,12 +424,17 @@ class BoundaryCache : public CellTraversor
 {
 public:
 
+	using Inherit = CellTraversor;
+	using Self = BoundaryCache<MAP>;
+
 	using BoundaryCellType = typename MAP::Boundary;
 	using iterator = typename std::vector<BoundaryCellType>::iterator;
 	using const_iterator = typename std::vector<BoundaryCellType>::const_iterator;
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(BoundaryCache);
-	inline BoundaryCache(const MAP& m) : map_(m)
+
+	inline BoundaryCache(const MAP& m) : Inherit(),
+		map_(m)
 	{
 		cells_.reserve(4096u);
 		build();
@@ -296,12 +476,11 @@ public:
 		typename MAP::DartMarker dm(map_);
 		map_.foreach_dart([&] (Dart d)
 		{
-			if (!dm.is_marked(d))
+			if (map_.is_boundary(d) && !dm.is_marked(d))
 			{
 				BoundaryCellType c(d);
 				dm.mark_orbit(c);
-				if (map_.is_boundary(d))
-					cells_.push_back(c);
+				cells_.push_back(c);
 			}
 		});
 		traversed_cells_ |= orbit_mask<CellType>();

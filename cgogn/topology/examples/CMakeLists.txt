@@ -36,3 +36,5 @@ target_link_libraries(topological_analysis_3d
 	${cgogn_rendering_LIBRARIES} ${Qt5Widgets_LIBRARIES} ${QOGLViewer_LIBRARIES}
 	${cgogn_topology_LIBRARIES}
 	)
+
+set_target_properties(topological_analysis_2d topological_analysis_3d PROPERTIES FOLDER examples/topology)

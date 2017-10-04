@@ -197,7 +197,7 @@ int test5()
 	for(uint32 i = container.begin(); i < container.end(); i += 9)
 		container.remove_lines<1>(i);
 
-	uint32  total = 0;
+	int32  total = 0;
 	for (uint32 j = 0; j < 50; ++j)
 	{
 		for(uint32 i = container.begin(); i != container.end(); container.next(i))

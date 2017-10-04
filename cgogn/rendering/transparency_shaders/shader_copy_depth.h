@@ -47,6 +47,7 @@ class CGOGN_RENDERING_API ShaderParamCopyDepth : public ShaderParam
 protected:
 	void set_uniforms() override;
 public:
+	using ShaderType = ShaderCopyDepth;
 	QOpenGLTexture* texture_;
 	GLuint depth_texture_sampler_;
 	ShaderParamCopyDepth(ShaderCopyDepth* sh);
@@ -79,7 +80,7 @@ public:
 private:
 
 	ShaderCopyDepth();
-	static std::unique_ptr<ShaderCopyDepth> instance_;
+	static ShaderCopyDepth* instance_;
 
 };
 

@@ -141,6 +141,7 @@ void ViewerTransparency::closeEvent(QCloseEvent*)
 	vbo_norm_.reset();
 	transp_drawer_.reset();
 	param_point_sprite_.reset();
+	cgogn::rendering::ShaderProgram::clean_all();
 }
 
 ViewerTransparency::ViewerTransparency() :
@@ -170,11 +171,13 @@ void ViewerTransparency::keyPressEvent(QKeyEvent *ev)
 			draw_points_ = !draw_points_;
 			break;
 		case Qt::Key_Plus:
+			std::cout <<"mesh_transparency_ " << mesh_transparency_<< std::endl;
 			if (mesh_transparency_<254) mesh_transparency_++;
 			transp_drawer_->set_front_color(QColor(0,250,0,mesh_transparency_));
 			transp_drawer_->set_back_color(QColor(0,250,0,mesh_transparency_));
 			break;
 		case Qt::Key_Minus:
+			std::cout <<"mesh_transparency_ " << mesh_transparency_<< std::endl;
 			if (mesh_transparency_>0) mesh_transparency_--;
 			transp_drawer_->set_front_color(QColor(0,250,0,mesh_transparency_));
 			transp_drawer_->set_back_color(QColor(0,250,0,mesh_transparency_));
@@ -254,6 +257,7 @@ void ViewerTransparency::init()
 	transp_drawer_ = cgogn::make_unique<cgogn::rendering::SurfaceTransparencyDrawer>();
 	transp_drawer_->set_position_vbo(vbo_pos_.get());
 	transp_drawer_->set_normal_vbo(vbo_norm_.get());
+	std::cout <<"mesh_transparency_ " << mesh_transparency_<< std::endl;
 	transp_drawer_->set_front_color(QColor(0,250,0,mesh_transparency_));
 	transp_drawer_->set_back_color(QColor(0,250,0,mesh_transparency_));
 
@@ -283,14 +287,12 @@ int main(int argc, char** argv)
 	else
 		surface_mesh = std::string(argv[1]);
 
-//	std::string surface_mesh("/home/thery/Data/Cubes.off");
-
 	QApplication application(argc, argv);
 	qoglviewer::init_ogl_context();
 
 	// Instantiate the viewer.
 	ViewerTransparency viewer;
-	viewer.setWindowTitle("simple_viewer");
+	viewer.setWindowTitle("transparency_viewer");
 	viewer.import(surface_mesh);
 	viewer.show();
 

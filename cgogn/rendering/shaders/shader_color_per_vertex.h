@@ -65,7 +65,7 @@ public:
 protected:
 
 	ShaderColorPerVertex();
-	static std::unique_ptr<ShaderColorPerVertex> instance_;
+	static ShaderColorPerVertex* instance_;
 };
 
 class CGOGN_RENDERING_API ShaderParamColorPerVertex : public ShaderParam
@@ -76,6 +76,7 @@ protected:
 	{}
 
 public:
+	using ShaderType = ShaderColorPerVertex;
 
 	ShaderParamColorPerVertex(ShaderColorPerVertex* prg) : ShaderParam(prg)
 	{}

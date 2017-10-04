@@ -9,6 +9,15 @@ project(CGoGN
 	LANGUAGES CXX C
 )
 
+foreach(p
+    CMP0048 # version
+    CMP0054 # CMake 3.1
+    )
+  if(POLICY ${p})
+    cmake_policy(SET ${p} NEW)
+  endif()
+endforeach()
+
 enable_testing()
 
 #### Default build type
@@ -47,9 +56,9 @@ endif(NOT MSVC)
 set(CGOGN_THIRDPARTY_DIR ${CGOGN_PATH}/thirdparty)
 option(CGOGN_PROVIDE_EIGEN "Use the version of eigen that is packaged with CGoGN." ON)
 option(CGOGN_PROVIDE_TINYXML2 "Use the version of tinyxml2 that is packaged with CGoGN." ON)
-option(CGOGN_BUILD_TESTS "Build cgogn unit tests using google test framework." ON)
-option(CGOGN_BUILD_EXAMPLES "Build some example apps." ON)
-option(CGOGN_BUILD_BENCHS "Build the benchmarks using google benchmark framework." ON)
+option(CGOGN_BUILD_TESTS "Build cgogn unit tests using google test framework." OFF)
+option(CGOGN_BUILD_EXAMPLES "Build some example apps." OFF)
+option(CGOGN_BUILD_BENCHS "Build the benchmarks using google benchmark framework." OFF)
 option(CGOGN_USE_OPENMP "Activate openMP directives." OFF)
 option(CGOGN_USE_SIMD "Enable SIMD instructions (sse,avx...)" ON)
 option(CGOGN_ENABLE_LTO "Enable link-time optimizations (only with gcc)" ON)
@@ -140,35 +149,38 @@ endif()
 include(GenerateExportHeader)
 include(CMakePackageConfigHelpers)
 
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
 
 subdirlist(CGOGN_CONFIGURED_MODULES ${CGOGN_SOURCE_DIR}/cgogn)
 
 add_subdirectory(${CGOGN_THIRDPARTY_DIR})
 
 foreach(subdir ${CGOGN_CONFIGURED_MODULES})
-	set(enabled_by_default ON)
-	option( MODULE_${subdir} "Enable CGOGN component ${subdir}" ${enabled_by_default})
-	if(MODULE_${subdir})
-	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cgogn/${subdir}")
+	option( CGOGN_MODULE_${subdir} "Enable CGOGN component ${subdir}" ON)
+	if(CGOGN_MODULE_${subdir})
+		list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cgogn/${subdir}")
 	endif()
 endforeach()
 
 foreach(subdir ${CGOGN_CONFIGURED_MODULES})
-	if(MODULE_${subdir})
-	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/cgogn/${subdir})
+	if(CGOGN_MODULE_${subdir})
+		add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/cgogn/${subdir})
 	endif()
 endforeach()
 
 foreach(subdir ${CGOGN_CONFIGURED_MODULES})
-	if(CGOGN_BUILD_TESTS)
-	if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/cgogn/${subdir}/tests/)
-		add_subdirectory(cgogn/${subdir}/tests)
-	endif()
-	endif()
-	if(CGOGN_BUILD_EXAMPLES)
-	if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/cgogn/${subdir}/examples/)
-		add_subdirectory(cgogn/${subdir}/examples)
-	endif()
+	if(CGOGN_MODULE_${subdir})
+		if(CGOGN_BUILD_TESTS)
+			if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/cgogn/${subdir}/tests/)
+				add_subdirectory(cgogn/${subdir}/tests)
+			endif()
+		endif()
+		if(CGOGN_BUILD_EXAMPLES)
+			if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/cgogn/${subdir}/examples/)
+				add_subdirectory(cgogn/${subdir}/examples)
+			endif()
+		endif()
 	endif()
 endforeach()
 

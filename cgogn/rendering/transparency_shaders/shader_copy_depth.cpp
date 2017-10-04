@@ -54,7 +54,7 @@ const char* ShaderCopyDepth::fragment_shader_source_ =
 "	gl_FragDepth = texture(depth_texture,tc).r;\n"
 "}\n";
 
-std::unique_ptr<ShaderCopyDepth> ShaderCopyDepth::instance_ = nullptr;
+ShaderCopyDepth* ShaderCopyDepth::instance_ = nullptr;
 
 ShaderCopyDepth::ShaderCopyDepth()
 {
@@ -74,8 +74,11 @@ void ShaderCopyDepth::set_depth_sampler(GLuint depth_samp)
 std::unique_ptr< ShaderCopyDepth::Param> ShaderCopyDepth::generate_param()
 {
 	if (!instance_)
-		instance_ = std::unique_ptr<ShaderCopyDepth>(new ShaderCopyDepth());
-	return cgogn::make_unique<ShaderCopyDepth::Param>(instance_.get());
+	{
+		instance_ = new ShaderCopyDepth();
+		ShaderProgram::register_instance(instance_);
+	}
+	return cgogn::make_unique<Param>(instance_);
 }
 
 

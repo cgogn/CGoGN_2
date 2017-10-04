@@ -49,51 +49,53 @@ void pliant_remeshing(
 	using Vertex = typename CMap2::Vertex;
 	using Edge = typename CMap2::Edge;
 
-	CellCache<CMap2> cache(map);
+	CMap2::CellCache cache(map);
 	cache.template build<Edge>();
 
 	Scalar mean_edge_length = geometry::mean_edge_length<VEC3>(map, cache, position);
 
-	const Scalar squared_max_edge_length = Scalar(0.5625) * mean_edge_length * mean_edge_length; // 0.5625 = 0.75^2
-	const Scalar squared_min_edge_length = Scalar(1.5625) * mean_edge_length * mean_edge_length; // 1.5625 = 1.25^2
+	const Scalar squared_min_edge_length = Scalar(0.5625) * mean_edge_length * mean_edge_length; // 0.5625 = 0.75^2
+	const Scalar squared_max_edge_length = Scalar(1.5625) * mean_edge_length * mean_edge_length; // 1.5625 = 1.25^2
 
 	// cut long edges (and adjacent faces)
 	map.foreach_cell([&] (Edge e)
 	{
 		std::pair<Vertex,Vertex> v = map.vertices(e);
-		const VEC3& edge = position[v.first] - position[v.second];
+		const VEC3 edge = position[v.first] - position[v.second];
 		if (edge.squaredNorm() > squared_max_edge_length)
 		{
 			Dart e2 = map.phi2(e.dart);
 			Vertex nv = map.cut_edge(e);
 			position[nv] = Scalar(0.5) * (position[v.first] + position[v.second]);
 			map.cut_face(nv.dart, map.phi_1(e.dart));
-			if(!map.is_boundary(e2))
+			if (!map.is_boundary(e2))
 				map.cut_face(map.phi1(e2), map.phi_1(e2));
 		}
 	},
 	cache);
 
 	// collapse short edges
-
 	map.foreach_cell([&] (Edge e)
 	{
 		std::pair<Vertex,Vertex> v = map.vertices(e);
-		const VEC3& edge = position[v.first] - position[v.second];
+		const VEC3 edge = position[v.first] - position[v.second];
 		if(edge.squaredNorm() < squared_min_edge_length)
 		{
 			bool collapse = true;
-			const VEC3& p = position[v.second];
+			const VEC3& p = position[v.first];
 			map.foreach_adjacent_vertex_through_edge(v.second, [&] (Vertex vv)
 			{
 				const VEC3& vec = p - position[vv];
 				if (vec.squaredNorm() > squared_max_edge_length)
 					collapse = false;
 			});
-			if(collapse)
+			if (collapse)
 			{
-//				Vertex cv = map.collapse_edge(e);
-//				position[cv] = p;
+				if (map.edge_can_collapse(e))
+				{
+					Vertex cv = map.collapse_edge(e);
+					position[cv] = p;
+				}
 			}
 		}
 	});

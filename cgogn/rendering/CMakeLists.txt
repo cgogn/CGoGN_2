@@ -5,7 +5,7 @@ project(cgogn_rendering
 find_package(Qt5 5.4.0 COMPONENTS Widgets REQUIRED)
 
 if (Qt5Widgets_VERSION VERSION_GREATER 5.5.99)
-	set(HEADER_W_QT56
+	set(HEADER_TRANSP_SHADER
 	transparency_shaders/shader_transparent_quad.h
 	transparency_shaders/shader_transparent_flat.h
 	transparency_shaders/shader_transparent_phong.h
@@ -15,7 +15,7 @@ if (Qt5Widgets_VERSION VERSION_GREATER 5.5.99)
 	transparency_volume_drawer.h
 	)
 
-	set(SOURCE_W_QT56
+	set(SOURCE_TRANSP_SHADER
 	transparency_shaders/shader_transparent_quad.cpp
 	transparency_shaders/shader_transparent_flat.cpp
 	transparency_shaders/shader_transparent_phong.cpp
@@ -28,9 +28,7 @@ else()
 	message(WARNING "Qt version < 5.6 : not compiling transparency rendering (need MRT FBO)")
 endif()
 
-
-set(HEADER_FILES
-	dll.h
+set(HEADER_SHADERS
 	shaders/vbo.h
 	shaders/shader_program.h
 	shaders/shader_simple_color.h
@@ -45,16 +43,21 @@ set(HEADER_FILES
 	shaders/shader_explode_volumes.h
 	shaders/shader_explode_volumes_line.h
 	shaders/shader_texture.h
+)
+
+set(HEADER_FILES
+	dll.h
 	drawer.h
 	topo_drawer.h
 	volume_drawer.h
 	map_render.h
 	wall_paper.h
 	frame_manipulator.h
-	${HEADER_W_QT56}
+	${HEADER_SHADERS}
+	${HEADER_TRANSP_SHADER}
 )
 
-set(SOURCE_FILES
+set(SOURCE_SHADERS
 	shaders/shader_program.cpp
 	shaders/shader_simple_color.cpp
 	shaders/shader_color_per_vertex.cpp
@@ -68,13 +71,17 @@ set(SOURCE_FILES
 	shaders/shader_explode_volumes.cpp
 	shaders/shader_explode_volumes_line.cpp
 	shaders/shader_texture.cpp
+)
+
+set(SOURCE_FILES
 	drawer.cpp
 	topo_drawer.cpp
 	volume_drawer.cpp
 	map_render.cpp
 	wall_paper.cpp
 	frame_manipulator.cpp
-	${SOURCE_W_QT56}
+	${SOURCE_SHADERS}
+	${SOURCE_TRANSP_SHADER}
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
@@ -87,6 +94,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	$<BUILD_INTERFACE:${CGOGN_SOURCE_DIR}>
 	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_TINYXML2_INCLUDE_DIR}>
 	$<INSTALL_INTERFACE:include>
+	$<INSTALL_INTERFACE:include/cgogn/thirdparty>
 )
 
 target_link_libraries(${PROJECT_NAME} cgogn_core cgogn_geometry ${Qt5Widgets_LIBRARIES})
@@ -94,9 +102,14 @@ target_link_libraries(${PROJECT_NAME} cgogn_core cgogn_geometry ${Qt5Widgets_LIB
 file(GLOB HEADERS "." "*.h")
 install(FILES ${HEADERS}
 	DESTINATION include/cgogn/rendering)
-install(DIRECTORY shaders
+install(DIRECTORY shaders transparency_shaders
 	DESTINATION include/cgogn/rendering
 	FILES_MATCHING PATTERN "*.h"
 )
 
-cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CGOGN_SOURCE_DIR}" "include")
+cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CGOGN_SOURCE_DIR}" "include;include/cgogn/thirdparty")
+
+# VisualStudio nice source organisation
+source_group("SHADERS" FILES ${HEADER_SHADERS} ${SOURCE_SHADERS})
+source_group("SHADERS_TRANSPARENT" FILES ${HEADER_TRANSP_SHADER} ${SOURCE_TRANSP_SHADER})
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER cgogn)

@@ -7,7 +7,15 @@ project(Eigen3
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Eigen
 	COMPONENT Eigen_headers
-	DESTINATION include/thirdparty
+	DESTINATION include/cgogn/thirdparty
+	PATTERN "*.in" EXCLUDE
+	PATTERN "*.txt" EXCLUDE
+	PATTERN "*.cpp" EXCLUDE
+)
+
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/unsupported
+	COMPONENT Eigen_headers
+	DESTINATION include/cgogn/thirdparty
 	PATTERN "*.in" EXCLUDE
 	PATTERN "*.txt" EXCLUDE
 	PATTERN "*.cpp" EXCLUDE

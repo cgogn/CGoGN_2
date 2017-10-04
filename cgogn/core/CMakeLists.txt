@@ -2,14 +2,16 @@ project(cgogn_core
 	LANGUAGES CXX
 )
 
-set(HEADER_FILES
-	dll.h
 
+
+set(HEADER_BASIC
 	basic/dart.h
 	basic/dart_marker.h
 	basic/cell.h
 	basic/cell_marker.h
+)
 
+set(HEADER_CMAP
 	cmap/map_traits.h
 	cmap/map_base_data.h
 	cmap/map_base.h
@@ -24,13 +26,22 @@ set(HEADER_FILES
 	cmap/cmap2_quad.h
 	cmap/cmap3_tetra.h
 	cmap/cmap3_hexa.h
+)
 
+set(HEADER_CONTAINER
 	container/chunk_array_container.h
 	container/chunk_array_factory.h
 	container/chunk_array_gen.h
 	container/chunk_array.h
 	container/chunk_stack.h
+)
 
+set(HEADER_GRAPH
+	graph/undirected_graph.h
+	graph/undirected_graph_builder.h
+)
+
+set(HEADER_UTILS
 	utils/assert.h
 	utils/buffers.h
 	utils/definitions.h
@@ -48,9 +59,14 @@ set(HEADER_FILES
 	utils/log_stream.h
 	utils/numerics.h
 	utils/type_traits.h
+	utils/timer.h
+	utils/parallel_foreach_element.h
 )
 
-set(SOURCE_FILES
+set(HEADER_FILES dll.h ${HEADER_BASIC} ${HEADER_CMAP} ${HEADER_CONTAINER} ${HEADER_GRAPH} ${HEADER_UTILS})
+
+
+set(SOURCE_CMAP
 	cmap/map_base_data.cpp
 	cmap/cmap0.cpp
 	cmap/cmap1.cpp
@@ -60,14 +76,19 @@ set(SOURCE_FILES
 	cmap/cmap2_quad.cpp
 	cmap/cmap3_tetra.cpp
 	cmap/cmap3_hexa.cpp
-
+)
+set(SOURCE_CONTAINER
 	container/chunk_array_container.cpp
 	container/chunk_array_gen.cpp
 	container/chunk_array.cpp
 	container/chunk_stack.cpp
 	container/chunk_array_container.cpp
 	container/chunk_array_factory.cpp
-
+)
+set(SOURCE_GRAPH
+	graph/undirected_graph.cpp
+)
+set(SOURCE_UTILS
 	utils/assert.cpp
 	utils/name_types.cpp
 	utils/thread.cpp
@@ -79,13 +100,13 @@ set(SOURCE_FILES
 	utils/log_stream.cpp
 	utils/masks.cpp
 	utils/string.cpp
+	utils/timer.cpp
 )
 
+set(SOURCE_FILES ${SOURCE_CMAP} ${SOURCE_CONTAINER} ${SOURCE_GRAPH} ${SOURCE_UTILS})
+
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
-# generate_export_header(${PROJECT_NAME}
-#   EXPORT_MACRO_NAME "CGOGN_CORE_API"
-#   EXPORT_FILE_NAME "${CMAKE_BINARY_DIR}/exports/${PROJECT_NAME}_export.h"
-# )
+
 
 # use of target_compile_options to have transitive flags
 if(CGOGN_USE_SIMD)
@@ -121,6 +142,7 @@ if(NOT MSVC)
 		target_compile_definitions(${PROJECT_NAME} PUBLIC "_GLIBCXX_PARALLEL")
 		remove_flags(CMAKE_CXX_FLAGS "-D_GLIBCXX_PARALLEL")
 	endif()
+	target_compile_options(${PROJECT_NAME} PUBLIC "-Wno-unknown-pragmas")
 endif()
 
 if(MSVC)
@@ -139,6 +161,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	$<BUILD_INTERFACE:${CGOGN_SOURCE_DIR}>
 	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_TERMCOLOR_INCLUDE_DIR}>
 	$<INSTALL_INTERFACE:include>
+	$<INSTALL_INTERFACE:include/cgogn/thirdparty>
 )
 
 if(${CGOGN_EXTERNAL_TEMPLATES})
@@ -161,4 +184,12 @@ install(DIRECTORY basic cmap container utils
 	FILES_MATCHING PATTERN "*.h"
 )
 
-cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CGOGN_SOURCE_DIR};${CGOGN_THIRDPARTY_TERMCOLOR_INCLUDE_DIR}" "include")
+cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CGOGN_SOURCE_DIR};${CGOGN_THIRDPARTY_TERMCOLOR_INCLUDE_DIR}" "include;include/cgogn/thirdparty")
+
+# VisualStudio nice source organisation
+source_group("CMAP" FILES ${HEADER_CMAP} ${SOURCE_CMAP})
+source_group("CONTAINER" FILES ${HEADER_CONTAINER} ${SOURCE_CONTAINER})
+source_group("GRAPH" FILES ${HEADER_GRAPH} ${SOURCE_GRAPH})
+source_group("UTILS" FILES ${HEADER_UTILS} ${SOURCE_UTILS})
+source_group("BASIC" FILES ${HEADER_BASIC})
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER cgogn)

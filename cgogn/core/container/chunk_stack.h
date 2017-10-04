@@ -155,6 +155,25 @@ public:
 		}
 		return false;
 	}
+
+	/**
+	 * @brief copy the stack into this
+	 * @param from source of copy
+	 */
+	void copy(const typename Inherit::Inherit& cag_src) override
+	{
+		const Self* from = dynamic_cast<const Self*>(&cag_src);
+		if (from == nullptr)
+		{
+			cgogn_log_error("ChunkStack") << "trying to copy from a different types";
+			return;
+		}
+
+		clear();
+		Inherit::copy(*from);
+		stack_size_ = from->stack_size_;
+	}
+
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_STACK_CPP_))

@@ -47,13 +47,12 @@ public:
 	template <typename T>
 	using ChunkArrayContainer = typename Map2::template ChunkArrayContainer<T>;
 
-	inline CMap2Builder_T(Map2& map) : map_(map)
-	{}
+	template <typename T>
+	using ChunkArray = typename Map2::template ChunkArray<T>;
 
+	inline CMap2Builder_T(Map2& map) : map_(map) {}
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CMap2Builder_T);
-
-	inline ~CMap2Builder_T()
-	{}
+	inline ~CMap2Builder_T() {}
 
 public:
 
@@ -63,10 +62,10 @@ public:
 		map_.template create_embedding<ORBIT>();
 	}
 
-	template <Orbit ORBIT, typename T>
-	inline void swap_chunk_array_container(ChunkArrayContainer<T> &cac)
+	template <Orbit ORBIT>
+	inline ChunkArrayContainer<uint32>& attribute_container()
 	{
-		map_.attributes_[ORBIT].swap(cac);
+		return map_.template non_const_attribute_container<ORBIT>();
 	}
 
 	template <class CellType>
@@ -102,6 +101,11 @@ public:
 		return map_.add_face_topo_fp(nb_edges);
 	}
 
+	inline Dart collapse_edge_topo(Dart d)
+	{
+		return map_.collapse_edge_topo(d);
+	}
+
 	inline Dart close_hole_topo(Dart d)
 	{
 		return map_.close_hole_topo(d);
@@ -127,6 +131,34 @@ public:
 	inline uint32 close_map()
 	{
 		return map_.close_map();
+	}
+
+	inline Dart add_topology_element()
+	{
+		return map_.add_topology_element();
+	}
+
+
+	template <bool B=true>
+	inline auto ca_phi1() -> typename std::enable_if<B && MAP2::PRIM_SIZE==1,ChunkArray<Dart>&>::type
+	{
+		return *(map_.Map2::Inherit::phi1_);
+	}
+
+	template <bool B=true>
+	inline auto ca_phi_1() -> typename std::enable_if< B &&MAP2::PRIM_SIZE==1,ChunkArray<Dart>&>::type
+	{
+		return *(map_.Map2::Inherit::phi_1_);
+	}
+
+	inline ChunkArray<Dart>& ca_phi2()
+	{
+		return *(map_.phi2_);
+	}
+
+	inline ChunkArrayContainer<uint8>& cac_topology()
+	{
+		return map_.topology_;
 	}
 
 private:

@@ -84,6 +84,8 @@ public:
 	template <Orbit ORBIT>
 	using CellMarkerNoUnmark = typename cgogn::CellMarkerNoUnmark<Self, ORBIT>;
 
+	using CellCache = typename cgogn::CellCache<Self>;
+	using QuickTraversor = typename cgogn::QuickTraversor<Self>;
 	using BoundaryCache = typename cgogn::BoundaryCache<Self>;
 
 protected:
@@ -696,8 +698,6 @@ public:
 	 * Orbits traversal
 	 *******************************************************************************/
 
-protected:
-
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
 	{
@@ -723,6 +723,8 @@ protected:
 			default: cgogn_assert_not_reached("Orbit not supported in a CMap3Tetra"); break;
 		}
 	}
+
+protected:
 
 	template <typename FUNC>
 	inline void foreach_dart_of_PHI1(Dart d, const FUNC& f) const

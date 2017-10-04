@@ -73,12 +73,6 @@ public:
 	 */
 	virtual uint8 data_size() const = 0;
 	virtual DataType data_type() const = 0;
-	/**
-	 * @brief buffer_vector
-	 * @return return a pointer to the vector used to store the data (WARNING : this is not a pointer to the data contained in the vector)
-	 */
-	virtual void* buffer_vector() = 0;
-	virtual const void* buffer_vector() const = 0;
 
 	virtual void reset() = 0;
 	virtual std::size_t size() const = 0;
@@ -113,7 +107,7 @@ class DataInput : public DataInputGen
 public:
 
 	using Inherit		= DataInputGen;
-	using Self			= DataInput<PRIM_SIZE, BUFFER_T , T> ;
+	using Self			= DataInput<PRIM_SIZE, BUFFER_T, T> ;
 	using ChunkArrayContainer = typename Inherit::ChunkArrayContainer;
 	using ChunkArrayGen	= typename Inherit::ChunkArrayGen;
 	using ChunkArray	= MapBaseData::ChunkArray<T>;
@@ -178,19 +172,31 @@ public:
 			}
 			else
 			{ // 2nd case : BUFFER_T and T are different.
-				VecBufferT buffer(old_size+n);
-				fp.read(reinterpret_cast<char*>(&buffer[old_size]), std::streamsize(n * sizeof(BUFFER_T)));
-				if ((big_endian && cgogn::internal::cgogn_is_little_endian) || (!big_endian && cgogn::internal::cgogn_is_big_endian))
-				{
-					for (auto it = buffer.begin() + typename VecBufferT::difference_type(old_size), end = buffer.end() ; it != end; ++it)
-						*it = cgogn::swap_endianness(*it);
-				}
-				if (fp.eof() || fp.bad())
-					this->reset();
-				// copy
 				auto dest_it = data_.begin();
-				for (auto & x : buffer)
-					*dest_it++ = internal::convert<T>(x);
+				std::advance(dest_it, old_size);
+				const std::size_t buffer_size = std::min(n,std::size_t(16384));
+				VecBufferT buffer(buffer_size);
+				std::size_t already_read = 0;
+				while (already_read != n)
+				{
+					const std::size_t nb_to_read = std::min(buffer_size, n-already_read);
+					buffer.resize(nb_to_read);
+					fp.read(reinterpret_cast<char*>(&buffer[0]), std::streamsize(nb_to_read * sizeof(BUFFER_T)));
+					already_read += nb_to_read;
+
+					if ((big_endian && cgogn::internal::cgogn_is_little_endian) || (!big_endian && cgogn::internal::cgogn_is_big_endian))
+						for (auto& it : buffer)
+							it = cgogn::swap_endianness(it);
+
+					if (fp.eof() || fp.bad())
+					{
+						this->reset();
+						return;
+					}
+					// copy
+					for (const auto & x : buffer)
+						*dest_it++ = internal::convert<T>(x);
+				}
 			}
 		}
 		else
@@ -298,16 +304,6 @@ public:
 		return cgogn::io::data_type(cgogn::name_of_type(T()));
 	}
 
-	void* buffer_vector() override
-	{
-		return &data_;
-	}
-
-	virtual const void* buffer_vector() const override
-	{
-		return &data_;
-	}
-
 	inline const VecT& vec() const
 	{
 		return data_;
@@ -331,8 +327,7 @@ public:
 	virtual std::unique_ptr<Inherit> simplify() override
 	{
 		std::unique_ptr<DataInput<PRIM_SIZE, T , T>> res = make_unique<DataInput<PRIM_SIZE, T , T>>();
-		VecT& res_vec = *(static_cast<VecT*>(res->buffer_vector()));
-		std::swap(this->data_, res_vec);
+		std::swap(this->data_, res->vec());
 		return std::unique_ptr<Inherit>(res.release());
 	}
 

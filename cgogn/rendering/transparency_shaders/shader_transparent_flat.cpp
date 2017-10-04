@@ -86,7 +86,7 @@ const char* ShaderFlatTransp::fragment_shader_source_ =
 "	depth_out = tc.z;\n"
 "}\n";
 
-std::unique_ptr<ShaderFlatTransp> ShaderFlatTransp::instance_ = nullptr;
+ShaderFlatTransp* ShaderFlatTransp::instance_ = nullptr;
 
 ShaderFlatTransp::ShaderFlatTransp()
 {
@@ -159,10 +159,22 @@ void ShaderFlatTransp::set_depth_sampler(GLuint depth_samp)
 std::unique_ptr< ShaderFlatTransp::Param> ShaderFlatTransp::generate_param()
 {
 	if (!instance_)
-		instance_ = std::unique_ptr<ShaderFlatTransp>(new ShaderFlatTransp());
-	return cgogn::make_unique<ShaderFlatTransp::Param>(instance_.get());
+	{
+		instance_ = new ShaderFlatTransp();
+		ShaderProgram::register_instance(instance_);
+	}
+	return cgogn::make_unique<Param>(instance_);
 }
 
+ShaderFlatTransp* ShaderFlatTransp::get_instance()
+{
+	if (!instance_)
+	{
+		instance_ = new ShaderFlatTransp();
+		ShaderProgram::register_instance(instance_);
+	}
+	return instance_;
+}
 
 
 
@@ -173,8 +185,6 @@ ShaderParamFlatTransp::ShaderParamFlatTransp(ShaderFlatTransp* sh) :
 	back_color_(0, 250, 0),
 	ambiant_color_(5, 5, 5),
 	light_pos_(10, 100, 1000),
-	rgba_texture_sampler_(0),
-	depth_texture_sampler_(1),
 	bf_culling_(false),
 	lighted_(true)
 {}
@@ -200,12 +210,16 @@ void ShaderParamFlatTransp::set_uniforms()
 	sh->set_back_color(back_color_);
 	sh->set_ambiant_color(ambiant_color_);
 	sh->set_light_position(light_pos_);
-	sh->set_layer(layer_);
 	sh->set_bf_culling(bf_culling_);
 	sh->set_lighted(lighted_);
-	sh->set_rgba_sampler(rgba_texture_sampler_);
-	sh->set_depth_sampler(depth_texture_sampler_);
 }
+
+void ShaderParamFlatTransp::set_alpha(int alpha)
+{
+	front_color_.setAlpha(alpha);
+	back_color_.setAlpha(alpha);
+}
+
 
 } // namespace rendering
 

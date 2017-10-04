@@ -97,7 +97,7 @@ const char* ShaderPhongTransp::fragment_shader_source_ =
 "	depth_out = tc.z;\n"
 "}\n";
 
-std::unique_ptr<ShaderPhongTransp> ShaderPhongTransp::instance_ = nullptr;
+ShaderPhongTransp* ShaderPhongTransp::instance_ = nullptr;
 
 ShaderPhongTransp::ShaderPhongTransp()
 {
@@ -178,10 +178,22 @@ void ShaderPhongTransp::set_depth_sampler(GLuint depth_samp)
 std::unique_ptr< ShaderPhongTransp::Param> ShaderPhongTransp::generate_param()
 {
 	if (!instance_)
-		instance_ = std::unique_ptr<ShaderPhongTransp>(new ShaderPhongTransp());
-	return cgogn::make_unique<ShaderPhongTransp::Param>(instance_.get());
+	{
+		instance_ = new ShaderPhongTransp();
+		ShaderProgram::register_instance(instance_);
+	}
+	return cgogn::make_unique<Param>(instance_);
 }
 
+ShaderPhongTransp* ShaderPhongTransp::get_instance()
+{
+	if (!instance_)
+	{
+		instance_ = new ShaderPhongTransp();
+		ShaderProgram::register_instance(instance_);
+	}
+	return instance_;
+}
 
 
 
@@ -194,8 +206,6 @@ ShaderParamPhongTransp::ShaderParamPhongTransp(ShaderPhongTransp* sh) :
 	specular_color_(255, 255, 255),
 	specular_coef_(100),
 	light_pos_(10, 100, 1000),
-	rgba_texture_sampler_(0),
-	depth_texture_sampler_(1),
 	bf_culling_(false)
 {}
 
@@ -218,7 +228,6 @@ void ShaderParamPhongTransp::set_normal_vbo(VBO* vbo_normal)
 	QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
 	shader_->bind();
 	vao_->bind();
-	// position vbo
 	vbo_normal->bind();
 	ogl->glEnableVertexAttribArray(ShaderPhongTransp::ATTRIB_NORM);
 	ogl->glVertexAttribPointer(ShaderPhongTransp::ATTRIB_NORM, vbo_normal->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
@@ -238,10 +247,13 @@ void ShaderParamPhongTransp::set_uniforms()
 	sh->set_specular_color(specular_color_);
 	sh->set_specular_coef(specular_coef_);
 	sh->set_light_position(light_pos_);
-	sh->set_layer(layer_);
 	sh->set_bf_culling(bf_culling_);
-	sh->set_rgba_sampler(rgba_texture_sampler_);
-	sh->set_depth_sampler(depth_texture_sampler_);
+}
+
+void ShaderParamPhongTransp::set_alpha(int alpha)
+{
+	front_color_.setAlpha(alpha);
+	back_color_.setAlpha(alpha);
 }
 
 } // namespace rendering

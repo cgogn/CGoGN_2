@@ -197,16 +197,11 @@ public:
 		for(auto chunk : table_data_)
 			delete[] chunk;
 		table_data_.clear();
+		table_data_.shrink_to_fit();
+		table_data_.reserve(1024u);
 	}
 
-	/**
-	 * @brief initialize an element (overwrite with T())
-	 * @param id index of the element
-	 */
-	void init_element(uint32 id) override
-	{
-		table_data_[id / CHUNK_SIZE][id % CHUNK_SIZE] = T();
-	}
+
 
 	/**
 	 * @brief copy an element to another one
@@ -403,6 +398,44 @@ public:
 				*chunk++ = v;
 		}
 	}
+
+	void copy(const Inherit& cag_src) override
+	{
+		clear();
+		const Self* ca = dynamic_cast<const Self*>(&cag_src);
+		if (ca == nullptr)
+		{
+			cgogn_log_error("ChunkArray") << "trying to copy between different types";
+			return;
+		}
+		for (T* chunk : ca->table_data_)
+		{
+			add_chunk();
+			T* ptr = table_data_.back();
+			for(uint32 i=0; i< CHUNK_SIZE; ++i)
+				*ptr++ = *chunk++;
+		}
+	}
+
+	void copy_data(const Inherit& cag_src) override
+	{
+		const Self* ca = dynamic_cast<const Self*>(&cag_src);
+		if (ca == nullptr)
+		{
+			cgogn_log_error("ChunkArray") << "trying to copy between different types";
+			return;
+		}
+
+		cgogn_message_assert(ca->nb_chunks()==this->nb_chunks(), "copy_data only with same sized ChunkArray");
+
+		auto td = table_data_.begin();
+		for (T* chunk : ca->table_data_)
+		{
+			T* ptr = *td++;
+			for(uint32 i=0; i< CHUNK_SIZE; ++i)
+				*ptr++ = *chunk++;
+		}
+	}
 };
 
 /**
@@ -420,7 +453,7 @@ public:
 protected:
 
 	// ensure we can use CHUNK_SIZE value < 32
-	const uint32 BOOLS_PER_INT = (CHUNK_SIZE<32u) ? CHUNK_SIZE : 32u;
+	static const uint32 BOOLS_PER_INT = (CHUNK_SIZE<32u) ? CHUNK_SIZE : 32u;
 
 	// vector of block pointers
 	std::vector<uint32*> table_data_;
@@ -556,16 +589,10 @@ public:
 		for(auto chunk : table_data_)
 			delete[] chunk;
 		table_data_.clear();
+		table_data_.shrink_to_fit();
+		table_data_.reserve(1024u);
 	}
 
-	/**
-	 * @brief initialize an element (overwrite with T())
-	 * @param id index of the element
-	 */
-	inline void init_element(uint32 id) override
-	{
-		set_false(id);
-	}
 
 	/**
 	 * @brief copy an element to another one
@@ -596,7 +623,7 @@ public:
 	 */
 	inline void swap_elements(uint32 idx1, uint32 idx2) override
 	{
-		bool data = this->operator[](idx1);
+		const bool data = this->operator[](idx1);
 		set_value(idx1, this->operator[](idx2));
 		set_value(idx2, data);
 	}
@@ -663,7 +690,7 @@ public:
 			fs.read(reinterpret_cast<char*>(table_data_[i]), CHUNK_SIZE / 8u);// /8 because bool = 1 bit & octet = 8 bit
 
 		// load last chunk
-		uint32 nb = nb_lines - nbc*CHUNK_SIZE;
+		const uint32 nb = nb_lines - nbc*CHUNK_SIZE;
 		fs.read(reinterpret_cast<char*>(table_data_[nbc]), nb / 8u);
 
 		return true;
@@ -680,10 +707,7 @@ public:
 		in >> val;
 		val = to_lower(val);
 		const bool b = (val == "true") || (std::stoi(val) != 0);
-		if (b)
-			set_true(idx);
-		else
-			set_false(idx);
+		set_value(idx,b);
 	}
 
 	const void* element_ptr(uint32) const override
@@ -698,51 +722,28 @@ public:
 	 */
 	inline bool operator[](uint32 i) const
 	{
-		const uint32 jj = i / CHUNK_SIZE;
-		cgogn_assert(jj < table_data_.size());
-		const uint32 j = i % CHUNK_SIZE;
-		const uint32 x = j / BOOLS_PER_INT;
-		const uint32 y = j % BOOLS_PER_INT;
-
-		const uint32 mask = 1u << y;
-
-		return (table_data_[jj][x] & mask) != 0u;
+		cgogn_assert(i / CHUNK_SIZE < table_data_.size());
+		return (table_data_[i / CHUNK_SIZE][(i % CHUNK_SIZE)/BOOLS_PER_INT] & (1u << ((i % CHUNK_SIZE) % BOOLS_PER_INT))) != 0u;
 	}
 
 	inline void set_false(uint32 i)
 	{
-		const uint32 jj = i / CHUNK_SIZE;
-		cgogn_assert(jj < table_data_.size());
-		const uint32 j = i % CHUNK_SIZE;
-		const uint32 x = j / BOOLS_PER_INT;
-		const uint32 y = j % BOOLS_PER_INT;
-		const uint32 mask = 1u << y;
-		table_data_[jj][x] &= ~mask;
+		cgogn_assert(i / CHUNK_SIZE < table_data_.size());
+		table_data_[i / CHUNK_SIZE][(i % CHUNK_SIZE)/ BOOLS_PER_INT] &= ~(1u << ((i % CHUNK_SIZE) % BOOLS_PER_INT));
 	}
 
 	inline void set_true(uint32 i)
 	{
-		const uint32 jj = i / CHUNK_SIZE;
-		cgogn_assert(jj < table_data_.size());
-		const uint32 j = i % CHUNK_SIZE;
-		const uint32 x = j / BOOLS_PER_INT;
-		const uint32 y = j % BOOLS_PER_INT;
-		const uint32 mask = 1u << y;
-		table_data_[jj][x] |= mask;
+		cgogn_assert(i / CHUNK_SIZE < table_data_.size());
+		table_data_[i / CHUNK_SIZE][(i % CHUNK_SIZE)/ BOOLS_PER_INT] |= 1u << ((i % CHUNK_SIZE) % BOOLS_PER_INT);
 	}
 
 	inline void set_value(uint32 i, bool b)
 	{
-		const uint32 jj = i / CHUNK_SIZE;
-		cgogn_assert(jj < table_data_.size());
-		const uint32 j = i % CHUNK_SIZE;
-		const uint32 x = j / BOOLS_PER_INT;
-		const uint32 y = j % BOOLS_PER_INT;
-		const uint32 mask = 1u << y;
 		if (b)
-			table_data_[jj][x] |= mask;
+			set_true(i);
 		else
-			table_data_[jj][x] &= ~mask;
+			set_false(i);
 	}
 
 	/**
@@ -754,36 +755,80 @@ public:
 	 */
 	inline void set_false_byte(uint32 i)
 	{
-		const uint32 jj = i / CHUNK_SIZE;
-		cgogn_assert(jj < table_data_.size());
-		const uint32 j = (i % CHUNK_SIZE) / BOOLS_PER_INT;
-		table_data_[jj][j] = 0u;
+		cgogn_assert(i / CHUNK_SIZE < table_data_.size());
+		table_data_[i / CHUNK_SIZE][(i % CHUNK_SIZE) / BOOLS_PER_INT] = 0u;
 	}
 
 	inline void all_false()
 	{
-		for (uint32 * const ptr : table_data_)
+		for (uint32* const ptr : table_data_)
 		{
-//#pragma omp for
 			for (int32 j = 0; j < int32(CHUNK_SIZE / BOOLS_PER_INT); ++j)
 				ptr[j] = 0u;
 		}
 	}
 
-//	inline void all_true()
-//	{
-//		for (auto ptr : table_data_)
-//		{
-//			for (uint32 j = 0u; j < CHUNK_SIZE/BOOLS_PER_INT; ++j)
-//				*ptr++ = 0xffffffff;
-//		}
-//	}
+	void copy(const Inherit& cag_src) override
+	{
+		clear();
+		const Self* ca = dynamic_cast<const Self*>(&cag_src);
+		if (ca == nullptr)
+		{
+			cgogn_log_error("ChunkArray") << "trying to copy between different types";
+			return;
+		}
+		for (uint32* chunk : ca->table_data_)
+		{
+			add_chunk();
+			uint32* ptr = table_data_.back();
+			for(uint32 i=0; i< CHUNK_SIZE/BOOLS_PER_INT; ++i)
+				*ptr++ = *chunk++;
+		}
+	}
+
+	void copy_data(const Inherit& cag_src) override
+	{
+		const Self* ca = dynamic_cast<const Self*>(&cag_src);
+		if (ca == nullptr)
+		{
+			cgogn_log_error("ChunkArray") << "trying to copy between different types";
+			return;
+		}
+		cgogn_message_assert(ca->nb_chunks()==this->nb_chunks(), "copy_data only with same sized ChunkArray");
+
+		auto td = table_data_.begin();
+		for (uint32* chunk : ca->table_data_)
+		{
+			uint32* ptr = *td++;
+			for(uint32 i=0; i< CHUNK_SIZE; ++i)
+				*ptr++ = *chunk++;
+		}
+	}
+
+	inline uint32 count_true()
+	{
+		uint32 nb=0;
+		for (uint32* ptr : table_data_)
+		{
+			for (int32 j = 0; j < int32(CHUNK_SIZE / BOOLS_PER_INT); ++j)
+			{
+				uint32 word = ptr[j];
+				while (word != 0)
+				{
+					nb += (word & 1u);
+					word >>= 1; // /=2 ?
+				}
+			}
+		}
+		return nb;
+	}
+
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_ARRAY_CPP_))
-extern template class CGOGN_CORE_API ChunkArray<CGOGN_CHUNK_SIZE, bool>;
+//extern template class CGOGN_CORE_API ChunkArray<CGOGN_CHUNK_SIZE, bool>;
 extern template class CGOGN_CORE_API ChunkArray<CGOGN_CHUNK_SIZE, uint32>;
-extern template class CGOGN_CORE_API ChunkArray<CGOGN_CHUNK_SIZE, unsigned char>;
+extern template class CGOGN_CORE_API ChunkArray<CGOGN_CHUNK_SIZE, uint8>;
 extern template class CGOGN_CORE_API ChunkArray<CGOGN_CHUNK_SIZE, std::array<float32, 3>>;
 extern template class CGOGN_CORE_API ChunkArray<CGOGN_CHUNK_SIZE, std::array<float64, 3>>;
 extern template class CGOGN_CORE_API ChunkArrayBool<CGOGN_CHUNK_SIZE>;

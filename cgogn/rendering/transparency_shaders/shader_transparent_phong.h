@@ -48,6 +48,7 @@ protected:
 	void set_uniforms() override;
 
 public:
+	using ShaderType = ShaderPhongTransp;
 
 	QColor front_color_;
 	QColor back_color_;
@@ -55,9 +56,6 @@ public:
 	QColor specular_color_;
 	GLfloat specular_coef_;
 	QVector3D light_pos_;
-	GLint layer_;
-	GLuint rgba_texture_sampler_;
-	GLuint depth_texture_sampler_;
 	bool bf_culling_;
 
 	ShaderParamPhongTransp(ShaderPhongTransp* sh);
@@ -65,6 +63,8 @@ public:
 	void set_position_vbo(VBO* vbo_pos);
 
 	void set_normal_vbo(VBO* vbo_normal);
+
+	void set_alpha(int alpha);
 
 };
 
@@ -150,10 +150,12 @@ public:
 
 	static std::unique_ptr<Param> generate_param();
 
+	static ShaderPhongTransp* get_instance();
+
 private:
 
 	ShaderPhongTransp();
-	static std::unique_ptr<ShaderPhongTransp> instance_;
+	static ShaderPhongTransp* instance_;
 
 };
 

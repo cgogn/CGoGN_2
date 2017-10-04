@@ -34,13 +34,16 @@ namespace cgogn
 namespace rendering
 {
 
-std::unique_ptr<ShaderSimpleColor> ShaderSimpleColor::instance_ = nullptr;
+ShaderSimpleColor* ShaderSimpleColor::instance_ = nullptr;
 
 std::unique_ptr<ShaderSimpleColor::Param> ShaderSimpleColor::generate_param()
 {
 	if (!instance_)
-		instance_ = std::unique_ptr<ShaderSimpleColor>(new ShaderSimpleColor());
-	return cgogn::make_unique<Param>(instance_.get());
+	{
+		instance_ = new ShaderSimpleColor();
+		ShaderProgram::register_instance(instance_);
+	}
+	return cgogn::make_unique<Param>(instance_);
 }
 
 const char* ShaderSimpleColor::vertex_shader_source_ =

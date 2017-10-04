@@ -66,14 +66,17 @@ void curvature(
 	Eigen::Matrix3d tensor;
 	tensor.setZero();
 
-	neighborhood.foreach_cell([&] (Edge2 e)
-	{
-		std::pair<Vertex2, Vertex2> vv = map.vertices(e);
-		const VEC3& p1 = position[vv.first];
-		const VEC3& p2 = position[vv.second];
-		Eigen::Vector3d ev = Eigen::Vector3d(p2[0], p2[1], p2[2]) - Eigen::Vector3d(p1[0], p1[1], p1[2]);
-		tensor += (ev * ev.transpose()) * edge_angle[e] * (Scalar(1) / ev.norm());
-	});
+	map.foreach_cell(
+		[&] (Edge2 e)
+		{
+			std::pair<Vertex2, Vertex2> vv = map.vertices(e);
+			const VEC3& p1 = position[vv.first];
+			const VEC3& p2 = position[vv.second];
+			Eigen::Vector3d ev = Eigen::Vector3d(p2[0], p2[1], p2[2]) - Eigen::Vector3d(p1[0], p1[1], p1[2]);
+			tensor += (ev * ev.transpose()) * edge_angle[e] * (Scalar(1) / ev.norm());
+		},
+		neighborhood
+	);
 
 	neighborhood.foreach_border([&] (Dart d)
 	{
@@ -152,7 +155,7 @@ void compute_curvature(
 	Attribute<VEC3, Orbit::PHI21>& Knormal
 )
 {
-	map.parallel_foreach_cell([&] (Cell<Orbit::PHI21> v, uint32)
+	map.parallel_foreach_cell([&] (Cell<Orbit::PHI21> v)
 	{
 		curvature<VEC3>(map, v, radius, position, normal, edge_angle, edge_area, kmax, kmin, Kmax, Kmin, Knormal);
 	},

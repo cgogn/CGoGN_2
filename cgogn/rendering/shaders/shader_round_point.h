@@ -117,11 +117,11 @@ public:
 private:
 
 	ShaderRoundPointTpl() : ShaderRoundPointGen(CPV) {}
-	static std::unique_ptr<ShaderRoundPointTpl> instance_;
+	static ShaderRoundPointTpl* instance_;
 };
 
 template <bool CPV>
-std::unique_ptr<ShaderRoundPointTpl<CPV>> ShaderRoundPointTpl<CPV>::instance_ = nullptr;
+ShaderRoundPointTpl<CPV>* ShaderRoundPointTpl<CPV>::instance_ = nullptr;
 
 
 // COLOR UNIFORM PARAM
@@ -140,6 +140,8 @@ protected:
 	}
 
 public:
+
+	using ShaderType = ShaderRoundPointTpl<false>;
 
 	QColor color_;
 	float32 size_;
@@ -184,6 +186,8 @@ protected:
 	}
 
 public:
+
+	using ShaderType = ShaderRoundPointTpl<true>;
 
 	float32 size_;
 	QVector4D plane_clip_;
@@ -247,8 +251,11 @@ template <bool CPV>
 std::unique_ptr<typename ShaderRoundPointTpl<CPV>::Param> ShaderRoundPointTpl<CPV>::generate_param()
 {
 	if (!instance_)
-		instance_ = std::unique_ptr<ShaderRoundPointTpl>(new ShaderRoundPointTpl<CPV>());
-	return cgogn::make_unique<Param>(instance_.get());
+	{
+		instance_ = new ShaderRoundPointTpl<CPV>();
+		ShaderProgram::register_instance(instance_);
+	}
+	return cgogn::make_unique<Param>(instance_);
 }
 
 

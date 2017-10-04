@@ -35,6 +35,15 @@ namespace cgogn
 namespace geometry
 {
 
+enum Intersection
+{
+	NO_INTERSECTION = 0,
+	VERTEX_INTERSECTION = 1,
+	EDGE_INTERSECTION = 2,
+	FACE_INTERSECTION = 3
+} ;
+
+
 template <typename VEC3>
 bool intersection_ray_triangle(const VEC3& P, const VEC3& Dir, const VEC3& Ta, const VEC3& Tb, const VEC3& Tc, VEC3* inter = nullptr)
 {
@@ -115,7 +124,53 @@ bool intersection_sphere_segment(
 	return false;
 }
 
+template <typename VEC3>
+Intersection intersection_segment_segment(
+		const VEC3& PA,
+		const VEC3& PB,
+		const VEC3& QA,
+		const VEC3& QB,
+		VEC3& Inter)
+{
+	using Scalar = typename vector_traits<VEC3>::Scalar;
+	const Scalar PRECISION = std::numeric_limits<Scalar>::epsilon();
 
+	VEC3 vp1p2 = PB - PA;
+	VEC3 vq1q2 = QB - QA;
+	VEC3 vp1q1 = QA - PA;
+	Scalar delta = vp1p2[0] * vq1q2[1] - vp1p2[1] * vq1q2[0] ;
+	Scalar coeff = vp1q1[0] * vq1q2[1] - vp1q1[1] * vq1q2[0] ;
+
+	if (delta == 0) //parallel
+	{
+		//test if collinear
+		if (coeff == 0)
+		{
+			//collinear
+			//TODO : check if there is a common point between the two edges
+			Inter = QA;
+			return EDGE_INTERSECTION;
+		}
+		else
+			return NO_INTERSECTION;
+	}
+	else
+		Inter = VEC3((PA[0] * delta + vp1p2[0] * coeff) / delta, (PA[1] * delta + vp1p2[1] * coeff) / delta, (PA[2] * delta + vp1p2[2] * coeff) / delta) ;
+
+	//test if inter point is outside the edges
+	if(
+		(Inter[0] < PA[0] && Inter[0] < PB[0]) || (Inter[0] > PA[0] && Inter[0] > PB[0]) ||
+		(Inter[0] < QA[0] && Inter[0] < QB[0]) || (Inter[0] > QA[0] && Inter[0] > QB[0]) ||
+		(Inter[1] < PA[1] && Inter[1] < PB[1]) || (Inter[1] > PA[1] && Inter[1] > PB[1]) ||
+		(Inter[1] < QA[1] && Inter[1] < QB[1]) || (Inter[1] > QA[1] && Inter[1] > QB[1])
+	)
+		return NO_INTERSECTION;
+
+	if(numerics::almost_equal_absolute(PA, Inter) || numerics::almost_equal_absolute(PB, Inter) || numerics::almost_equal_absolute(QA, Inter) || numerics::almost_equal_absolute(QB, Inter))
+		return VERTEX_INTERSECTION;
+
+	return EDGE_INTERSECTION;
+}
 
 template <typename VEC3>
 bool intersection_line_plane(const VEC3& point_line, const VEC3& dir_line, const VEC3& point_plane, const VEC3& normal_plane, VEC3* inter = nullptr)

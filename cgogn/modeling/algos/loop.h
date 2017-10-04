@@ -28,6 +28,7 @@
 
 #include <cgogn/modeling/dll.h>
 #include <cgogn/core/basic/dart_marker.h>
+#include <cgogn/core/utils/masks.h>
 #include <cgogn/core/cmap/cmap3.h>
 #include <cgogn/geometry/types/geometry_traits.h>
 
@@ -49,28 +50,18 @@ void loop(MAP& map, typename MAP::template VertexAttribute<VEC3>& position)
 
 	DartMarker<MAP> initial_edge_marker(map);
 
-	std::vector<Edge>* initial_edges = cgogn::dart_buffers()->cell_buffer<Edge>();
-	map.foreach_cell([&] (Edge e)
-	{
-		initial_edges->push_back(e);
-		initial_edge_marker.mark_orbit(e);
-	});
+	CellCache<MAP> initial_cache(map);
+	initial_cache.template build<Vertex>();
+	initial_cache.template build<Edge>();
+	initial_cache.template build<Face>();
 
-	std::vector<Vertex>* initial_vertices = cgogn::dart_buffers()->cell_buffer<Vertex>();
-	map.foreach_cell([&] (Vertex v)
-	{
-		initial_vertices->push_back(v);
-	});
+	map.foreach_cell([&] (Edge e) {	initial_edge_marker.mark_orbit(e); }, initial_cache);
 
 	// cut edges
-	for (Edge e : *initial_edges)
-	{
-//		std::pair<Vertex, Vertex> ve = map.vertices(e);
-		map.cut_edge(e);
-	}
+	map.foreach_cell([&] (Edge e) { map.cut_edge(e); }, initial_cache);
 
 	// compute position of new edge points
-	for (Edge e : *initial_edges)
+	map.foreach_cell([&] (Edge e)
 	{
 		Vertex v1(e.dart);
 		Vertex v2(map.template phi<12>(e.dart));
@@ -80,9 +71,10 @@ void loop(MAP& map, typename MAP::template VertexAttribute<VEC3>& position)
 
 		position2[nve] = Scalar(3.0/8.0) * (position[v1] + position[v2]) + Scalar(1.0/8.0) * (position[vr] + position[vl]);
 	}
+	, initial_cache);
 
 	// compute new position of old vertices
-	for (Vertex v : *initial_vertices)
+	map.foreach_cell([&] (Vertex v)
 	{
 		VEC3 sum_edge;// Sum_E
 		sum_edge.setZero();
@@ -110,7 +102,8 @@ void loop(MAP& map, typename MAP::template VertexAttribute<VEC3>& position)
 				beta = 3.0 / (8.0 * nb_e);
 			position2[v] = Scalar(beta)*sum_edge + Scalar(1.0-beta*nb_e) * position[v];
 		}
-	}
+	},
+	initial_cache);
 
 	// add edges inside faces
 	map.foreach_cell([&] (Face f)
@@ -127,10 +120,8 @@ void loop(MAP& map, typename MAP::template VertexAttribute<VEC3>& position)
 
 		Dart d3 = map.template phi<11>(d2);
 		map.cut_face(d2, d3);
-	});
-
-	cgogn::dart_buffers()->release_cell_buffer(initial_edges);
-	cgogn::dart_buffers()->release_cell_buffer(initial_vertices);
+	},
+	initial_cache);
 
 	map.swap_attributes(position, position2);
 	map.remove_attribute(position2);

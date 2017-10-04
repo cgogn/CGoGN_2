@@ -48,6 +48,7 @@ class CGOGN_RENDERING_API ShaderParamTranspQuad : public ShaderParam
 protected:
 	void set_uniforms() override;
 public:
+	using ShaderType = ShaderTranspQuad;
 	GLuint rgba_texture_sampler_;
 	GLuint depth_texture_sampler_;
 	ShaderParamTranspQuad(ShaderTranspQuad* sh);
@@ -83,7 +84,7 @@ public:
 private:
 
 	ShaderTranspQuad();
-	static std::unique_ptr<ShaderTranspQuad> instance_;
+	static ShaderTranspQuad* instance_;
 
 };
 

@@ -37,6 +37,11 @@ target_link_libraries(picking_viewer ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIE
 add_executable(viewer_topo3 viewer_topo3.cpp)
 target_link_libraries(viewer_topo3 ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${cgogn_rendering_LIBRARIES} ${QOGLViewer_LIBRARIES})
 
+add_executable(mt_viewer mt_viewer.cpp)
+target_link_libraries(mt_viewer ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${cgogn_rendering_LIBRARIES} ${QOGLViewer_LIBRARIES})
+
+set_target_properties(simple_viewer viewer_per_face viewer_topo drawing picking_viewer viewer_topo3 mt_viewer
+PROPERTIES FOLDER examples/rendering)
 
 
 if (Qt5Widgets_VERSION VERSION_GREATER 5.5.99)
@@ -44,7 +49,13 @@ if (Qt5Widgets_VERSION VERSION_GREATER 5.5.99)
 	add_executable(transparency_viewer transparency_viewer.cpp)
 	target_link_libraries(transparency_viewer ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${cgogn_rendering_LIBRARIES} ${QOGLViewer_LIBRARIES})
 
+	add_executable(transparencies_viewer transparencies_viewer.cpp)
+	target_link_libraries(transparencies_viewer ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${cgogn_rendering_LIBRARIES} ${QOGLViewer_LIBRARIES})
+
 	add_executable(transparency_volume_viewer transparency_volume_viewer.cpp)
 	target_link_libraries(transparency_volume_viewer ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${cgogn_rendering_LIBRARIES} ${QOGLViewer_LIBRARIES})
+
+	set_target_properties(transparency_viewer transparency_volume_viewer transparencies_viewer 
+	PROPERTIES FOLDER examples/rendering)
 
 endif()

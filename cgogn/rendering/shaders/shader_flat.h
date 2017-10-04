@@ -59,6 +59,7 @@ protected:
 	GLint unif_back_color_;
 	GLint unif_ambiant_color_;
 	GLint unif_light_position_;
+	GLint unif_bf_culling_;
 
 public:
 
@@ -102,6 +103,8 @@ public:
 	 */
 	void set_local_light_position(const QVector3D& l, const QMatrix4x4& view_matrix);
 
+	void set_bf_culling(bool cull);
+
 protected:
 
 	ShaderFlatGen(bool color_per_vertex);
@@ -118,11 +121,11 @@ public:
 private:
 
 	ShaderFlatTpl() : ShaderFlatGen(CPV) {}
-	static std::unique_ptr<ShaderFlatTpl> instance_;
+	static ShaderFlatTpl* instance_;
 };
 
 template <bool CPV>
-std::unique_ptr<ShaderFlatTpl<CPV>> ShaderFlatTpl<CPV>::instance_ = nullptr;
+ShaderFlatTpl<CPV>* ShaderFlatTpl<CPV>::instance_ = nullptr;
 
 
 // COLOR UNIFORM PARAM
@@ -138,21 +141,26 @@ protected:
 		sh->set_back_color(back_color_);
 		sh->set_ambiant_color(ambiant_color_);
 		sh->set_light_position(light_pos_);
+		sh->set_bf_culling(bf_culling_);
 	}
 
 public:
+
+	using ShaderType = ShaderFlatTpl<false>;
 
 	QColor front_color_;
 	QColor back_color_;
 	QColor ambiant_color_;
 	QVector3D light_pos_;
+	bool bf_culling_;
 
 	ShaderParamFlat(ShaderFlatTpl<false>* sh) :
 		ShaderParam(sh),
 		front_color_(250, 0, 0),
 		back_color_(0, 250, 0),
 		ambiant_color_(5, 5, 5),
-		light_pos_(10, 100, 1000)
+		light_pos_(10, 100, 1000),
+		bf_culling_(false)
 	{}
 
 	void set_position_vbo(VBO* vbo_pos)
@@ -182,17 +190,22 @@ protected:
 		ShaderFlatGen* sh = static_cast<ShaderFlatGen*>(this->shader_);
 		sh->set_ambiant_color(ambiant_color_);
 		sh->set_light_position(light_pos_);
+		sh->set_bf_culling(bf_culling_);
 	}
 
 public:
 
+	using ShaderType = ShaderFlatTpl<true>;
+
 	QColor ambiant_color_;
 	QVector3D light_pos_;
+	bool bf_culling_;
 
 	ShaderParamFlat(ShaderFlatTpl<true>* sh) :
 		ShaderParam(sh),
 		ambiant_color_(5, 5, 5),
-		light_pos_(10, 100, 1000)
+		light_pos_(10, 100, 1000),
+		bf_culling_(false)
 	{}
 
 	void set_all_vbos(VBO* vbo_pos, VBO* vbo_color)
@@ -245,8 +258,11 @@ template <bool CPV>
 std::unique_ptr<typename ShaderFlatTpl<CPV>::Param> ShaderFlatTpl<CPV>::generate_param()
 {
 	if (!instance_)
-		instance_ = std::unique_ptr<ShaderFlatTpl<CPV>>(new ShaderFlatTpl<CPV>());
-	return cgogn::make_unique<Param>(instance_.get());
+	{
+		instance_ = new ShaderFlatTpl<CPV>();
+		ShaderProgram::register_instance(instance_);
+	}
+	return cgogn::make_unique<Param>(instance_);
 }
 
 using ShaderFlat = ShaderFlatTpl<false>;

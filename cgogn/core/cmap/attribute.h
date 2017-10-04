@@ -126,7 +126,7 @@ public:
 		orbit_(orbit)
 	{
 		if (map != nullptr)
-			chunk_array_cont_ = &map->const_attribute_container(orbit);
+			chunk_array_cont_ = &map->attribute_container(orbit);
 		if (chunk_array_ != nullptr)
 			chunk_array_->add_external_ref(reinterpret_cast<ChunkArrayGen**>(&chunk_array_));
 	}
@@ -278,6 +278,12 @@ public:
 			cgogn_assert(ah_ptr_ == it.ah_ptr_);
 			return index_ != it.index_;
 		}
+
+		inline uint32 index()
+		{
+			return index_;
+		}
+
 	};
 
 	inline const_iterator begin() const
@@ -330,6 +336,13 @@ public:
 			cgogn_assert(ah_ptr_ == it.ah_ptr_);
 			return index_ != it.index_;
 		}
+
+		inline uint32 index()
+		{
+			return index_;
+		}
+
+
 	};
 
 	inline iterator begin()
@@ -349,9 +362,9 @@ public:
 
 protected:
 
-	ChunkArrayContainer const*	chunk_array_cont_;
-	TChunkArray*				chunk_array_;
-	Orbit						orbit_;
+	const ChunkArrayContainer* chunk_array_cont_;
+	TChunkArray*               chunk_array_;
+	Orbit                      orbit_;
 };
 
 /**

@@ -71,7 +71,7 @@ inline std::string orbit_name(Orbit orbit)
 	}
 	cgogn_assert_not_reached("This orbit does not exist");
 #ifdef NDEBUG 
-	return "UNKNOWN";  // little trick to  avoid warning on VS
+	return "UNKNOWN"; // little trick to avoid warning on VS
 #endif
 }
 
@@ -166,6 +166,12 @@ public:
 		serialization::serialize_binary(o, dart.index, little_endian);
 	}
 };
+
+template <typename>
+struct is_cell_type : std::false_type {};
+
+template <Orbit ORBIT>
+struct is_cell_type<Cell<ORBIT>> : std::true_type {};
 
 } // namespace cgogn
 

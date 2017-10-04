@@ -73,6 +73,8 @@ public:
 	template <Orbit ORBIT>
 	using CellMarkerStore = typename cgogn::CellMarkerStore<Self, ORBIT>;
 
+	using CellCache = typename cgogn::CellCache<Self>;
+	using QuickTraversor = typename cgogn::QuickTraversor<Self>;
 	using BoundaryCache = typename cgogn::BoundaryCache<Self>;
 
 protected:
@@ -314,7 +316,7 @@ public:
 
 	/*!
 	 * \brief Remove a face from the map.
-	 * \param d : a dart of the face to remove
+	 * \param f : the face to remove
 	 */
 	inline void remove_face(Face f)
 	{
@@ -428,7 +430,6 @@ public:
 		return this->nb_darts_of_orbit(f);
 	}
 
-
 	inline bool has_codegree(Face f, uint32 codegree) const
 	{
 		if (codegree < 1u) return false;
@@ -447,6 +448,8 @@ public:
 	 * Boundary information
 	 *******************************************************************************/
 
+#pragma warning(push)
+#pragma warning(disable:4702)
 	template <Orbit ORBIT>
 	inline bool is_boundary_cell(Cell<ORBIT> c) const
 	{
@@ -460,12 +463,14 @@ public:
 			case Orbit::PHI1_PHI3:
 			case Orbit::PHI2_PHI3:
 			case Orbit::PHI21_PHI31:
-			case Orbit::PHI1_PHI2_PHI3:
-			default: cgogn_assert_not_reached("Orbit not supported in a CMap1"); break;
+			case Orbit::PHI1_PHI2_PHI3: 
+			default: cgogn_assert_not_reached_false("Orbit not supported in a CMap1"); break;
 		}
 	}
+#pragma warning(pop)
 
 public:
+
 	/*******************************************************************************
 	* Orbits traversal                                                             *
 	*******************************************************************************/
@@ -564,6 +569,7 @@ struct CMap1Type
 using CMap1 = CMap1_T<CMap1Type>;
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP1_CPP_))
+extern template class CGOGN_CORE_API CMap1_T<CMap1Type>;
 extern template class CGOGN_CORE_API DartMarker<CMap1>;
 extern template class CGOGN_CORE_API DartMarkerStore<CMap1>;
 extern template class CGOGN_CORE_API DartMarkerNoUnmark<CMap1>;

@@ -107,7 +107,7 @@ private:
 	VertexAttribute<Vec3> vertex_position2_;
 	VertexAttribute<Vec3> vertex_normal_;
 
-	cgogn::CellCache<Map2> cell_cache_;
+	Map2::CellCache cell_cache_;
 	std::unique_ptr<CustomFilter> filter_;
 
 	cgogn::geometry::AABB<Vec3> bb_;
@@ -185,6 +185,8 @@ void Viewer::closeEvent(QCloseEvent*)
 	vbo_color_.reset();
 	vbo_sphere_sz_.reset();
 	drawer_.reset();
+	cgogn::rendering::ShaderProgram::clean_all();
+
 }
 
 Viewer::Viewer() :

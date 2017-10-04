@@ -114,11 +114,11 @@ public:
 private:
 
 	ShaderBoldLineTpl() : ShaderBoldLineGen(CPV) {}
-	static std::unique_ptr<ShaderBoldLineTpl> instance_;
+	static ShaderBoldLineTpl* instance_;
 };
 
 template <bool CPV>
-std::unique_ptr<ShaderBoldLineTpl<CPV>> ShaderBoldLineTpl<CPV>::instance_ = nullptr;
+ShaderBoldLineTpl<CPV>* ShaderBoldLineTpl<CPV>::instance_ = nullptr;
 
 
 // COLOR UNIFORM VERSION
@@ -137,6 +137,7 @@ protected:
 	}
 
 public:
+	using ShaderType = ShaderBoldLineTpl<false>;
 
 	QColor color_;
 	float32 width_;
@@ -182,6 +183,7 @@ protected:
 
 public:
 
+	using ShaderType = ShaderBoldLineTpl<true>;
 	using Self = ShaderParamBoldLine<true>;
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderParamBoldLine);
 
@@ -247,8 +249,11 @@ template <bool CPV>
 std::unique_ptr<typename ShaderBoldLineTpl<CPV>::Param> ShaderBoldLineTpl<CPV>::generate_param()
 {
 	if (!instance_)
-		instance_ = std::unique_ptr<ShaderBoldLineTpl>(new ShaderBoldLineTpl<CPV>);
-	return cgogn::make_unique<Param>(instance_.get());
+	{
+		instance_ = new ShaderBoldLineTpl<CPV>;
+		ShaderProgram::register_instance(instance_);
+	}
+	return cgogn::make_unique<Param>(instance_);
 }
 
 
