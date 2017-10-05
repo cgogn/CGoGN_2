@@ -94,7 +94,6 @@ inline std::unique_ptr<VolumeFileImport<MAP>> newVolumeImport(MAP& map, const st
 	}
 }
 
-
 template <typename VEC3, typename MAP>
 inline void import_surface(MAP& map, const std::string& filename)
 {
