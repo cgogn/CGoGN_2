@@ -228,17 +228,6 @@ public:
 		return o;
 	}
 
-private:
-	void init(const VEC& p, const VEC& Ti, const VEC& Tj)
-	{
-		p_ = p ;
-		Ti_ = Ti ;
-		Tj_ = Tj ;
-		cgogn_assert(is_valid()) ;
-		if (!is_valid())
-			cgogn_log_error("Parallelogram::init") << "Attempt to create an invalid Parallelogram.";
-	}
-
 	bool is_valid() const
 	{
 		bool res = true ;
@@ -248,6 +237,30 @@ private:
 
 		return res ;
 	}
+
+	void make_valid()
+	{
+//		// alpha2 > alpha1
+//		const T& a1 = getAlphaI() ;
+//		const T& a2 = getAlphaJ() ;
+//		if (a2 )
+
+//		// Ti positive x coords
+//		Ti_[0] = clamp(Ti_[0],1) ;
+//		Tj_[0] = clamp(Tj_[0],0) ;
+		assert(false) ; // TODO
+	}
+
+private:
+	void init(const VEC& p, const VEC& Ti, const VEC& Tj)
+	{
+		p_ = p ;
+		Ti_ = Ti ;
+		Tj_ = Tj ;
+		if (!is_valid())
+			cgogn_log_warning("Parallelogram::init") << "Creating an invalid Parallelogram.";
+	}
+
 };
 
 /**
