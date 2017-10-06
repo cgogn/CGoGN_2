@@ -35,11 +35,25 @@ namespace geometry
 /**
  * area of the triangle formed by 3 points in 3D
  */
-template <typename VEC3>
-inline typename vector_traits<VEC3>::Scalar area(const VEC3& p1, const VEC3& p2, const VEC3& p3)
+template <typename VEC>
+inline auto area(const VEC& p1, const VEC& p2, const VEC& p3)
+	-> typename std::enable_if<vector_traits<VEC>::SIZE == 3, typename vector_traits<VEC>::Scalar>::type
 {
-	using Scalar = typename vector_traits<VEC3>::Scalar;
+	using Scalar = typename vector_traits<VEC>::Scalar;
 	return (Scalar(0.5) * ((p2 - p1).cross(p3 - p1)).norm());
+}
+
+/**
+ * area of the triangle formed by 3 points in 2D
+ */
+template <typename VEC>
+inline auto area(const VEC& p1, const VEC& p2, const VEC& p3)
+	-> typename std::enable_if<vector_traits<VEC>::SIZE == 2, typename vector_traits<VEC>::Scalar>::type
+{
+	using Scalar = typename vector_traits<VEC>::Scalar;
+	VEC v1 = p2 - p1;
+	VEC v2 = p3 - p1;
+	return (Scalar(0.5) * (v1[0] * v2[1] - v1[1] * v2[0]));
 }
 
 } // namespace geometry
