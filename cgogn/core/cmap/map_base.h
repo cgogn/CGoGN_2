@@ -258,6 +258,15 @@ public:
 	}
 
 	/**
+	 * \brief Second version of add_attribute taking a Cell as template parameter instead of an Orbit
+	 */
+	template <typename T, typename CellType>
+	inline Attribute<T, CellType::ORBIT> add_attribute(const std::string& attribute_name)
+	{
+		return this->add_attribute<T, CellType::ORBIT>(attribute_name);
+	}
+
+	/**
 	* \brief search an attribute for a given orbit
 	* @param attribute_name attribute name
 	* @return an Attribute
@@ -272,39 +281,7 @@ public:
 	}
 
 	/**
-	 * \brief remove an attribute
-	 * @param ah a handler to the attribute to remove
-	 * @return true if remove succeed else false
-	 */
-	template <typename T>
-	inline bool remove_attribute(const Attribute_T<T>& ah)
-	{
-		return this->attributes_[ah.orbit()].remove_chunk_array(ah.data());
-	}
-
-	/**
-	 * \brief remove_attribute
-	 * @param orbit, the attribute orbit
-	 * @param att_name attribute name
-	 * @return true if remove succeed else false
-	 */
-	inline bool remove_attribute(Orbit orbit, const std::string& att_name)
-	{
-		cgogn_message_assert(orbit < NB_ORBITS, "Unknown orbit parameter");
-		return this->attributes_[orbit].remove_chunk_array(att_name);
-	}
-
-	/**
-	 * \brief Second version of add_attribute taking a Cell as template paramter instead of an Orbit
-	 */
-	template <typename T, typename CellType>
-	inline Attribute<T, CellType::ORBIT> add_attribute(const std::string& attribute_name)
-	{
-		return this->add_attribute<T, CellType::ORBIT>(attribute_name);
-	}
-
-	/**
-	 * \brief Second version of get_attribute taking a Cell as template paramter instead of an Orbit
+	 * \brief Second version of get_attribute taking a Cell as template parameter instead of an Orbit
 	 */
 	template <typename T, typename CellType>
 	inline Attribute<T, CellType::ORBIT> get_attribute(const std::string& attribute_name) const
@@ -337,6 +314,29 @@ public:
 
 		const ChunkArray<T_ASK>* ca = reinterpret_cast<const ChunkArray<T_ASK>*>(this->attributes_[ORBIT].template get_chunk_array<T_ATT>(attribute_name));
 		return Attribute<T_ASK, ORBIT>(const_cast<Self*>(this), const_cast<ChunkArray<T_ASK>*>(ca));
+	}
+
+	/**
+	 * \brief remove an attribute
+	 * @param ah a handler to the attribute to remove
+	 * @return true if remove succeed else false
+	 */
+	template <typename T>
+	inline bool remove_attribute(const Attribute_T<T>& ah)
+	{
+		return this->attributes_[ah.orbit()].remove_chunk_array(ah.data());
+	}
+
+	/**
+	 * \brief remove_attribute
+	 * @param orbit, the attribute orbit
+	 * @param att_name attribute name
+	 * @return true if remove succeed else false
+	 */
+	inline bool remove_attribute(Orbit orbit, const std::string& att_name)
+	{
+		cgogn_message_assert(orbit < NB_ORBITS, "Unknown orbit parameter");
+		return this->attributes_[orbit].remove_chunk_array(att_name);
 	}
 
 	template <typename T, Orbit ORBIT>

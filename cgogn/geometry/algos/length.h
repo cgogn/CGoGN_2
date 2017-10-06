@@ -93,16 +93,14 @@ inline typename vector_traits<VEC3>::Scalar mean_edge_length(
 	using Scalar = typename vector_traits<VEC3>::Scalar;
 	using Edge = typename MAP::Edge;
 
-	std::vector<Scalar> edge_length_per_thread(thread_pool()->nb_workers());
-	std::vector<uint32> nb_edges_per_thread(thread_pool()->nb_workers());
-	for (Scalar& l : edge_length_per_thread) l = 0;
-	for (uint32& n : nb_edges_per_thread) n = 0;
+	std::vector<Scalar> edge_length_per_thread(thread_pool()->nb_workers(), 0);
+	std::vector<uint32> nb_edges_per_thread(thread_pool()->nb_workers(), 0);
 
 	map.parallel_foreach_cell([&] (Edge e)
 	{
 		uint32 thread_index =cgogn::current_thread_index();
 		edge_length_per_thread[thread_index] += ::cgogn::geometry::length<VEC3>(map, e, position);
-		nb_edges_per_thread[thread_index]++;
+		++nb_edges_per_thread[thread_index];
 	},
 	mask);
 

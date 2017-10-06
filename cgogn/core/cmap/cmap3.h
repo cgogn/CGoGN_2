@@ -1637,7 +1637,6 @@ public:
 	}
 #pragma warning(push)
 
-
 	inline Face boundary_face_of_edge(Edge e) const
 	{
 		Face res;

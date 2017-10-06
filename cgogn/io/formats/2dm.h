@@ -39,12 +39,12 @@ namespace io
 {
 
 template <typename MAP, typename VEC3>
-class SMS2DMSurfaceImport : public SurfaceFileImport<MAP, VEC3>
+class SMS2DMSurfaceImport : public SurfaceFileImport<MAP>
 {
 public:
 
 	using Self = SMS2DMSurfaceImport<MAP, VEC3>;
-	using Inherit = SurfaceFileImport<MAP, VEC3>;
+	using Inherit = SurfaceFileImport<MAP>;
 	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
@@ -59,7 +59,7 @@ protected:
 	{
 		std::ifstream fp(filename.c_str(), std::ios::in);
 
-		ChunkArray<VEC3>* position = this->position_attribute();
+		ChunkArray<VEC3>* position = this->template add_vertex_attribute<VEC3>("position");
 
 		std::string line, tag;
 
@@ -101,8 +101,7 @@ protected:
 			getline_safe(fp, line);
 		} while (!fp.eof());
 
-        this->faces_nb_edges_.reserve(vertices_id.size() * 2);
-        this->faces_vertex_indices_.reserve(vertices_id.size() * 8);
+		this->reserve(vertices_id.size() * 2);
 
         // lecture des faces TRI
 
@@ -130,10 +129,7 @@ protected:
                     oss >> v3;
                     oss >> matid;
 
-                    this->faces_nb_edges_.push_back(3);
-                    this->faces_vertex_indices_.push_back(vertices_id[v1-1]);
-                    this->faces_vertex_indices_.push_back(vertices_id[v2-1]);
-                    this->faces_vertex_indices_.push_back(vertices_id[v3-1]);
+					this->add_triangle(vertices_id[v1-1], vertices_id[v2-1], vertices_id[v3-1]);
                 }
 
                 fp >> tag;
@@ -168,11 +164,7 @@ protected:
                     oss >> v4;
                     oss >> matid;
 
-                    this->faces_nb_edges_.push_back(4);
-                    this->faces_vertex_indices_.push_back(vertices_id[v1-1]);
-                    this->faces_vertex_indices_.push_back(vertices_id[v2-1]);
-                    this->faces_vertex_indices_.push_back(vertices_id[v3-1]);
-                    this->faces_vertex_indices_.push_back(vertices_id[v4-1]);
+					this->add_quad(vertices_id[v1-1], vertices_id[v2-1], vertices_id[v3-1], vertices_id[v4-1]);
                 }
 
                 fp >> tag;

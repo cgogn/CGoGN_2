@@ -45,12 +45,12 @@ namespace io
 /// livesu TVCG 2012
 ///
 template <typename VEC3>
-class SkelGraphImport : public GraphFileImport<VEC3>
+class SkelGraphImport : public GraphFileImport
 {
 
 public:
 	using Self = SkelGraphImport<VEC3>;
-	using Inherit = GraphFileImport<VEC3>;
+	using Inherit = GraphFileImport;
     using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
     template <typename T>
     using ChunkArray = typename Inherit::template ChunkArray<T>;
@@ -82,8 +82,8 @@ protected:
         const uint32 nb_vertices = uint32((std::stoul(line)));
         this->reserve(nb_vertices);
 
-        ChunkArray<VEC3>* position = this->position_attribute();
-        ChunkArray<Scalar>* radius = this->radius_attribute();
+		ChunkArray<VEC3>* position = this->template add_vertex_attribute<VEC3>("position");
+		ChunkArray<Scalar>* radius = this->template add_vertex_attribute<Scalar>("radius");
 
         std::vector<uint32> vertices_id;
         vertices_id.reserve(nb_vertices);

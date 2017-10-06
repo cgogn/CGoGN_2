@@ -45,12 +45,12 @@ namespace io
 /// Tagliasacchi 2012
 ///
 template <typename VEC3>
-class CgGraphImport : public GraphFileImport<VEC3>
+class CgGraphImport : public GraphFileImport
 {
 
 public:
 	using Self = CgGraphImport<VEC3>;
-	using Inherit = GraphFileImport<VEC3>;
+	using Inherit = GraphFileImport;
     using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
     template <typename T>
     using ChunkArray = typename Inherit::template ChunkArray<T>;
@@ -63,7 +63,7 @@ protected:
     virtual bool import_file_impl(const std::string& filename) override
     {
         std::ifstream fp(filename.c_str(), std::ios::in);
-		ChunkArray<VEC3>* position = this->position_attribute();
+		ChunkArray<VEC3>* position = this->template add_vertex_attribute<VEC3>("position");
 
         std::string line;
         line.reserve(512);
