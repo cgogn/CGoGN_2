@@ -347,10 +347,10 @@ public:
 		}
 	}
 
-	void import_element(uint32 idx, std::istream& in) override
-	{
-		serialization::parse(in, this->operator [](idx));
-	}
+//	void import_element(uint32 idx, std::istream& in) override
+//	{
+//		serialization::parse(in, this->operator [](idx));
+//	}
 
 	const void* element_ptr(uint32 idx) const override
 	{
@@ -701,14 +701,14 @@ public:
 		serialization::ostream_writer(o, this->operator[](idx),binary, little_endian);
 	}
 
-	void import_element(uint32 idx, std::istream& in) override
-	{
-		std::string val;
-		in >> val;
-		val = to_lower(val);
-		const bool b = (val == "true") || (std::stoi(val) != 0);
-		set_value(idx,b);
-	}
+//	void import_element(uint32 idx, std::istream& in) override
+//	{
+//		std::string val;
+//		in >> val;
+//		val = to_lower(val);
+//		const bool b = (val == "true") || (std::stoi(val) != 0);
+//		set_value(idx,b);
+//	}
 
 	const void* element_ptr(uint32) const override
 	{
