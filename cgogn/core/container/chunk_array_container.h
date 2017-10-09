@@ -223,7 +223,7 @@ public:
 		const uint32 index = array_index(name);
 		if (index == UNKNOWN)
 		{
-			cgogn_log_warning("get_chunk_array") << "Chunk array of name \"" << name << "\" not found.";
+			//cgogn_log_warning("get_chunk_array") << "Chunk array of name \"" << name << "\" not found.";
 			return nullptr;
 		}
 
@@ -242,7 +242,7 @@ public:
 		const uint32 index = array_index(name);
 		if (index == UNKNOWN)
 		{
-			cgogn_log_warning("get_chunk_array") << "Chunk array of name \"" << name << "\" not found.";
+			//cgogn_log_warning("get_chunk_array") << "Chunk array of name \"" << name << "\" not found.";
 			return nullptr;
 		}
 

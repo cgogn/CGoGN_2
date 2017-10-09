@@ -56,6 +56,8 @@ public:
 	 * @param p the anchor point
 	 * @param Ti vector 1
 	 * @param Tj vector 2
+	 * @pre Ti[0] > 0
+	 * @pre Tj[0] >= 0
 	 */
 	Parallelogram(const VEC& p, const VEC& Ti, const VEC& Tj)
 	{
@@ -242,7 +244,8 @@ private:
 	bool is_valid() const
 	{
 		bool res = true ;
-		res &= Ti_[0] > T(0) && Tj_[0] >= T(0) ; // positive X coordinates
+		res &= Ti_[0] > T(0) && (Tj_[0] > T(-1e-6)) ; // positive X coordinates
+		//res &= Ti_[0] > T(0) && (Tj_[0] > T(0) || almost_equal_absolute(Tj_[0],0.0,1e-6)) ; // positive X coordinates
 		res &= (res == (getAlphaJ() > getAlphaI())) ; // 2nd vector above 1st.
 		//res &= !almost_equal_absolute(Ti_.norm(),T(0)) && !almost_equal_absolute(Tj_.norm(),T(0)) ; // non-zero vectors
 
