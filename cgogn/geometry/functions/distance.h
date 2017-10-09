@@ -33,7 +33,7 @@ namespace geometry
 {
 
 /**
- * @brief squared distance line point (optimized version for testing many points with the same line
+ * @brief squared distance line point (optimized version for testing many points with the same line)
  * @param A one point of line
  * @param AB normalized vector or line
  * @param P point o compute distance to line
@@ -56,7 +56,7 @@ template <typename VEC3>
 inline typename vector_traits<VEC3>::Scalar squared_distance_line_point(const VEC3& A, const VEC3& B, const VEC3& P)
 {
 	VEC3 AB = B - A ;
-	cgogn_message_assert(AB.squaredNorm()>0.0,"line must be defined by 2 different points");
+	cgogn_message_assert(AB.squaredNorm() > 0.0, "line must be defined by 2 different points");
 	AB.normalize();
 	return squared_distance_normalized_line_point(A, AB, P) ;
 }
@@ -79,12 +79,11 @@ typename vector_traits<VEC3>::Scalar squared_distance_line_seg(const VEC3& A, co
 	Scalar PQ_n2 = PQ.squaredNorm();
 
 	// if P == Q compute distance to P
-	if (PQ_n2 == Scalar(0)) // P==Q
+	if (PQ_n2 == Scalar(0)) // P == Q
 	{
-		VEC3 V = AB/AB.norm();
+		VEC3 V = AB / AB.norm();
 		return squared_distance_normalized_line_point(A, V, P);
 	}
-
 
 	Scalar X = AB.dot(PQ) ;
 	VEC3 AP = P - A ;
@@ -108,9 +107,8 @@ typename vector_traits<VEC3>::Scalar squared_distance_line_seg(const VEC3& A, co
 	Scalar num = AP.dot(temp) ;
 	Scalar den = temp.squaredNorm() ;
 
-	return (num*num) / den ;
+	return (num * num) / den ;
 }
-
 
 /**
 * compute squared distance from line to segment
@@ -142,24 +140,24 @@ typename vector_traits<VEC3>::Scalar squared_distance_seg_point(const VEC3& A, c
 	
 	VEC3 AP = P - A;
 
-	//squared vector length
+	// squared vector length
 	Scalar AB2 = AB.dot(AB);
 
-	//position of projection of P on [A,B]
+	// position of projection of P on [A,B]
 	Scalar t = AP.dot(AB) / AB2;
 
-	//before A, distance is PA
-	if(t <= Scalar(0.))
+	// before A, distance is PA
+	if (t <= Scalar(0.))
 		return AP.squaredNorm();
 
-	//after B, distance is PB
-	if(t >= Scalar(1.))
+	// after B, distance is PB
+	if (t >= Scalar(1.))
 	{
 		VEC3 BP = P - (AB + A);
 		return BP.squaredNorm();
 	}
 
-	//between A & B, distance is projection on (AB)
+	// between A & B, distance is projection on (AB)
 	VEC3 X = AB.cross(AP);
 	return X.squaredNorm() / AB2;
 }

@@ -217,7 +217,7 @@ public:
 	 * @param idx
 	 * @param i
 	 */
-	virtual void import_element(uint32 idx, std::istream& in) = 0;
+//	virtual void import_element(uint32 idx, std::istream& in) = 0;
 	/**
 	 * @brief element_ptr
 	 * @return a generic pointer to the element of index idx.

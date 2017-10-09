@@ -38,12 +38,13 @@ namespace io
 {
 
 template <typename MAP, typename VEC3>
-class TetVolumeImport : public VolumeFileImport<MAP, VEC3>
+class TetVolumeImport : public VolumeFileImport<MAP>
 {
 public:
 
 	using Self = TetVolumeImport<MAP, VEC3>;
-	using Inherit = VolumeFileImport<MAP, VEC3>;
+	using Inherit = VolumeFileImport<MAP>;
+	using Scalar = typename VEC3::Scalar;
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
@@ -55,7 +56,7 @@ protected:
 
 	virtual bool import_file_impl(const std::string& filename) override
 	{
-		ChunkArray<VEC3>* position = this->position_attribute();
+		ChunkArray<VEC3>* position = this->template add_vertex_attribute<VEC3>("position");
 		std::ifstream fp(filename, std::ios::in);
 
 		std::string line;
@@ -129,10 +130,26 @@ protected:
 
 			switch (nbv)
 			{
-				case 4: this->add_tetra(ids[1], ids[2], ids[3], ids[0], false); break;
-				case 5: this->add_pyramid(ids[0], ids[1], ids[2], ids[3],ids[4], true); break;
-				case 6: this->add_triangular_prism(ids[0], ids[1], ids[2], ids[3], ids[4], ids[5], true); break;
-				case 8: this->add_hexa(ids[4], ids[5], ids[7], ids[6], ids[0], ids[1], ids[3], ids[2], true); break;
+				case 4: {
+					this->template reorient_tetra<VEC3>(*position, ids[0], ids[1], ids[2], ids[3]);
+					this->add_tetra(ids[1], ids[2], ids[3], ids[0]);
+					break;
+				}
+				case 5: {
+					this->template reorient_pyramid<VEC3>(*position, ids[0], ids[1], ids[2], ids[3],ids[4]);
+					this->add_pyramid(ids[0], ids[1], ids[2], ids[3],ids[4]);
+					break;
+				}
+				case 6: {
+					this->template reorient_triangular_prism<VEC3>(*position, ids[0], ids[1], ids[2], ids[3], ids[4], ids[5]);
+					this->add_triangular_prism(ids[0], ids[1], ids[2], ids[3], ids[4], ids[5]);
+					break;
+				}
+				case 8: {
+					this->template reorient_hexa<VEC3>(*position, ids[4], ids[5], ids[7], ids[6], ids[0], ids[1], ids[3], ids[2]);
+					this->add_hexa(ids[4], ids[5], ids[7], ids[6], ids[0], ids[1], ids[3], ids[2]);
+					break;
+				}
 				default:
 					cgogn_log_warning("TetVolumeImport") << "Elements with " << nbv << " vertices are not handled. Ignoring.";
 					break;

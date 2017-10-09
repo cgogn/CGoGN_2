@@ -147,8 +147,6 @@ LogStream Logger::log(LogLevel lvl, const std::string& sender, Logger::FileInfo 
 	return LogStream(lvl, sender, fileinfo);
 }
 
-
-
 } // namespace logger
-} // namespace cgogn
 
+} // namespace cgogn

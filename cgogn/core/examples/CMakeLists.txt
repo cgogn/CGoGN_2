@@ -10,3 +10,4 @@ add_definitions("-DCGOGN_TEST_MESHES_PATH=${CGOGN_TEST_MESHES_PATH}")
 
 add_subdirectory(chunk_array)
 add_subdirectory(map)
+add_subdirectory(utils)

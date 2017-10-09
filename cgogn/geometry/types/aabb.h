@@ -274,8 +274,9 @@ public:
 
 	/// \brief Test if a ray intersectes an axis-aligned box
 	/// \tparam VEC3 the domain of the box. Has to be of dimension 3
+	template <bool B = true>
 	auto ray_intersect(const Vec& P, const Vec& V) const
-	  -> typename std::enable_if<nb_components_traits<Vec>::value == 3, bool>::type
+	  -> typename std::enable_if<B && nb_components_traits<Vec>::value == 3, bool>::type
 	{
 		if (!cgogn::almost_equal_relative(V[2], Scalar(0)))
 		{

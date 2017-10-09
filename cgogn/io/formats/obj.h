@@ -43,12 +43,12 @@ namespace io
 {
 
 template <typename MAP, typename VEC3>
-class ObjSurfaceImport : public SurfaceFileImport<MAP, VEC3>
+class ObjSurfaceImport : public SurfaceFileImport<MAP>
 {
 public:
 
 	using Self = ObjSurfaceImport<MAP, VEC3>;
-	using Inherit = SurfaceFileImport<MAP, VEC3>;
+	using Inherit = SurfaceFileImport<MAP>;
 	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
@@ -63,7 +63,7 @@ protected:
 	{
 		std::ifstream fp(filename.c_str(), std::ios::in);
 
-		ChunkArray<VEC3>* position = this->position_attribute();
+		ChunkArray<VEC3>* position = this->template add_vertex_attribute<VEC3>("position");
 
 		std::string line, tag;
 
@@ -261,12 +261,12 @@ protected:
 ///
 ///
 template <typename VEC3>
-class ObjGraphImport : public GraphFileImport<VEC3>
+class ObjGraphImport : public GraphFileImport
 {
 
 public:
 	using Self = ObjGraphImport<VEC3>;
-	using Inherit = GraphFileImport<VEC3>;
+	using Inherit = GraphFileImport;
     using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
     template <typename T>
     using ChunkArray = typename Inherit::template ChunkArray<T>;
@@ -281,8 +281,8 @@ protected:
         std::ifstream fp(filename.c_str(), std::ios::in);
 
 
-		ChunkArray<VEC3>* position = this->position_attribute();
-		ChunkArray<Scalar>* radius = this->radius_attribute();
+		ChunkArray<VEC3>* position = this->template add_vertex_attribute<VEC3>("position");
+		ChunkArray<Scalar>* radius = this->template add_vertex_attribute<Scalar>("radius");
 
 		std::string line, tag;
 

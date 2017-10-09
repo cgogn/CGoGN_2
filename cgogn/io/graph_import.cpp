@@ -20,7 +20,6 @@
 * Contact information: cgogn@unistra.fr                                        *
 *                                                                              *
 *******************************************************************************/
-#define CGOGN_IO_GRAPH_IMPORT_CPP_
 
 #include <cgogn/io/graph_import.h>
 
@@ -30,10 +29,13 @@ namespace cgogn
 namespace io
 {
 
-template class CGOGN_IO_API GraphImport<Eigen::Vector3f>;
-template class CGOGN_IO_API GraphImport<Eigen::Vector3d>;
-template class CGOGN_IO_API GraphFileImport<Eigen::Vector3f>;
-template class CGOGN_IO_API GraphFileImport<Eigen::Vector3d>;
+void GraphImport::clear()
+{
+	edges_nb_vertices_.clear();
+	edges_vertex_indices_.clear();
+	vertex_attributes_.remove_chunk_arrays();
+	edge_attributes_.remove_chunk_arrays();
+}
 
 } // namespace io
 

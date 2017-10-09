@@ -75,7 +75,6 @@ public:
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(MapRender);
 
 	inline bool is_primitive_uptodate(DrawingType prim) { return indices_buffers_uptodate_[prim]; }
-
 	inline void set_primitive_dirty(DrawingType prim) { indices_buffers_uptodate_[prim] = false; }
 
 protected:
@@ -256,7 +255,6 @@ public:
 		return nb_indices_[prim];
 	}
 
-
 	template <typename VEC3, typename MAP, typename MASK>
 	inline void init_primitives(
 			const MAP& m,
@@ -293,11 +291,14 @@ public:
 				break;
 		}
 
-		if (!indices_buffers_[prim]->isCreated())
-			indices_buffers_[prim]->create();
-
 		indices_buffers_uptodate_[prim] = true;
 		nb_indices_[prim] = uint32(table_indices.size());
+
+		if (table_indices.empty())
+			return;
+
+		if (!indices_buffers_[prim]->isCreated())
+			indices_buffers_[prim]->create();
 		indices_buffers_[prim]->bind();
 		indices_buffers_[prim]->allocate(&(table_indices[0]), nb_indices_[prim] * sizeof(uint32));
 		indices_buffers_[prim]->release();
@@ -342,14 +343,14 @@ public:
 				break;
 		}
 
+		indices_buffers_uptodate_[prim] = true;
+		nb_indices_[prim] = uint32(table_indices.size());
+
 		if (table_indices.empty())
 			return;
 
 		if (!indices_buffers_[prim]->isCreated())
 			indices_buffers_[prim]->create();
-
-		indices_buffers_uptodate_[prim] = true;
-		nb_indices_[prim] = uint32(table_indices.size());
 		indices_buffers_[prim]->bind();
 		indices_buffers_[prim]->allocate(&(table_indices[0]), nb_indices_[prim] * sizeof(uint32));
 		indices_buffers_[prim]->release();
