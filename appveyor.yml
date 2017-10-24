@@ -42,5 +42,5 @@ environment:
     CONFIG: Debug
 
 build_script:
-  - cmake "-G%GENERATOR%" 
+  - cmake "-G%GENERATOR%" -DQt5_DIR="C:\Qt\5.8\msvc2015_64\lib\cmake\Qt5"
   - cmake --build . --config "%CONFIG%"
