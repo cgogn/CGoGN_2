@@ -4,6 +4,8 @@ project(cgogn_modeling_examples
 	LANGUAGES CXX
 )
 
+if (CGOGN_USE_QT)
+
 find_package(cgogn_core REQUIRED)
 find_package(cgogn_geometry REQUIRED)
 find_package(cgogn_io REQUIRED)
@@ -38,3 +40,5 @@ target_link_libraries(curve ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${cgog
 
 set_target_properties(remeshing decimation subdivision triangular_tiling square_tiling dual curve 
 PROPERTIES FOLDER examples/modeling)
+
+endif()

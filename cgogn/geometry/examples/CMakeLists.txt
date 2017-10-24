@@ -4,6 +4,8 @@ project(cgogn_geometry_examples
 	LANGUAGES CXX
 )
 
+if (CGOGN_USE_QT)
+
 find_package(cgogn_core REQUIRED)
 find_package(cgogn_io REQUIRED)
 find_package(cgogn_rendering REQUIRED)
@@ -21,3 +23,6 @@ target_link_libraries(filtering ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${
 
 
 set_target_properties(filtering PROPERTIES FOLDER examples/geometry)
+
+
+endif()
