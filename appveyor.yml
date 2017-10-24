@@ -1,0 +1,46 @@
+#---------------------------------#
+#      general configuration      #
+#---------------------------------#
+
+# version format
+version: 1.0.{build}
+
+# you can use {branch} name in version format too
+# version: 1.0.{build}-{branch}
+
+# branches to build
+branches:
+  # whitelist
+  only:
+    - develop
+
+  # blacklist
+#  except:
+#    - gh-pages
+
+# Skipping commits with particular message or from specific user
+skip_commits:
+  message: /WIP/      # Regex for matching commit message
+ 
+# Do not build feature branch with open Pull Requests
+#skip_branch_with_pr: true
+
+# Maximum number of concurrent jobs for the project
+max_jobs: 4
+
+# clone directory
+clone_folder: c:\projects\myproject
+
+# fetch repository as zip archive
+shallow_clone: true                 # default is "false"
+
+# set clone depth
+clone_depth: 1                      # clone entire repository history if not defined
+
+environment:
+    GENERATOR: "Visual Studio 14 Win64"
+    CONFIG: Debug
+
+build_script:
+  - cmake "-G%GENERATOR%"  -DCGOGN_MODULE_rendering=OFF -DCGOGN_USE_QT=OFF -DCGOGN_BUILD_TEST=ON -DCGOGN_BUILD_EXAMPLES=ON
+  - cmake --build _builds --config "%CONFIG%"
