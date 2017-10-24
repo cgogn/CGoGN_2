@@ -43,4 +43,4 @@ environment:
 
 build_script:
   - cmake "-G%GENERATOR%"  -DCGOGN_MODULE_rendering=OFF -DCGOGN_USE_QT=OFF -DCGOGN_BUILD_TESTS=ON -DCGOGN_BUILD_EXAMPLES=ON
-  - cmake --build _builds --config "%CONFIG%"
+  - cmake --build . --config "%CONFIG%"
