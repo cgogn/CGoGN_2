@@ -102,7 +102,7 @@ public:
 
 	inline void copy_line_vertex_container(uint32 dest, uint32 src)
 	{
-		vertex_container().template copy_line(dest, src, false, false);
+		vertex_container().copy_line(dest, src, false, false);
 	}
 
 	inline ChunkArrayGen* add_vertex_attribute(const DataInputGen& in_data, const std::string& att_name)
