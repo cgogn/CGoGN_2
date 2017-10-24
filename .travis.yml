@@ -20,6 +20,6 @@ script:
   - cd build
   - export CC=gcc-5
   - export CXX=g++-5
-  - cmake .. -DCGOGN_MODULE_rendering=OFF
+  - cmake .. -DCGOGN_MODULE_rendering=OFF -DCGOGN_USE_QT=OFF
   - make
   - make test
