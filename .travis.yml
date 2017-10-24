@@ -1,0 +1,25 @@
+dist: trusty
+sudo: required
+before_install:
+  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+  - sudo apt-get update
+  - sudo apt-get install "g++-5"
+  - sudo apt-get install cmake3
+  
+language: cpp
+
+compiler:
+  - g++
+  
+branches:
+  only:
+  - develop
+
+script:
+  - mkdir build
+  - cd build
+  - export CC=gcc-5
+  - export CXX=g++-5
+  - cmake .. -D CGOGN_MODULE_rendering=OFF
+  - make
+  - make test
