@@ -17,9 +17,8 @@ os:
 #    - os: osx
 
 before_install:
-  - chmod +x .travis_install.sh
-  - ./.travis_install.sh
- 
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then bash .travis_install.sh  ; fi
+    
 branches:
   only:
 #  - develop
