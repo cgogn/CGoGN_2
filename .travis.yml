@@ -9,12 +9,12 @@ os:
 #  - g++
 #  - clang
 
-#matrix:
-#  include:
-#    - os: linux
-#      dist: trusty
-#      sudo: required
-#    - os: osx
+matrix:
+  include:
+    - os: linux
+      dist: trusty
+      sudo: required
+    - os: osx
 
 before_install:
   - bash .travis_install.sh
