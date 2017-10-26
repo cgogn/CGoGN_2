@@ -2,7 +2,7 @@
 language: cpp
 
 os:
- # - linux
+  - linux
   - osx
 
 #compiler:
@@ -17,7 +17,7 @@ os:
 #    - os: osx
 
 before_install:
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then bash .travis_install.sh  ; fi
+  - bash .travis_install.sh
     
 branches:
   only:
@@ -27,8 +27,7 @@ branches:
 script:
   - mkdir build
   - cd build
-#  - export CC=gcc-5
-#  - export CXX=g++-5
-  - cmake .. -DCGOGN_MODULE_rendering=OFF -DCGOGN_USE_QT=OFF -DCGOGN_BUILD_TESTS=ON -DCGOGN_BUILD_EXAMPLES=ON
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then  cmake .. -DCMAKE_CXX_COMPILER=g++-5 -DCMAKE_C_COMPILER=gcc-5 -DCGOGN_BUILD_TESTS=ON -DCGOGN_BUILD_EXAMPLES=ON ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then  cmake .. -DCGOGN_MODULE_rendering=OFF -DCGOGN_USE_QT=OFF -DCGOGN_BUILD_TESTS=ON -DCGOGN_BUILD_EXAMPLES=ON ; fi
   - make
   - make test
