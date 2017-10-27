@@ -8,6 +8,7 @@ set(HEADER_ALGOS
 	algos/area.h
 	algos/centroid.h
 	algos/curvature.h
+	algos/convexity.h
 	algos/normal.h
 	algos/ear_triangulation.h
 	algos/picking.h

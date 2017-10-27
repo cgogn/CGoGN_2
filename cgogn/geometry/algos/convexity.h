@@ -36,7 +36,7 @@ namespace geometry
 {
 
 /**
- * @brief isPlanar verifies if a face is planar: defined by the fact that all coordinates other than the first two (x and y) are constant (up to epsilon)
+ * @brief is_planar verifies if a face is planar: defined by the fact that all coordinates other than the first two (x and y) are constant (up to epsilon)
  * @param map the map
  * @param f the face
  * @param position container of vertex positions
@@ -44,7 +44,7 @@ namespace geometry
  * @return true iff planar
  */
 template <typename VEC, typename MAP>
-inline bool isPlanar(
+inline bool is_planar(
 	const MAP& map,
 	const typename MAP::Face f,
 	const typename MAP::template VertexAttribute<VEC>& position,
@@ -56,7 +56,6 @@ inline bool isPlanar(
 
 	if (vector_traits<VEC>::SIZE < 3)
 		return true ;
-
 
 	using VecN_2 = Eigen::Matrix<Scalar,vector_traits<VEC>::SIZE - 2,1> ;
 	// Init with first vertex
@@ -84,21 +83,21 @@ inline bool isPlanar(
 }
 
 /**
- * @brief isConvex verifies if a given face is convex (in the plane, not in 3D).
+ * @brief is_convex verifies if a given face is convex (in the plane, not in 3D).
  * @param map the map
  * @param f the face
  * @param position the geometric embedding of the vertices
- * @pre If the face is not planar (see #isPlanar), false is returned.
+ * @note if the face is not planar (see #isPlanar), false is returned.
  * @return true iff the face is convex.
  */
 template <typename VEC, typename MAP>
-inline bool isConvex(
+inline bool is_convex(
 	const MAP& map,
 	const typename MAP::Face f,
 	const typename MAP::template VertexAttribute<VEC>& position
 )
 {
-	if (!isPlanar<VEC,MAP>(map,f,position))
+	if (!is_planar<VEC,MAP>(map,f,position))
 	{
 		cgogn_log_error("Trying to assess convexity of a face while it's not planar. This is ill-defined") ;
 		return false ;
