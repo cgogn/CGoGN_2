@@ -87,7 +87,7 @@ inline bool is_planar(
  * @param map the map
  * @param f the face
  * @param position the geometric embedding of the vertices
- * @note if the face is not planar (see #isPlanar), false is returned.
+ * @note if the face is not planar (see #is_planar), false is returned.
  * @return true iff the face is convex.
  */
 template <typename VEC, typename MAP>
