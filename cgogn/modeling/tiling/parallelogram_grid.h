@@ -76,12 +76,22 @@ public:
 	 */
 	Parallelogram(const VEC& p, const T& mag_i, const T& alpha_i, const T& mag_j, const T& alpha_j )
 	{
-		VEC Ti = VEC::Zero() ,Tj = VEC::Zero() ;
-		Ti[0] = mag_i*sin(alpha_i) ;
-		Ti[1] = -mag_i*cos(alpha_i) ;
-		Tj[0] = mag_j*sin(alpha_j) ;
-		Tj[1] = -mag_j*cos(alpha_j) ;
+//		VEC Ti = VEC::Zero() ,Tj = VEC::Zero() ;
+		VEC Ti = mag_alpha2coord(mag_i,alpha_i) ;
+		VEC Tj = mag_alpha2coord(mag_j,alpha_j) ;
+//		Ti[0] = mag_i*sin(alpha_i) ;
+//		Ti[1] = -mag_i*cos(alpha_i) ;
+//		Tj[0] = mag_j*sin(alpha_j) ;
+//		Tj[1] = -mag_j*cos(alpha_j) ;
 		init(p,Ti,Tj) ;
+	}
+
+	static VEC mag_alpha2coord(const T& mag, const T& alpha)
+	{
+		VEC t = VEC::Zero() ;
+		t[0] = mag*sin(alpha) ;
+		t[1] = -mag*cos(alpha) ;
+		return t ;
 	}
 
 	/**
@@ -155,6 +165,17 @@ public:
 	T getAlphaJ() const
 	{
 		return getAlpha(Tj_) ;
+	}
+
+	/**
+	 * @brief is_approx checks if the current parallelogram is identical to another one (up to epsilon)
+	 * @param p the parallelogram to verify to
+	 * @param eps the precision to tolerate
+	 * @return
+	 */
+	bool is_approx(const Parallelogram& p, const T& eps = Eigen::NumTraits<T>::dummy_precision()) const
+	{
+		return p_.isApprox(p.getRefPos(),eps) && Ti_.isApprox(p.getTi(),eps) && Tj_.isApprox(p.getTj(),eps) ;
 	}
 
 	/**
