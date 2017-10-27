@@ -1,35 +1,23 @@
-
 language: cpp
 
 os:
- # - linux
+  - linux
   - osx
 
-#compiler:
-#  - g++
-#  - clang
+compiler:
+  - g++
+  - clang
 
-#matrix:
-#  include:
-#    - os: linux
-#      dist: trusty
-#      sudo: required
-#    - os: osx
-
-before_install:
-  - chmod +x .travis_install.sh
-  - ./.travis_install.sh
+install:
+  - bash .travis_install.sh
  
 branches:
   only:
-#  - develop
-  - sylvain
+  - develop
 
 script:
   - mkdir build
   - cd build
-#  - export CC=gcc-5
-#  - export CXX=g++-5
-  - cmake .. -DCGOGN_MODULE_rendering=OFF -DCGOGN_USE_QT=OFF -DCGOGN_BUILD_TESTS=ON -DCGOGN_BUILD_EXAMPLES=ON
+  - cmake .. -DCMAKE_CXX_COMPILER=g++-5 -DCMAKE_C_COMPILER=gcc-5 -DCGOGN_BUILD_TESTS=ON -DCGOGN_BUILD_EXAMPLES=ON
   - make
   - make test
