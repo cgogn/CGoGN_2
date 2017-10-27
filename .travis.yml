@@ -1,16 +1,16 @@
-dist: trusty
-sudo: required
-before_install:
-  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-  - sudo apt-get update
-  - sudo apt-get install "g++-5"
-  - sudo apt-get install cmake3
-  
 language: cpp
 
-compiler:
-  - g++
-  
+dist: trusty
+
+sudo: required
+
+os:
+  - linux
+  - osx
+
+install:
+  - bash .travis_install.sh
+    
 branches:
   only:
   - develop
@@ -18,8 +18,7 @@ branches:
 script:
   - mkdir build
   - cd build
-  - export CC=gcc-5
-  - export CXX=g++-5
-  - cmake .. -DCGOGN_MODULE_rendering=OFF -DCGOGN_USE_QT=OFF -DCGOGN_BUILD_TESTS=ON -DCGOGN_BUILD_EXAMPLES=ON
-  - make
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then  cmake .. -DQt5_DIR=/opt/5.6.3/gcc_64/lib/cmake/Qt5 -DCMAKE_CXX_COMPILER=g++-5 -DCMAKE_C_COMPILER=gcc-5 -DCGOGN_BUILD_TESTS=ON -DCGOGN_BUILD_EXAMPLES=ON ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then  cmake .. -DCGOGN_MODULE_rendering=OFF -DCGOGN_USE_QT=OFF -DCGOGN_BUILD_TESTS=ON -DCGOGN_BUILD_EXAMPLES=ON ; fi
+  - make -j2
   - make test
