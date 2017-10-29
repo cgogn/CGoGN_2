@@ -46,23 +46,9 @@ struct vector_traits<geometry::Vec_T<std::array<Scalar_, Size>>>
 {
 	static const std::size_t SIZE = Size;
 	using Scalar = Scalar_;
+	using Type = geometry::Vec_T<std::array<Scalar_, Size>>;
+
 };
-
-// specialization 2 : Eigen::Vector
-//template <typename Scalar_, int32 Rows, int32 Options>
-//struct vector_traits<Eigen::Matrix<Scalar_, Rows, 1, Options, Rows, 1>>
-//{
-//	static const std::size_t SIZE = Rows;
-//	using Scalar = Scalar_;
-//};
-
-// specialization 3 : Eigen::AlignedVector3
-//template <typename Scalar_>
-//struct vector_traits<Eigen::AlignedVector3<Scalar_>>
-//{
-//	static const std::size_t SIZE = 3;
-//	using Scalar = Scalar_;
-//};
 
 
 // specialization 2 & 3: is for uniform manip of vec & scalar (vbo)
@@ -72,6 +58,7 @@ struct vector_traits<float32>
 {
 	static const std::size_t SIZE = 1;
 	using Scalar = float32;
+	using Type = float32;
 };
 
 // specialization 3 : double
@@ -80,6 +67,7 @@ struct vector_traits<float64>
 {
 	static const std::size_t SIZE = 1;
 	using Scalar = float64;
+	using Type = float64;
 };
 
 
@@ -100,6 +88,7 @@ struct vector_traits<V, typename std::enable_if < is_eigen<V>::value >::type>
 {
 	static const std::size_t SIZE = Eigen::internal::traits<V>::RowsAtCompileTime;;
 	using Scalar = typename Eigen::internal::traits<V>::Scalar;
+	using Type = Eigen::Matrix<Scalar, SIZE, 1, 0, SIZE, 1 >;
 };
 
 

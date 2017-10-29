@@ -39,8 +39,8 @@ namespace geometry
  * @param P point o compute distance to line
  * @return distance
  */
-template <typename VEC3>
-inline typename vector_traits<VEC3>::Scalar squared_distance_normalized_line_point(const VEC3& A, const VEC3& AB_norm, const VEC3& P)
+template <typename VEC3, typename VEC3b, typename VEC3c >
+inline typename vector_traits<VEC3>::Scalar squared_distance_normalized_line_point(const VEC3& A, const VEC3b& AB_norm, const VEC3c& P)
 {
 	return ((A - P).cross(AB_norm)).squaredNorm() ;
 }
@@ -52,8 +52,8 @@ inline typename vector_traits<VEC3>::Scalar squared_distance_normalized_line_poi
  * @param P point o compute distance to line
  * @return distance
  */
-template <typename VEC3>
-inline typename vector_traits<VEC3>::Scalar squared_distance_line_point(const VEC3& A, const VEC3& B, const VEC3& P)
+template <typename VEC3, typename VEC3b, typename VEC3c >
+inline typename vector_traits<VEC3>::Scalar squared_distance_line_point(const VEC3& A, const VEC3b& B, const VEC3c& P)
 {
 	VEC3 AB = B - A ;
 	cgogn_message_assert(AB.squaredNorm() > 0.0, "line must be defined by 2 different points");
@@ -70,8 +70,8 @@ inline typename vector_traits<VEC3>::Scalar squared_distance_line_point(const VE
 * @param Q second point of segment
 * @return the squared distance
 */
-template <typename VEC3>
-typename vector_traits<VEC3>::Scalar squared_distance_line_seg(const VEC3& A, const VEC3& AB, typename vector_traits<VEC3>::Scalar AB2, const VEC3& P, const VEC3& Q)
+template <typename VEC3, typename VEC3b, typename VEC3c, typename VEC3d>
+typename vector_traits<VEC3>::Scalar squared_distance_line_seg(const VEC3& A, const VEC3b& AB, typename vector_traits<VEC3>::Scalar AB2, const VEC3c& P, const VEC3d& Q)
 {
 	using Scalar = typename vector_traits<VEC3>::Scalar;
 
