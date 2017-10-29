@@ -28,6 +28,7 @@
 
 #include <cgogn/io/mesh_io_gen.h>
 #include <cgogn/io/data_io.h>
+#include <cgogn/io/dll.h>
 
 namespace cgogn
 {
@@ -35,7 +36,7 @@ namespace cgogn
 namespace io
 {
 
-class GraphImport
+class CGOGN_IO_API GraphImport
 {
 public:
 
@@ -258,7 +259,7 @@ protected:
 /// \class GraphFileImport
 /// Imports a skeleton from a file
 ///
-class GraphFileImport : public GraphImport, public FileImport
+class CGOGN_IO_API GraphFileImport : public GraphImport, public FileImport
 {
 	using Self = GraphFileImport;
 	using Inherit1 = GraphImport;
@@ -268,11 +269,9 @@ class GraphFileImport : public GraphImport, public FileImport
 
 public:
 
-	inline GraphFileImport() : Inherit1(), Inherit2()
-	{}
+	GraphFileImport();
 
-	virtual ~GraphFileImport()
-	{}
+	~GraphFileImport();
 };
 
 } // namespace io

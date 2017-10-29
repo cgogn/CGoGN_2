@@ -101,7 +101,7 @@ protected:
 			getline_safe(fp, line);
 		} while (!fp.eof());
 
-		this->reserve(vertices_id.size() * 2);
+		this->reserve(uint32(vertices_id.size()) * 2);
 
         // lecture des faces TRI
 

@@ -52,10 +52,10 @@ inline void normalize_safe(VEC& v)
 /**
  * @brief cosinus of the angle formed by 2 vectors
  */
-template <typename VEC>
-typename VEC::Scalar cos_angle(const VEC& a, const VEC& b)
+template <typename VECA, typename VECB>
+typename vector_traits<VECA>::Scalar cos_angle(const VECA a, const VECB b)
 {
-	using Scalar = typename vector_traits<VEC>::Scalar;
+	using Scalar = typename vector_traits<VECA>::Scalar;
 
 	Scalar na2 = a.squaredNorm();
 	Scalar nb2 = b.squaredNorm();

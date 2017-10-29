@@ -37,6 +37,13 @@ void GraphImport::clear()
 	edge_attributes_.remove_chunk_arrays();
 }
 
+GraphFileImport::GraphFileImport() : Inherit1(), Inherit2()
+{}
+
+GraphFileImport::~GraphFileImport()
+{}
+
+
 } // namespace io
 
 } // namespace cgogn

@@ -36,7 +36,7 @@ namespace cgogn
 namespace geometry
 {
 
-template <typename Vec_T>
+template <typename Vec_T, typename Enable = void>
 struct vector_traits
 {};
 
@@ -49,23 +49,24 @@ struct vector_traits<geometry::Vec_T<std::array<Scalar_, Size>>>
 };
 
 // specialization 2 : Eigen::Vector
-template <typename Scalar_, int32 Rows, int32 Options>
-struct vector_traits<Eigen::Matrix<Scalar_, Rows, 1, Options, Rows, 1>>
-{
-	static const std::size_t SIZE = Rows;
-	using Scalar = Scalar_;
-};
+//template <typename Scalar_, int32 Rows, int32 Options>
+//struct vector_traits<Eigen::Matrix<Scalar_, Rows, 1, Options, Rows, 1>>
+//{
+//	static const std::size_t SIZE = Rows;
+//	using Scalar = Scalar_;
+//};
 
 // specialization 3 : Eigen::AlignedVector3
-template <typename Scalar_>
-struct vector_traits<Eigen::AlignedVector3<Scalar_>>
-{
-	static const std::size_t SIZE = 3;
-	using Scalar = Scalar_;
-};
+//template <typename Scalar_>
+//struct vector_traits<Eigen::AlignedVector3<Scalar_>>
+//{
+//	static const std::size_t SIZE = 3;
+//	using Scalar = Scalar_;
+//};
 
-// specialization 3 & 4: is for uniform manip of vec & scalar (vbo)
-// specialization 3 : float
+
+// specialization 2 & 3: is for uniform manip of vec & scalar (vbo)
+// specialization 2 : float
 template <>
 struct vector_traits<float32>
 {
@@ -73,13 +74,34 @@ struct vector_traits<float32>
 	using Scalar = float32;
 };
 
-// specialization 4 : double
+// specialization 3 : double
 template <>
 struct vector_traits<float64>
 {
 	static const std::size_t SIZE = 1;
 	using Scalar = float64;
 };
+
+
+// specialization 4 : Eigen::Vector
+
+// an utility function that return true/false_type if param is Eigen
+template <typename T>
+std::true_type cgogn_check_eigen_type(const Eigen::MatrixBase<T>*);
+std::false_type cgogn_check_eigen_type(...);
+
+// the class bool is_xxxx that inherit the return type of preceeding functions
+template <typename T>
+struct is_eigen : public decltype(cgogn_check_eigen_type(std::declval<T*>()))
+{};
+
+template <typename V>
+struct vector_traits<V, typename std::enable_if < is_eigen<V>::value >::type>
+{
+	static const std::size_t SIZE = Eigen::internal::traits<V>::RowsAtCompileTime;;
+	using Scalar = typename Eigen::internal::traits<V>::Scalar;
+};
+
 
 template <typename T, typename Enable = void>
 struct nb_components_traits

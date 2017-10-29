@@ -175,7 +175,7 @@ public:
     using ChunkArrayContainer = typename Inherit::ChunkArrayContainer;
 
 protected:
-    virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& ) override
+    virtual void export_file_impl(const Map& /*map*/, std::ofstream& /*output*/, const ExportOptions& ) override
     {
 
     }

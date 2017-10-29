@@ -147,10 +147,10 @@ public:
     using ChunkArrayContainer = typename Inherit::ChunkArrayContainer;
 
 protected:
-    virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& ) override
+    virtual void export_file_impl(const Map& map, std::ofstream& /*output*/, const ExportOptions& ) override
     {
 		uint32 count = 0;
-		map.foreach_cell([&] (Vertex v)
+		map.foreach_cell([&] (Vertex /*v*/)
 		{
 			++count;
 		});
