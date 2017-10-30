@@ -51,7 +51,7 @@ TEST(VEC_OP_TEST, CGOGN_Typename)
 	EXPECT_EQ(cgogn::name_of_type(EigenVec3d()), "Eigen::Matrix<double,3,1,0,3,1>");
 }
 
-template <typename V, typename S, int N>
+template <typename V, typename S, uint32 N>
 void tmpl_test_vector_traits()
 {
 	using Scalar = typename cgogn::geometry::vector_traits<V>::Scalar;

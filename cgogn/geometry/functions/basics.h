@@ -56,9 +56,6 @@ template <typename VEC, typename VECb>
 auto cos_angle(const VEC a, const VECb b) ->
 typename std::enable_if < is_same_vector<VEC, VECb>::value, typename vector_traits<VEC>::Scalar>::type
 {
-	vector_traits<VEC>::Type NP;
-	std::cout << typeid(NP).name() << std::endl;
-
 	using Scalar = typename vector_traits<VEC>::Scalar;
 
 	Scalar na2 = a.squaredNorm();
