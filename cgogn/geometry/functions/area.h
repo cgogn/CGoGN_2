@@ -35,8 +35,9 @@ namespace geometry
 /**
  * area of the triangle formed by 3 points in 3D
  */
-template <typename VEC3>
-inline typename vector_traits<VEC3>::Scalar area(const VEC3& p1, const VEC3& p2, const VEC3& p3)
+template <typename VEC3, typename VEC3b, typename VEC3c>
+inline auto area(const VEC3& p1, const VEC3b& p2, const VEC3c& p3) ->
+typename std::enable_if < is_same_vector<VEC3, VEC3b>::value && is_same_vector<VEC3, VEC3c>::value, typename vector_traits<VEC3>::Scalar>::type
 {
 	using Scalar = typename vector_traits<VEC3>::Scalar;
 	return (Scalar(0.5) * ((p2 - p1).cross(p3 - p1)).norm());

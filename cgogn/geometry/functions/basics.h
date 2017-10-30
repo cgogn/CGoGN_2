@@ -53,7 +53,8 @@ inline void normalize_safe(VEC& v)
  * @brief cosinus of the angle formed by 2 vectors
  */
 template <typename VEC, typename VECb>
-typename vector_traits<VEC>::Scalar cos_angle(const VEC a, const VECb b)
+auto cos_angle(const VEC a, const VECb b) ->
+typename std::enable_if < is_same_vector<VEC, VECb>::value, typename vector_traits<VEC>::Scalar>::type
 {
 	vector_traits<VEC>::Type NP;
 	std::cout << typeid(NP).name() << std::endl;
@@ -71,7 +72,8 @@ typename vector_traits<VEC>::Scalar cos_angle(const VEC a, const VECb b)
  * @brief angle formed by 2 vectors
  */
 template <typename VEC, typename VECb>
-typename vector_traits<VEC>::Scalar angle(const VEC& a, const VECb& b)
+auto angle(const VEC a, const VECb b) ->
+typename std::enable_if < is_same_vector<VEC, VECb>::value, typename vector_traits<VEC>::Scalar>::type
 {
 	return std::acos(cos_angle(a, b));
 }

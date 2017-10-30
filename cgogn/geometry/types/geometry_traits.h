@@ -92,6 +92,13 @@ struct vector_traits<V, typename std::enable_if < is_eigen<V>::value >::type>
 };
 
 
+template <typename V1, typename V2>
+struct is_same_vector : std::integral_constant < bool, std::is_same<V1, V2>::value || (is_eigen<V1>::value && is_eigen<V2>::value /*&&
+	std::is_same<typename vector_traits<V1>::Scalar, typename vector_traits<V2>::Scalar>::value && vector_traits<V1>::SIZE == vector_traits<V2>::SIZE*/)>
+{};
+
+
+
 template <typename T, typename Enable = void>
 struct nb_components_traits
 {};
