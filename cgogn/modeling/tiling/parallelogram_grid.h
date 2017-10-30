@@ -18,7 +18,7 @@ namespace modeling
  * @brief The Parallelogram class.
  * Defines a parallelogram by a point and two vectors.
  */
-template <typename T, uint VECSIZE>
+template <typename T, uint8 VECSIZE>
 class Parallelogram
 {
 private:
@@ -182,22 +182,22 @@ public:
 	 * @brief nb_scalars returns the amount of scalars needed for the internal representation of a parallelogram
 	 * @return the amount of scalars needed for the internal representation of a parallelogram
 	 */
-	constexpr static uint nb_scalars()
+	constexpr static uint8 nb_scalars()
 	{
 		return 3 * VEC::SizeAtCompileTime ;
 	}
 
-	static uint sample_parallelograms_uniform(std::queue<Parallelogram>& samples, uint angular_bins, uint magnitude_bins, uint pos_bins, uint diagonal)
+	static uint32 sample_parallelograms_uniform(std::queue<Parallelogram>& samples, uint32 angular_bins, uint32 magnitude_bins, uint32 pos_bins, uint32 diagonal)
 	{
-		const uint half_diagonal = diagonal / 2 ;
+		const uint32 half_diagonal = diagonal / 2 ;
 
 		const T angular_step = M_PI * (1.0 / angular_bins) ;
 		magnitude_bins = std::min(magnitude_bins,half_diagonal) ;
-		const uint mag_step = floor(half_diagonal / magnitude_bins) ;
+		const uint32 mag_step = floor(half_diagonal / magnitude_bins) ;
 
-		for (uint mag_i = mag_step ; mag_i <= half_diagonal ; mag_i += mag_step)
+		for (uint32 mag_i = mag_step ; mag_i <= half_diagonal ; mag_i += mag_step)
 		{
-			for (uint mag_j = mag_step ; mag_j <= half_diagonal ; mag_j += mag_step)
+			for (uint32 mag_j = mag_step ; mag_j <= half_diagonal ; mag_j += mag_step)
 			{
 				T start_alpha = M_PI/2.0 - floor(M_PI/2.0 / angular_step)*angular_step ; // M_PI/2 - n times angular_step so that smallest possible > 0
 				for (T alpha_i = start_alpha ; alpha_i <= M_PI ; alpha_i += angular_step)
@@ -216,10 +216,10 @@ public:
 								continue ;
 
 							VEC p0 = VEC::Zero();
-							for (uint pi = 0 ; pi < pos_bins ; ++pi)
+							for (uint32 pi = 0 ; pi < pos_bins ; ++pi)
 							{
 								p0[1] = 0.0 ;
-								for (uint pj = 0 ; pj < pos_bins ; ++pj)
+								for (uint32 pj = 0 ; pj < pos_bins ; ++pj)
 								{
 									Parallelogram<T,VECSIZE> p(p0,mag_i,alpha_i,mag_j,alpha_j) ;
 									samples.push(p) ;
