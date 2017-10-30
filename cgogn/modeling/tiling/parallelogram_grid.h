@@ -509,9 +509,9 @@ private:
 	 * @param f_bbox bounding box of the current face
 	 * @return
 	 */
-	uint queueFreeEdges(const Face& f, std::queue<Edge>& edgeQueue, const geometry::AABB<VEC>& f_bbox)
+	uint32 queueFreeEdges(const Face& f, std::queue<Edge>& edgeQueue, const geometry::AABB<VEC>& f_bbox)
 	{
-		uint counter = 0 ;
+		uint32 counter = 0 ;
 		// if current face touches the Rectangle
 		if (area_.intersects(f_bbox))
 		{
@@ -653,7 +653,7 @@ private:
 	void sewFaceToAdjacentFaces(MapBuilder& mbuild,const Face& f0, const std::array<Face,4>& adjacentFaces)
 	{
 		Dart d = f0.dart ;
-		for (uint o = S ; o <= W ; ++o)
+		for (uint8 o = S ; o <= W ; ++o)
 		{
 			const Face& fAdj = adjacentFaces[o] ;
 			if (fAdj.is_valid()) // if there's a face to be sewed in that direction
@@ -878,7 +878,7 @@ private:
 	 * @param no the vertex to fetch
 	 * @return the requested vertex
 	 */
-	Vertex getVertexByNo(const Face& f, uint no) const
+	Vertex getVertexByNo(const Face& f, uint32 no) const
 	{
 		assert(no<4) ;
 		return Vertex(getDartByOrient(f,Orient(no))) ;
