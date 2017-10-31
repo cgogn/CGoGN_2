@@ -4,6 +4,8 @@ project(cgogn_topology_examples
 	LANGUAGES CXX
 	)
 
+if (CGOGN_USE_QT)
+
 set(CMAKE_AUTOMOC ON)
 
 list(APPEND CMAKE_PREFIX_PATH "${CGOGN_RELEASE_BUILD_DIR}")
@@ -38,3 +40,5 @@ target_link_libraries(topological_analysis_3d
 	)
 
 set_target_properties(topological_analysis_2d topological_analysis_3d PROPERTIES FOLDER examples/topology)
+
+endif()
