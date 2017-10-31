@@ -22,3 +22,10 @@ script:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then  cmake .. -DCGOGN_MODULE_rendering=OFF -DCGOGN_USE_QT=OFF -DCGOGN_BUILD_TESTS=ON -DCGOGN_BUILD_EXAMPLES=ON ; fi
   - make -j2
   - make test
+  - sudo make install
+  - cd ..
+  - mkdir build_app
+  - cd build_app
+  - cmake ../cgogn/geometry/examples/ -DCGOGN_USE_QT=ON
+  - make
+
