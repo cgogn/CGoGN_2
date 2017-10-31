@@ -65,7 +65,10 @@ endif()
 
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/QOGLViewer"
 	DESTINATION "include/cgogn/thirdparty/"
-	FILES_MATCHING PATTERN "*.h"
-)
+	FILES_MATCHING PATTERN "*.h")
+
+
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/qt_inst.conf ${Qt5_DIR} )
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/qt_inst.conf DESTINATION "include/cgogn/thirdparty/")
 
 cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}" "include/cgogn/thirdparty")

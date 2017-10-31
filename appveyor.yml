@@ -51,7 +51,7 @@ build_script:
   - cd ..
   - mkdir build_app
   - cd build_app
-  - cmake "-G%GENERATOR%" ../cgogn/geometry/examples/ -DCGOGN_USE_QT=ON -DQt5_DIR="C:\Qt\5.8\msvc2015_64\lib\cmake\Qt5"
+  - cmake "-G%GENERATOR%" ../cgogn/geometry/examples/ -DCGOGN_USE_QT=ON -DCMAKE_PREFIX_PATH="C:\Program Files\CGoGN"
   - cmake --build . --config "%CONFIG%"
   
 
