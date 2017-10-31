@@ -44,10 +44,10 @@ environment:
 build_script:
   - md build
   - cd build
-  - cmake "-G%GENERATOR%" .. -DQt5_DIR="C:\Qt\5.8\msvc2015_64\lib\cmake\Qt5"
+  - cmake "-G%GENERATOR%" .. -DQt5_DIR="C:\Qt\5.8\msvc2015_64\lib\cmake\Qt5" -DCGOGN_BUILD_TESTS=ON -DCGOGN_BUILD_EXAMPLES=ON
   - cmake --build . --config "%CONFIG%"
-  - cmake --build . --target RUN_TESTS
-  - cmake --build . --target INSTALL
+  - cmake --build . --config "%CONFIG%" --target RUN_TESTS
+  - cmake --build . --config "%CONFIG%" --target INSTALL
   - cd ..
   - mkdir build_app
   - cd build_app
