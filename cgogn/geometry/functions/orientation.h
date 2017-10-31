@@ -47,8 +47,9 @@ enum Orientation2D
  * @param Pb end point
  * @return the orientation
  */
-template <typename VEC2>
-Orientation2D side(const VEC2& P, const VEC2& Pa, const VEC2& Pb)
+template <typename VEC2, typename VEC2b, typename VEC2c>
+auto side(const VEC2& P, const VEC2b& Pa, const VEC2c& Pb)
+-> typename std::enable_if <is_same3vector <VEC2, VEC2b, VEC2c>::value, Orientation2D>::type
 {
 	static_assert(vector_traits<VEC2>::SIZE == 2ul, "The size of the vector must be equal to 2.");
 
@@ -73,8 +74,9 @@ Orientation2D side(const VEC2& P, const VEC2& Pa, const VEC2& Pb)
  * @param C plane point 3
  * @return the orientation
  */
-template <typename VEC3>
-Orientation3D test_orientation_3D(const VEC3& P, const VEC3& A, const VEC3& B, const VEC3& C)
+template <typename VEC3, typename VEC3b, typename VEC3c, typename VEC3d>
+auto test_orientation_3D(const VEC3& P, const VEC3b& A, const VEC3c& B, const VEC3d& C)
+-> typename std::enable_if <is_same4vector<VEC3, VEC3b, VEC3c, VEC3d>::value, Orientation3D>::type
 {
 	static_assert(vector_traits<VEC3>::SIZE == 3ul, "The size of the vector must be equal to 3.");
 	return Plane3D<VEC3>(A, B, C).orient(P);
@@ -87,8 +89,9 @@ Orientation3D test_orientation_3D(const VEC3& P, const VEC3& A, const VEC3& B, c
  * @param PP plane point
  * @return the orientation
  */
-template <typename VEC3>
-Orientation3D test_orientation_3D(const VEC3& P, const VEC3& N, const VEC3& PP)
+template <typename VEC3, typename VEC3b, typename VEC3c>
+auto test_orientation_3D(const VEC3& P, const VEC3b& N, const VEC3c& PP)
+-> typename std::enable_if <is_same3vector<VEC3, VEC3b, VEC3c>::value, Orientation3D>::type
 {
 	static_assert(vector_traits<VEC3>::SIZE == 3ul, "The size of the vector must be equal to 3.");
 	return Plane3D<VEC3>(N, PP).orient(P);

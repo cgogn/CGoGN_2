@@ -49,3 +49,14 @@ TYPED_TEST(Area_TEST, TriangleArea)
 	TypeParam p2(Scalar(0), Scalar(2), Scalar(0));
 	EXPECT_DOUBLE_EQ(cgogn::geometry::area(p0, p1, p2), Scalar(2));
 }
+
+TYPED_TEST(Area_TEST, TriangleArea_complex_param)
+{
+	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
+	TypeParam p0(Scalar(0), Scalar(0), Scalar(0));
+	TypeParam p1(Scalar(2), Scalar(0), Scalar(0));
+	TypeParam p2(Scalar(0), Scalar(2), Scalar(0));
+	TypeParam Z(Scalar(0), Scalar(), Scalar(1));
+	EXPECT_DOUBLE_EQ(cgogn::geometry::area(2 * (p0 - Z), (p1 - Z + p1 - Z), (p2 - Z) / 0.5), Scalar(8));
+}
+

@@ -36,14 +36,16 @@ namespace geometry
 /**
  * \todo geometric predicate : move it to a specific location with other geometric predicates
  */
-template <typename VEC3>
-bool in_sphere(const VEC3& point, const VEC3& center, const typename vector_traits<VEC3>::Scalar radius)
+template <typename VEC3, typename VEC3b>
+auto in_sphere(const VEC3& point, const VEC3b& center, const typename vector_traits<VEC3>::Scalar radius)
+-> typename std::enable_if <is_same2vector<VEC3, VEC3b>::value, bool>::type
 {
 	return (point - center).norm() < radius;
 }
 
-template <typename VEC3>
-inline bool in_triangle(const VEC3& P, const VEC3& normal, const VEC3& Ta,  const VEC3& Tb, const VEC3& Tc)
+template <typename VEC3, typename VEC3b, typename VEC3c, typename VEC3d, typename VEC3e>
+auto in_triangle(const VEC3& P, const VEC3b& normal, const VEC3c& Ta,  const VEC3d& Tb, const VEC3e& Tc)
+-> typename std::enable_if <is_same5vector<VEC3, VEC3b, VEC3c, VEC3d, VEC3e>::value, bool>::type
 {
 	using Scalar = typename vector_traits<VEC3>::Scalar;
 	static const auto triple_positive = [] (const VEC3& U, const VEC3& V, const VEC3& W) -> bool
@@ -59,8 +61,9 @@ inline bool in_triangle(const VEC3& P, const VEC3& normal, const VEC3& Ta,  cons
 	return true;
 }
 
-template <typename VEC3>
-inline bool in_triangle(const VEC3& P, const VEC3& Ta,  const VEC3& Tb, const VEC3& Tc)
+template <typename VEC3, typename VEC3b, typename VEC3c, typename VEC3d>
+auto in_triangle(const VEC3& P, const VEC3b& Ta,  const VEC3c& Tb, const VEC3d& Tc)
+-> typename std::enable_if <is_same4vector<VEC3, VEC3b, VEC3c, VEC3d>::value, bool>::type
 {
 	return in_triangle(P, normal(Ta, Tb, Tc), Ta, Tb,Tc );
 }

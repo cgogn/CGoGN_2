@@ -91,11 +91,35 @@ struct vector_traits<V, typename std::enable_if < is_eigen<V>::value >::type>
 	using Type = Eigen::Matrix<Scalar, SIZE, 1, 0, SIZE, 1 >;
 };
 
+// convenient struct for easy SFINAE
+
+template <typename V1, typename V2, typename Enable = void>
+struct is_same2vector 
+{};
 
 template <typename V1, typename V2>
-struct is_same_vector : std::integral_constant < bool, std::is_same<V1, V2>::value || (is_eigen<V1>::value && is_eigen<V2>::value /*&&
-	std::is_same<typename vector_traits<V1>::Scalar, typename vector_traits<V2>::Scalar>::value && vector_traits<V1>::SIZE == vector_traits<V2>::SIZE*/)>
-{};
+struct is_same2vector < V1, V2, typename std::enable_if < std::is_same<V1, V2>::value  || ( is_eigen<V1>::value && is_eigen<V2>::value )>::type>
+{
+	using S1 = typename vector_traits<V1>::Scalar;
+	using S2 = typename vector_traits<V2>::Scalar;
+	static const bool value = std::is_same<S1, S2>::value && (vector_traits<V1>::SIZE == vector_traits<V2>::SIZE);
+};
+
+template <typename V1, typename V2>
+struct is_same2vector < V1, V2, typename std::enable_if <!(std::is_same<V1, V2>::value || (is_eigen<V1>::value && is_eigen<V2>::value))>::type>
+{
+	static const bool value = false;
+};
+
+template <typename V1, typename V2, typename V3>
+struct is_same3vector : public std::integral_constant < bool, is_same2vector<V1, V2>::value && is_same2vector<V1, V3>::value> {};
+
+template <typename V1, typename V2, typename V3, typename V4>
+struct is_same4vector : public std::integral_constant < bool, is_same3vector<V1, V2, V3>::value && is_same2vector<V1, V4>::value> {};
+
+template <typename V1, typename V2, typename V3, typename V4, typename V5>
+struct is_same5vector : public std::integral_constant < bool, is_same4vector<V1, V2, V3, V4>::value && is_same2vector<V1, V5>::value> {};
+
 
 
 

@@ -24,6 +24,8 @@
 #ifndef CGOGN_GEOMETRY_FUNCTIONS_NORMAL_H_
 #define CGOGN_GEOMETRY_FUNCTIONS_NORMAL_H_
 
+#include <cgogn/geometry/types/geometry_traits.h>
+
 namespace cgogn
 {
 
@@ -33,8 +35,9 @@ namespace geometry
 /**
  * normal of the plane spanned by 3 points in 3D
  */
-template <typename VEC3>
-inline VEC3 normal(const VEC3& p1, const VEC3& p2, const VEC3& p3)
+template <typename VEC3, typename VEC3b, typename VEC3c>
+inline auto normal(const VEC3& p1, const VEC3b& p2, const VEC3c& p3)
+-> typename std::enable_if <is_same3vector<VEC3, VEC3b, VEC3c>::value, VEC3>::type
 {
 	return (p2-p1).cross(p3-p1);
 }

@@ -587,21 +587,21 @@ protected:
 	template <typename T>
 	inline void reorient_tetra(const ChunkArray<T>& pos, uint32& p0, uint32& p1, uint32& p2, uint32& p3)
 	{
-		if (geometry::test_orientation_3D<T>(pos[p0], pos[p1], pos[p2], pos[p3]) == geometry::Orientation3D::OVER)
+		if (geometry::test_orientation_3D(pos[p0], pos[p1], pos[p2], pos[p3]) == geometry::Orientation3D::OVER)
 			std::swap(p1, p2);
 	}
 
 	template <typename T>
 	inline void reorient_pyramid(const ChunkArray<T>& pos, uint32& p0, uint32& p1, uint32& p2, uint32& p3, uint32& p4)
 	{
-		if (geometry::test_orientation_3D<T>(pos[p4], pos[p0], pos[p1], pos[p2]) == geometry::Orientation3D::OVER)
+		if (geometry::test_orientation_3D(pos[p4], pos[p0], pos[p1], pos[p2]) == geometry::Orientation3D::OVER)
 			std::swap(p1, p3);
 	}
 
 	template <typename T>
 	inline void reorient_triangular_prism(const ChunkArray<T>& pos, uint32& p0, uint32& p1, uint32& p2, uint32& p3, uint32& p4, uint32& p5)
 	{
-		if (geometry::test_orientation_3D<T>(pos[p3], pos[p0], pos[p1], pos[p2]) == geometry::Orientation3D::OVER)
+		if (geometry::test_orientation_3D(pos[p3], pos[p0], pos[p1], pos[p2]) == geometry::Orientation3D::OVER)
 		{
 			std::swap(p1, p2);
 			std::swap(p4, p5);
