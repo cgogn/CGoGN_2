@@ -39,8 +39,20 @@ clone_depth: 1                      # clone entire repository history if not def
 
 environment:
     GENERATOR: "Visual Studio 14 Win64"
-    CONFIG: Debug
+    CONFIG: Release
 
 build_script:
-  - cmake "-G%GENERATOR%" -DQt5_DIR="C:\Qt\5.8\msvc2015_64\lib\cmake\Qt5"
+  - md build
+  - cd build
+  - cmake "-G%GENERATOR%" .. -DQt5_DIR="C:\Qt\5.8\msvc2015_64\lib\cmake\Qt5" -DCGOGN_BUILD_TESTS=ON -DCGOGN_BUILD_EXAMPLES=ON
   - cmake --build . --config "%CONFIG%"
+  - cmake --build . --config "%CONFIG%" --target RUN_TESTS
+  - cmake --build . --config "%CONFIG%" --target INSTALL
+  - cd ..
+  - mkdir build_app
+  - cd build_app
+  - cmake "-G%GENERATOR%" ../cgogn/geometry/examples/ -DCGOGN_USE_QT=ON -DCMAKE_PREFIX_PATH="C:\Program Files\CGoGN"
+  - cmake --build . --config "%CONFIG%"
+  
+
+

@@ -41,8 +41,8 @@ cgogn_reset_warning_level()
 
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
-target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARY} ${Qt5Widgets_LIBRARIES})
-target_include_directories(${PROJECT_NAME} PRIVATE ${Qt5Widgets_INCLUDE_DIRS})
+target_link_libraries(${PROJECT_NAME} PUBLIC ${OPENGL_LIBRARY} ${Qt5Widgets_LIBRARIES})
+target_include_directories(${PROJECT_NAME} PUBLIC ${Qt5Widgets_INCLUDE_DIRS})
 
 if(WIN32)
 	add_definitions(-DCREATE_QGLVIEWER_DLL -DNOMINMAX /W3)
@@ -65,7 +65,10 @@ endif()
 
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/QOGLViewer"
 	DESTINATION "include/cgogn/thirdparty/"
-	FILES_MATCHING PATTERN "*.h"
-)
+	FILES_MATCHING PATTERN "*.h")
+
+
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/qt_inst.conf ${Qt5_DIR} )
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/qt_inst.conf DESTINATION "include/cgogn/thirdparty/")
 
 cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}" "include/cgogn/thirdparty")

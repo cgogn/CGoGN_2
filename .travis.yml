@@ -22,3 +22,10 @@ script:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then  cmake .. -DCGOGN_MODULE_rendering=OFF -DCGOGN_USE_QT=OFF -DCGOGN_BUILD_TESTS=ON -DCGOGN_BUILD_EXAMPLES=ON ; fi
   - make -j2
   - make test
+  - sudo make install
+  - cd ..
+  - mkdir build_app
+  - cd build_app
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then  cmake ../cgogn/geometry/examples/ -DCMAKE_CXX_COMPILER=g++-5 -DCMAKE_C_COMPILER=gcc-5 -DCGOGN_USE_QT=ON ; make ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then  cmake ../cgogn/modeling/examples/ -DCGOGN_USE_QT=OFF ; make triangular_tiling ; fi
+
