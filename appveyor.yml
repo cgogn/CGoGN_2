@@ -34,8 +34,8 @@ build_script:
   - cd build
   - cmake -Wno-dev -Wno-deprecated "-G%GENERATOR%" .. -DCMAKE_SUPPRESS_REGENERATION=1 -DQt5_DIR="C:\Qt\5.8\msvc2015_64\lib\cmake\Qt5" -DCGOGN_BUILD_TESTS=ON -DCGOGN_BUILD_EXAMPLES=ON -DCGOGN_BUILD_BENCHS=ON
   - cmake --build . --config "%CONFIG%" -- /verbosity:minimal
-  - cmake --build . --config "%CONFIG%" --target RUN_TESTS -- /verbosity:quiet
-  - cmake --build . --config "%CONFIG%" --target INSTALL -- /verbosity:quiet
+  - cmake --build . --config "%CONFIG%" --target RUN_TESTS -- /verbosity:minimal
+  - cmake --build . --config "%CONFIG%" --target INSTALL -- /verbosity:minimal
   - cd ..
   - mkdir build_app
   - cd build_app
