@@ -32,13 +32,13 @@ build:
 build_script:
   - md build
   - cd build
-  - cmake "-G%GENERATOR%" .. -DQt5_DIR="C:\Qt\5.8\msvc2015_64\lib\cmake\Qt5" -DCGOGN_BUILD_TESTS=ON -DCGOGN_BUILD_EXAMPLES=ON
+  - cmake -Wno-dev -Wno-deprecated "-G%GENERATOR%" .. -DCMAKE_SUPPRESS_REGENERATION=1 -DQt5_DIR="C:\Qt\5.8\msvc2015_64\lib\cmake\Qt5" -DCGOGN_BUILD_TESTS=ON -DCGOGN_BUILD_EXAMPLES=ON
   - cmake --build . --config "%CONFIG%" -- /verbosity:minimal
-  - cmake --build . --config "%CONFIG%" --target RUN_TESTS -- /verbosity:minimal
-  - cmake --build . --config "%CONFIG%" --target INSTALL -- /verbosity:minimal
+  - cmake --build . --config "%CONFIG%" --target RUN_TESTS -- /verbosity:quiet
+  - cmake --build . --config "%CONFIG%" --target INSTALL -- /verbosity:quiet
   - cd ..
   - mkdir build_app
   - cd build_app
-  - cmake "-G%GENERATOR%" ../cgogn/geometry/examples/ -DCGOGN_USE_QT=ON -DCMAKE_PREFIX_PATH="C:\Program Files\CGoGN"
+  - cmake "-G%GENERATOR%" ../cgogn/geometry/examples/ -DCMAKE_SUPPRESS_REGENERATION=1 -DCGOGN_USE_QT=ON -DCMAKE_PREFIX_PATH="C:\Program Files\CGoGN"
   - cmake --build . --config "%CONFIG%" -- /verbosity:minimal
   
