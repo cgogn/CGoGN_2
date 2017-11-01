@@ -34,8 +34,8 @@ build_script:
   - cd build
   - cmake "-G%GENERATOR%" .. -DQt5_DIR="C:\Qt\5.8\msvc2015_64\lib\cmake\Qt5" -DCGOGN_BUILD_TESTS=ON -DCGOGN_BUILD_EXAMPLES=ON
   - cmake --build . --config "%CONFIG%" -- /verbosity:minimal
-  - cmake --build . --config "%CONFIG%" --target RUN_TESTS
-  - cmake --build . --config "%CONFIG%" --target INSTALL
+  - cmake --build . --config "%CONFIG%" --target RUN_TESTS -- /verbosity:minimal
+  - cmake --build . --config "%CONFIG%" --target INSTALL -- /verbosity:minimal
   - cd ..
   - mkdir build_app
   - cd build_app
