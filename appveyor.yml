@@ -33,7 +33,7 @@ build_script:
   - md build
   - cd build
 # if commit log contain cibuildonlylib dont built benchs tests & examples
-  - git -log --format=%B -n 1 > pipogit.log && set /P var1=<pipogit.log && if x%var1:cibuildonlylib=%==x%var1% set tocompile=-DCGOGN_BUILD_TESTS=ON -DCGOGN_BUILD_EXAMPLES=ON -DCGOGN_BUILD_BENCHS=ON
+  - if x%APPVEYOR_REPO_COMMIT_MESSAGE:cibuildonlylib=%==x%APPVEYOR_REPO_COMMIT_MESSAGE% set tocompile=-DCGOGN_BUILD_TESTS=ON -DCGOGN_BUILD_EXAMPLES=ON -DCGOGN_BUILD_BENCHS=ON
   - cmake -Wno-dev -Wno-deprecated "-G%GENERATOR%" .. -DCMAKE_SUPPRESS_REGENERATION=1 -DQt5_DIR="C:\Qt\5.8\msvc2015_64\lib\cmake\Qt5" %tocompile%
   - cmake --build . --config "%CONFIG%" -- /verbosity:minimal
   - cmake --build . --config "%CONFIG%" --target RUN_TESTS -- /verbosity:quiet
