@@ -102,38 +102,6 @@ protected:
 			getline_safe(fp, line);
 		} while (!fp.eof());
 
-		fp.clear();
-		fp.seekg(0, std::ios::beg);
-
-		do
-		{
-			fp >> tag;
-			getline_safe(fp, line);
-		} while (tag != std::string("vn") && (!fp.eof()));
-
-		if (tag == "vn")
-		{
-			uint32 counter{0u};
-			ChunkArray<VEC3>* normal = this->vertex_container().template add_chunk_array<VEC3>("normal");
-			do
-			{
-				if (tag == std::string("vn"))
-				{
-					std::stringstream oss(line);
-
-					float64 x, y, z;
-					oss >> x;
-					oss >> y;
-					oss >> z;
-
-					VEC3 norm{Scalar(x), Scalar(y), Scalar(z)};
-					(*normal)[vertices_id[counter++]] = norm;
-				}
-
-				fp >> tag;
-				getline_safe(fp, line);
-			} while (!fp.eof());
-		}
 
 		fp.clear();
 		fp.seekg(0, std::ios::beg);
