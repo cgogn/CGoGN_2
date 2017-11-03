@@ -21,44 +21,18 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_GEOMETRY_FUNCTIONS_AREA_H_
-#define CGOGN_GEOMETRY_FUNCTIONS_AREA_H_
+#define CGOGN_MODELING_TILING_PARALLELOGRAM_GRID_CPP_
 
-#include <cgogn/geometry/types/geometry_traits.h>
+#include <cgogn/modeling/tiling/parallelogram_grid.h>
 
 namespace cgogn
 {
 
-namespace geometry
+namespace modeling
 {
 
-/**
- * area of the triangle formed by 3 points in 3D
- */
-template <typename VEC>
-inline auto area(const VEC& p1, const VEC& p2, const VEC& p3)
-	-> typename std::enable_if<vector_traits<VEC>::SIZE == 3, typename vector_traits<VEC>::Scalar>::type
-{
-	using Scalar = typename vector_traits<VEC>::Scalar;
-	return (Scalar(0.5) * ((p2 - p1).cross(p3 - p1)).norm());
-}
+//template class CGOGN_MODELING_API ParallelogramGrid<CMap2,Eigen::Vector2d>;
 
-/**
- * area of the triangle formed by 3 points in 2D
- */
-template <typename VEC>
-inline auto area(const VEC& p1, const VEC& p2, const VEC& p3)
-	-> typename std::enable_if<vector_traits<VEC>::SIZE == 2, typename vector_traits<VEC>::Scalar>::type
-{
-	using Scalar = typename vector_traits<VEC>::Scalar;
-	VEC v1 = p2 - p1;
-	VEC v2 = p3 - p1;
-	return (Scalar(0.5) * (v1[0] * v2[1] - v1[1] * v2[0]));
-}
-
-
-} // namespace geometry
+} // namespace modeling
 
 } // namespace cgogn
-
-#endif // CGOGN_GEOMETRY_FUNCTIONS_AREA_H_

@@ -20,6 +20,7 @@ set(HEADER_TILING
 	tiling/square_grid.h
 	tiling/square_cylinder.h
 	tiling/square_tore.h
+	tiling/parallelogram_grid.h
 )
 set(HEADER_DECIMATION
 	decimation/edge_approximator.h
@@ -50,6 +51,7 @@ set(SOURCE_TILING
 	tiling/square_cylinder.cpp
 	tiling/square_tore.cpp
 #	tiling/square_cube.h
+	tiling/parallelogram_grid.cpp
 )
 set(SOURCE_FILES ${SOURCE_ALGOS} ${SOURCE_TILING})
 

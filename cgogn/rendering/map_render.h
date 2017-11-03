@@ -48,6 +48,7 @@ enum DrawingType : uint8
 	POINTS = 0,
 	LINES,
 	TRIANGLES,
+	QUAD,
 	BOUNDARY,
 	SIZE_BUFFER
 };
@@ -81,7 +82,7 @@ protected:
 	template <typename MAP, typename MASK>
 	inline void init_points(const MAP& m, const MASK& mask, std::vector<uint32>& table_indices)
 	{
-//		table_indices.reserve(m.get_nb_darts() / 6);
+		//		table_indices.reserve(m.get_nb_darts() / 6);
 		m.foreach_cell([&] (typename MAP::Vertex v)
 		{
 			table_indices.push_back(m.embedding(v));
@@ -95,7 +96,7 @@ protected:
 		using Vertex = typename MAP::Vertex;
 		using Edge = typename MAP::Edge;
 
-//		table_indices.reserve(m.get_nb_darts() / 2);
+		//		table_indices.reserve(m.get_nb_darts() / 2);
 		m.foreach_cell([&] (Edge e)
 		{
 			std::pair<Vertex, Vertex> vs = m.vertices(e);
@@ -112,7 +113,7 @@ protected:
 		using Face = typename MAP::Face;
 
 		// reserve more ?
-//		table_indices.reserve(m.get_nb_darts() / 3);
+		//		table_indices.reserve(m.get_nb_darts() / 3);
 		m.foreach_cell([&] (Face f)
 		{
 			Dart d0 = f.dart;
@@ -132,17 +133,17 @@ protected:
 
 	template <typename VEC3, typename MAP, typename MASK>
 	inline void init_triangles_ear(
-		const MAP& m,
-		const MASK& mask,
-		std::vector<uint32>& table_indices,
-		const typename MAP::template VertexAttribute<VEC3>* position
-	)
+			const MAP& m,
+			const MASK& mask,
+			std::vector<uint32>& table_indices,
+			const typename MAP::template VertexAttribute<VEC3>* position
+			)
 	{
 		using Vertex = typename MAP::Vertex;
 		using Face = typename MAP::Face;
 
 		// reserve more ?
-//		table_indices.reserve(m.get_nb_darts() / 3);
+		//		table_indices.reserve(m.get_nb_darts() / 3);
 		m.foreach_cell([&] (Face f)
 		{
 			if (m.has_codegree(f, 3))
@@ -158,8 +159,28 @@ protected:
 	}
 
 	template <typename MAP, typename MASK>
+	inline void init_quad(const MAP& m, const MASK& mask, std::vector<uint32>& table_indices)
+	{
+		using Vertex = typename MAP::Vertex;
+		using Face = typename MAP::Face;
+
+		m.foreach_cell([&] (Face f)
+		{
+			Dart d0 = f.dart;
+			Dart d1 = m.phi1(d0);
+			Dart d2 = m.phi1(d1);
+			Dart d3 = m.phi1(d2);
+			table_indices.push_back(m.embedding(Vertex(d0)));
+			table_indices.push_back(m.embedding(Vertex(d1)));
+			table_indices.push_back(m.embedding(Vertex(d2)));
+			table_indices.push_back(m.embedding(Vertex(d3)));
+		},
+		mask);
+	}
+
+	template <typename MAP, typename MASK>
 	inline auto init_boundaries(const MAP& m, const MASK& mask, std::vector<uint32>& table_indices)
-		-> typename std::enable_if<MAP::DIMENSION == 2 && std::is_same<MASK, typename MAP::BoundaryCache>::value, void>::type
+	-> typename std::enable_if<MAP::DIMENSION == 2 && std::is_same<MASK, typename MAP::BoundaryCache>::value, void>::type
 	{
 		using Vertex = typename MAP::Vertex;
 		using Edge = typename MAP::Edge;
@@ -180,7 +201,7 @@ protected:
 
 	template <typename MAP, typename MASK>
 	inline auto init_boundaries(const MAP& m, const MASK& /*mask*/, std::vector<uint32>& table_indices)
-		-> typename std::enable_if<MAP::DIMENSION == 2 && !std::is_same<MASK, typename MAP::BoundaryCache>::value, void>::type
+	-> typename std::enable_if<MAP::DIMENSION == 2 && !std::is_same<MASK, typename MAP::BoundaryCache>::value, void>::type
 	{
 		// if the given MASK is not a BoundaryCache, build a BoundaryCache and use it
 		typename MAP::BoundaryCache bcache(m);
@@ -189,7 +210,7 @@ protected:
 
 	template <typename MAP, typename MASK>
 	inline auto init_boundaries(const MAP& m, const MASK& mask, std::vector<uint32>& table_indices)
-		-> typename std::enable_if<MAP::DIMENSION == 3 && std::is_same<MASK, typename MAP::BoundaryCache>::value, void>::type
+	-> typename std::enable_if<MAP::DIMENSION == 3 && std::is_same<MASK, typename MAP::BoundaryCache>::value, void>::type
 	{
 		using Vertex = typename MAP::Vertex;
 		using Face = typename MAP::Face;
@@ -219,7 +240,7 @@ protected:
 
 	template <typename MAP, typename MASK>
 	inline auto init_boundaries(const MAP& m, const MASK& mask, std::vector<uint32>& table_indices)
-		-> typename std::enable_if<MAP::DIMENSION == 3 && !std::is_same<MASK, typename MAP::BoundaryCache>::value, void>::type
+	-> typename std::enable_if<MAP::DIMENSION == 3 && !std::is_same<MASK, typename MAP::BoundaryCache>::value, void>::type
 	{
 		unused_parameters(mask);
 		// if the given MASK is not a BoundaryCache, build a BoundaryCache and use it
@@ -236,11 +257,11 @@ public:
 
 	template <typename VEC3, typename MAP, typename MASK>
 	inline void init_primitives(
-		const MAP& m,
-		const MASK& mask,
-		DrawingType prim,
-		const typename MAP::template VertexAttribute<VEC3>* position
-	)
+			const MAP& m,
+			const MASK& mask,
+			DrawingType prim,
+			const typename MAP::template VertexAttribute<VEC3>* position
+			)
 	{
 		std::vector<uint32> table_indices;
 
@@ -259,6 +280,9 @@ public:
 				else
 					init_triangles(m, mask, table_indices);
 				indices_tri_.clear();
+				break;
+			case QUAD:
+				init_quad(m, mask, table_indices) ;
 				break;
 			case BOUNDARY:
 				init_boundaries(m, mask, table_indices);
@@ -282,20 +306,20 @@ public:
 
 	template <typename VEC3, typename MAP>
 	inline void init_primitives(
-		const MAP& m,
-		DrawingType prim,
-		const typename MAP::template VertexAttribute<VEC3>* position
-	)
+			const MAP& m,
+			DrawingType prim,
+			const typename MAP::template VertexAttribute<VEC3>* position
+			)
 	{
 		init_primitives<VEC3>(m, AllCellsFilter(), prim, position);
 	}
 
 	template <typename MAP, typename MASK>
 	inline void init_primitives(
-		const MAP& m,
-		const MASK& mask,
-		DrawingType prim
-	)
+			const MAP& m,
+			const MASK& mask,
+			DrawingType prim
+			)
 	{
 		std::vector<uint32> table_indices;
 
@@ -334,9 +358,9 @@ public:
 
 	template <typename MAP>
 	inline void init_primitives(
-		const MAP& m,
-		DrawingType prim
-	)
+			const MAP& m,
+			DrawingType prim
+			)
 	{
 		init_primitives(m, AllCellsFilter(), prim);
 	}
@@ -370,11 +394,11 @@ void transform_position(const MAP& map, const typename MAP::template VertexAttri
  */
 template <typename VEC3, typename MAP>
 void create_indices_vertices_faces(
-	const MAP& m,
-	const typename MAP::template VertexAttribute<VEC3>& position,
-	std::vector<uint32>& indices1,
-	std::vector<uint32>& indices2
-)
+		const MAP& m,
+		const typename MAP::template VertexAttribute<VEC3>& position,
+		std::vector<uint32>& indices1,
+		std::vector<uint32>& indices2
+		)
 {
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
