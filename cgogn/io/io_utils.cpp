@@ -306,7 +306,12 @@ CGOGN_IO_API FileType file_type(const std::string& filename)
 		{"nas", FileType_NASTRAN},
 		{"bdf", FileType_NASTRAN},
 		{"tet", FileType_AIMATSHAPE},
-		{"tetmesh", FileType_TETMESH}
+		{"tetmesh", FileType_TETMESH},
+		{"skel", FileType::FileType_SKEL},
+		{"cg", FileType::FileType_CG},
+		{"cskel", FileType::FileType_CSKEL},
+		{"skc", FileType::FileType_CSKEL},
+		{"dot", FileType::FileType_DOT}
 	};
 
 	const auto it = file_type_map.find(ext);

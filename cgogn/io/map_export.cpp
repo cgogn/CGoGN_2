@@ -33,6 +33,7 @@ namespace io
 
 template CGOGN_IO_API void export_surface(CMap2& , const ExportOptions&);
 template CGOGN_IO_API void export_volume(CMap3& , const ExportOptions&);
+template CGOGN_IO_API void export_graph(UndirectedGraph& , const ExportOptions&);
 
 } // namespace io
 

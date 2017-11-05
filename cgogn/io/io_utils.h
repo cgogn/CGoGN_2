@@ -105,6 +105,9 @@ public:
 enum FileType
 {
 	FileType_UNKNOWN = 0,
+	FileType_CG,
+	FileType_CSKEL,
+	FileType_DOT,
 	FileType_OFF,
 	FileType_OBJ,
 	FileType_2DM,
@@ -115,6 +118,7 @@ enum FileType
 	FileType_VTP,
 	FileType_MESHB,
 	FileType_MSH,
+	FileType_SKEL,
 	FileType_TETGEN,
 	FileType_NASTRAN,
 	FileType_AIMATSHAPE,

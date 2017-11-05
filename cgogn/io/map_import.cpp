@@ -35,7 +35,8 @@ template CGOGN_IO_API void import_surface<Eigen::Vector3f>(CMap2&, const std::st
 template CGOGN_IO_API void import_surface<Eigen::Vector3d>(CMap2&, const std::string&);
 template CGOGN_IO_API void import_volume<Eigen::Vector3f>(CMap3&, const std::string&);
 template CGOGN_IO_API void import_volume<Eigen::Vector3d>(CMap3&, const std::string&);
-
+template CGOGN_IO_API void import_graph<Eigen::Vector3f>(UndirectedGraph&, const std::string&);
+template CGOGN_IO_API void import_graph<Eigen::Vector3d>(UndirectedGraph&, const std::string&);
 } // namespace io
 
 } // namespace cgogn
