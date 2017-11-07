@@ -88,7 +88,7 @@ public:
 
 		for (uint32 i = 0, end = nb_edges(); i < end; ++i)
 		{
-			uint nbe = this->edges_nb_vertices_[i];
+			uint32 nbe = this->edges_nb_vertices_[i];
 
 			edges_buffer.clear();
 			for (uint32 j = 0u; j < nbe; ++j)
@@ -146,7 +146,7 @@ public:
 
 		for (uint32 i = 0, end = nb_edges(); i < end; ++i)
 		{
-			uint nbe = this->edges_nb_vertices_[i];
+			uint32 nbe = this->edges_nb_vertices_[i];
 
 			edges_buffer.clear();
 			for (uint32 j = 0u; j < nbe; ++j)
