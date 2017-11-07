@@ -60,7 +60,7 @@ namespace io
 {
 
 template <typename VEC3, typename MAP>
-inline std::unique_ptr<SurfaceFileImport<MAP>> newSurfaceImport(MAP& map, const std::string& filename)
+inline std::unique_ptr<SurfaceFileImport<MAP>> new_surface_import(MAP& map, const std::string& filename)
 {
 	const FileType ft = file_type(filename);
 	switch (ft)
@@ -76,13 +76,13 @@ inline std::unique_ptr<SurfaceFileImport<MAP>> newSurfaceImport(MAP& map, const 
 		case FileType::FileType_MSH: return make_unique<MshSurfaceImport<MAP, VEC3>>(map);
 		case FileType::FileType_MESHB: return make_unique<LM6SurfaceImport<MAP, VEC3>>(map);
 		default:
-			cgogn_log_warning("newSurfaceImport") << "SurfaceImport does not handle files with extension \"" << extension(filename) << "\".";
+			cgogn_log_warning("SurfaceImport") << "SurfaceImport does not handle files with extension \"" << extension(filename) << "\".";
 			return std::unique_ptr<SurfaceFileImport<MAP>>();
 	}
 }
 
 template <typename VEC3, typename MAP>
-inline std::unique_ptr<VolumeFileImport<MAP>> newVolumeImport(MAP& map, const std::string& filename)
+inline std::unique_ptr<VolumeFileImport<MAP>> new_volume_import(MAP& map, const std::string& filename)
 {
 	const FileType ft = file_type(filename);
 	switch (ft)
@@ -102,10 +102,11 @@ inline std::unique_ptr<VolumeFileImport<MAP>> newVolumeImport(MAP& map, const st
 }
 
 template <typename VEC3>
-inline std::unique_ptr<GraphFileImport> newGraphImport(const std::string& filename)
+inline std::unique_ptr<GraphFileImport> new_graph_import(const std::string& filename)
 {
 	const FileType ft = file_type(filename);
-	switch (ft) {
+	switch (ft)
+	{
 		case FileType::FileType_SKEL:		return make_unique<SkelGraphImport<VEC3>>();
 		case FileType::FileType_VTK_LEGACY:	return make_unique<VtkGraphImport<VEC3>>();
 		case FileType::FileType_CG:			return make_unique<CgGraphImport<VEC3>>();
@@ -121,35 +122,29 @@ inline std::unique_ptr<GraphFileImport> newGraphImport(const std::string& filena
 template <typename VEC3, typename MAP>
 inline void import_surface(MAP& map, const std::string& filename)
 {
-	auto si = newSurfaceImport<VEC3>(map, filename);
+	auto si = new_surface_import<VEC3>(map, filename);
 	if (si)
-	{
 		if (si->import_file(filename))
 			si->create_map();
-	}
 }
 
 template <typename VEC3, typename MAP>
 inline void import_volume(MAP& map, const std::string& filename)
 {
-	auto si = newVolumeImport<VEC3>(map, filename);
+	auto si = new_volume_import<VEC3>(map, filename);
 	if (si)
-	{
 		if (si->import_file(filename))
 			si->create_map();
-	}
 }
 
 template <typename VEC3, typename MAP>
 inline void import_graph(MAP& map, const std::string& filename)
 {
-	auto si = newGraphImport<VEC3>(filename);
+	auto si = new_graph_import<VEC3>(filename);
 
 	if(si)
-	{
 		if(si->import_file(filename))
 			si->create(map);
-	}
 }
 
 
