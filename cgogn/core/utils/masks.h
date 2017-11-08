@@ -255,7 +255,7 @@ public:
 
 		inline Dart operator*() const
 		{
-			return qt_ptr_->qt_attributes_[orbit_]->operator[](index_);
+			return qt_ptr_->qt_attributes_[orbit_](this->operator[](index_));
 		}
 
 		inline bool operator!=(const_iterator it) const
