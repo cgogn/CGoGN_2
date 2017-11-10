@@ -78,12 +78,12 @@ public:
 	ExportOptions(const ExportOptions& eo);
 	ExportOptions(ExportOptions&& eo);
 	inline ~ExportOptions() {}
-	inline ExportOptions& filename(const std::string & filename) { filename_ = filename; return *this; }
-	inline ExportOptions& position_attribute(Orbit orb, const std::string & name)
+	inline ExportOptions& filename(const std::string& filename) { filename_ = filename; return *this; }
+	inline ExportOptions& position_attribute(Orbit orb, const std::string& name)
 	{
 		position_attributes_.insert(std::make_pair(orb, name)); return *this;
 	}
-	inline ExportOptions& add_attribute(Orbit orb, const std::string & name) { attributes_to_export_.push_back(std::make_pair(orb,name)); return *this; }
+	inline ExportOptions& add_attribute(Orbit orb, const std::string& name) { attributes_to_export_.push_back(std::make_pair(orb, name)); return *this; }
 	inline ExportOptions& binary(bool b) { binary_ = b; return *this; }
 	inline ExportOptions& compress(bool b) { compress_ = b; return *this; }
 	inline ExportOptions& overwrite(bool b) { overwrite_ = b; return *this; }

@@ -255,7 +255,7 @@ public:
 
 		inline Dart operator*() const
 		{
-			return qt_ptr_->qt_attributes_[orbit_]->operator[](index_);
+			return (qt_ptr_->qt_attributes_[orbit_])[index_];
 		}
 
 		inline bool operator!=(const_iterator it) const
@@ -411,6 +411,20 @@ public:
 			[] (CellType) { return true; },
 			[] (CellType c) -> Dart { return c.dart; }
 		);
+	}
+
+	template <typename CellType, typename DartSelectionFunction>
+	inline void add(CellType c, const DartSelectionFunction& dart_select)
+	{
+		static_assert(is_func_return_same<DartSelectionFunction, Dart>::value && is_func_parameter_same<DartSelectionFunction, CellType>::value, "Badly formed DartSelectionFunction");
+		static const Orbit ORBIT = CellType::ORBIT;
+		cells_[ORBIT].push_back(dart_select(c));
+	}
+
+	template <typename CellType>
+	inline void add(CellType c)
+	{
+		this->add<CellType>(c, [] (CellType c) -> Dart { return c.dart; });
 	}
 
 private:
