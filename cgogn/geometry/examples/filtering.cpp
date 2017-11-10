@@ -165,10 +165,7 @@ void Viewer::import(const std::string& surface_mesh)
 	cell_cache_.build<Edge>();
 
 	fqt_.build<Vertex>();
-	fqt_.set_filter<Vertex>([&] (Vertex v)
-	{
-		return vertex_position_[v][0] > 0;
-	});
+	fqt_.set_filter<Vertex>([&] (cgogn::Dart d) { return vertex_position_[Vertex(d)][0] > 0; });
 
 	filter_ = cgogn::make_unique<CustomFilter>(vertex_position_);
 
