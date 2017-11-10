@@ -293,7 +293,7 @@ protected:
 	 * @brief remove a triangle (3 darts)
 	 * @param d
 	 */
-	inline void remove_tri_topo_fp(Dart d)
+	inline void remove_face_topo_fp(Dart d)
 	{
 		this->remove_topology_element(d); // in fact remove PRIM_SIZE darts
 	}
@@ -549,8 +549,8 @@ protected:
 		phi2_sew(phi<12>(d),res);
 		phi2_sew(phi<12>(e),phi2(phi_1(e)));
 
-		remove_tri_topo_fp(d);
-		remove_tri_topo_fp(e);
+		remove_face_topo_fp(d);
+		remove_face_topo_fp(e);
 
 		return res;
 	}
@@ -721,8 +721,8 @@ protected:
 		phi2_unsew(e4);
 #endif
 
-		remove_tri_topo_fp(e.dart);
-		remove_tri_topo_fp(phi2(e.dart));
+		remove_face_topo_fp(e.dart);
+		remove_face_topo_fp(phi2(e.dart));
 
 		Dart f1 = add_tri_topo_fp();
 		Dart f2 = add_tri_topo_fp();
@@ -838,7 +838,7 @@ protected:
 		phi2_sew(e1,f1);
 		phi2_sew(e2,f2);
 		phi2_sew(e3,f3);
-		remove_tri_topo_fp(f.dart);
+		remove_face_topo_fp(f.dart);
 
 		return Vertex(phi_1(f1));
 	}
