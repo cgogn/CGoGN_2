@@ -222,10 +222,9 @@ public:
 		inline const_iterator(const Self* qt, Orbit orbit, uint32 i) :
 			qt_ptr_(qt),
 			orbit_(orbit),
+			ca_cont_(qt->map_.attribute_container(orbit)),
 			index_(i)
-		{
-			ca_cont_ = qt_ptr_->map_.attribute_container(orbit);
-		}
+		{}
 
 		inline const_iterator(const const_iterator& it) :
 			qt_ptr_(it.qt_ptr_),
@@ -255,7 +254,7 @@ public:
 
 		inline Dart operator*() const
 		{
-			return qt_ptr_->qt_attributes_[orbit_]->operator[](index_);
+			return (qt_ptr_->qt_attributes_[orbit_])[index_];
 		}
 
 		inline bool operator!=(const_iterator it) const
@@ -270,8 +269,8 @@ public:
 	{
 		static const Orbit ORBIT = CellType::ORBIT;
 		const_iterator it(
-			&qt_attributes_[ORBIT],
-			map_.template attribute_container<ORBIT>(),
+			this,
+			ORBIT,
 			map_.template attribute_container<ORBIT>().begin()
 		);
 		if (!qt_filters_[ORBIT](*it))
@@ -284,8 +283,8 @@ public:
 	{
 		static const Orbit ORBIT = CellType::ORBIT;
 		return const_iterator(
-			&qt_attributes_[ORBIT],
-			map_.template attribute_container<ORBIT>(),
+			this,
+			ORBIT,
 			map_.template attribute_container<ORBIT>().end()
 		);
 	}
@@ -301,9 +300,9 @@ public:
 	template <typename CellType, typename FilterFunction>
 	inline void set_filter(const FilterFunction& filter)
 	{
-		static_assert(is_func_return_same<FilterFunction, bool>::value && is_func_parameter_same<FilterFunction, CellType>::value, "Badly formed FilterFunction");
+		static_assert(is_func_return_same<FilterFunction, bool>::value && is_func_parameter_same<FilterFunction, Dart>::value, "Badly formed FilterFunction");
 		static const Orbit ORBIT = CellType::ORBIT;
-		qt_filters_[ORBIT] = [&] (Dart d) -> bool { return filter(CellType(d)); };
+		qt_filters_[ORBIT] = filter;
 	}
 
 	template <typename CellType, typename DartSelectionFunction>
@@ -411,6 +410,20 @@ public:
 			[] (CellType) { return true; },
 			[] (CellType c) -> Dart { return c.dart; }
 		);
+	}
+
+	template <typename CellType, typename DartSelectionFunction>
+	inline void add(CellType c, const DartSelectionFunction& dart_select)
+	{
+		static_assert(is_func_return_same<DartSelectionFunction, Dart>::value && is_func_parameter_same<DartSelectionFunction, CellType>::value, "Badly formed DartSelectionFunction");
+		static const Orbit ORBIT = CellType::ORBIT;
+		cells_[ORBIT].push_back(dart_select(c));
+	}
+
+	template <typename CellType>
+	inline void add(CellType c)
+	{
+		this->add<CellType>(c, [] (CellType c) -> Dart { return c.dart; });
 	}
 
 private:

@@ -108,6 +108,7 @@ private:
 	VertexAttribute<Vec3> vertex_normal_;
 
 	Map2::CellCache cell_cache_;
+	cgogn::FilteredQuickTraversor<Map2> fqt_;
 	std::unique_ptr<CustomFilter> filter_;
 
 	cgogn::geometry::AABB<Vec3> bb_;
@@ -163,6 +164,9 @@ void Viewer::import(const std::string& surface_mesh)
 	cell_cache_.build<Vertex>();
 	cell_cache_.build<Edge>();
 
+	fqt_.build<Vertex>();
+	fqt_.set_filter<Vertex>([&] (cgogn::Dart d) { return vertex_position_[Vertex(d)][0] > 0; });
+
 	filter_ = cgogn::make_unique<CustomFilter>(vertex_position_);
 
 	cgogn::geometry::compute_AABB(vertex_position_, bb_);
@@ -194,6 +198,7 @@ Viewer::Viewer() :
 	vertex_position_(),
 	vertex_normal_(),
 	cell_cache_(map_),
+	fqt_(map_),
 	bb_(),
 	render_(nullptr),
 	vbo_pos_(nullptr),
@@ -235,7 +240,8 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 //			bb_rendering_ = !bb_rendering_;
 //			break;
 		case Qt::Key_A: {
-			cgogn::geometry::filter_average<Vec3>(map_, *filter_, vertex_position_, vertex_position2_);
+			cgogn::geometry::filter_average<Vec3>(map_, fqt_, vertex_position_, vertex_position2_);
+//			cgogn::geometry::filter_average<Vec3>(map_, *filter_, vertex_position_, vertex_position2_);
 //			cgogn::geometry::filter_average<Vec3>(map_, cell_cache_, vertex_position_, vertex_position2_);
 //			cgogn::geometry::filter_average<Vec3>(map_, vertex_position_, vertex_position2_);
 			map_.swap_attributes(vertex_position_, vertex_position2_);

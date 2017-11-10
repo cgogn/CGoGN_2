@@ -87,40 +87,32 @@ public:
 		return *this;
 	}
 
-	template <
-		typename VEC3,
-		typename std::enable_if<nb_components_traits<VEC3>::value == 3 && std::is_same<typename vector_traits<VEC3>::Scalar, double>::value>::type* = nullptr
-	>
-	double operator()(const VEC3& v)
+	template <typename VEC3>
+	auto operator()(const VEC3& v)
+		-> typename std::enable_if<vector_traits<VEC3>::SIZE == 3 && std::is_same<typename vector_traits<VEC3>::Scalar, double>::value, double>::type
 	{
 		return (*this)(Vec4d(v[0], v[1], v[2], 1.));
 	}
 
-	template <
-		typename VEC3,
-		typename std::enable_if<nb_components_traits<VEC3>::value == 3 && !std::is_same<typename vector_traits<VEC3>::Scalar, double>::value>::type* = nullptr
-	>
-	typename vector_traits<VEC3>::Scalar operator()(const VEC3& v)
+	template <typename VEC3>
+	auto operator()(const VEC3& v)
+		-> typename std::enable_if<vector_traits<VEC3>::SIZE == 3 && !std::is_same<typename vector_traits<VEC3>::Scalar, double>::value, typename vector_traits<VEC3>::Scalar>::type
 	{
 		using Scalar = typename vector_traits<VEC3>::Scalar;
 
 		return Scalar((*this)(Vec4d(double(v[0]), double(v[1]), double(v[2]), 1.)));
 	}
 
-	template <
-		typename VEC4,
-		typename std::enable_if<nb_components_traits<VEC4>::value == 4 && std::is_same<VEC4, Vec4d>::value>::type* = nullptr
-	>
-	double operator()(const VEC4& v)
+	template <typename VEC4>
+	auto operator()(const VEC4& v)
+		-> typename std::enable_if<vector_traits<VEC4>::SIZE == 4 && std::is_same<VEC4, Vec4d>::value, double>::type
 	{
 		return v.transpose() * matrix_ * v;
 	}
 
-	template <
-		typename VEC4,
-		typename std::enable_if<nb_components_traits<VEC4>::value == 4 && !std::is_same<VEC4, Vec4d>::value>::type* = nullptr
-	>
-	typename vector_traits<VEC4>::Scalar operator()(const VEC4& v)
+	template <typename VEC4>
+	auto operator()(const VEC4& v)
+		-> typename std::enable_if<vector_traits<VEC4>::SIZE == 4 && !std::is_same<VEC4, Vec4d>::value, typename vector_traits<VEC4>::Scalar>::type
 	{
 		using Scalar = typename vector_traits<VEC4>::Scalar;
 
@@ -133,11 +125,9 @@ public:
 		return Scalar(res);
 	}
 
-	template <
-		typename VEC3,
-		typename std::enable_if<nb_components_traits<VEC3>::value == 3>::type* = nullptr
-	>
-	bool optimized(VEC3& v)
+	template <typename VEC3>
+	auto optimized(VEC3& v)
+		-> typename std::enable_if<vector_traits<VEC3>::SIZE == 3, bool>::type
 	{
 		using Scalar = typename vector_traits<VEC3>::Scalar;
 
@@ -152,11 +142,9 @@ public:
 		return b;
 	}
 
-	template <
-		typename VEC4,
-		typename std::enable_if<nb_components_traits<VEC4>::value == 4 && std::is_same<VEC4, Vec4d>::value>::type* = nullptr
-	>
-	bool optimized(VEC4& v)
+	template <typename VEC4>
+	auto optimized(VEC4& v)
+		-> typename std::enable_if<vector_traits<VEC4>::SIZE == 4 && std::is_same<VEC4, Vec4d>::value, bool>::type
 	{
 		Matrix4d m(matrix_);
 		for (uint32 i = 0; i < 3; ++i) m(3,i) = 0.;
@@ -170,11 +158,9 @@ public:
 		return invertible;
 	}
 
-	template <
-		typename VEC4,
-		typename std::enable_if<nb_components_traits<VEC4>::value == 4 && !std::is_same<VEC4, Vec4d>::value>::type* = nullptr
-	>
-	bool optimized(VEC4& v)
+	template <typename VEC4>
+	auto optimized(VEC4& v)
+		-> typename std::enable_if<vector_traits<VEC4>::SIZE == 4 && !std::is_same<VEC4, Vec4d>::value, bool>::type
 	{
 		using Scalar = typename vector_traits<VEC4>::Scalar;
 

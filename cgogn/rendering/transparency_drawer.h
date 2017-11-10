@@ -48,14 +48,14 @@ class CGOGN_RENDERING_API SurfaceTransparencyDrawer
 	int max_nb_layers_;
 
 	/// rendering shader
-	std::unique_ptr<cgogn::rendering::ShaderFlatTransp::Param> param_flat_;
+	std::unique_ptr<ShaderFlatTransp::Param> param_flat_;
 
-	std::unique_ptr<cgogn::rendering::ShaderPhongTransp::Param> param_phong_;
+	std::unique_ptr<ShaderPhongTransp::Param> param_phong_;
 
-	/// shader for quad blending  with opaque scene
-	std::unique_ptr<cgogn::rendering::ShaderTranspQuad::Param> param_trq_;
+	/// shader for quad blending with opaque scene
+	std::unique_ptr<ShaderTranspQuad::Param> param_trq_;
 
-	std::unique_ptr<cgogn::rendering::ShaderCopyDepth::Param> param_copy_depth_;
+	std::unique_ptr<ShaderCopyDepth::Param> param_copy_depth_;
 
 	/// FBO
 	std::unique_ptr<QOpenGLFramebufferObject> fbo_layer_;
@@ -100,14 +100,12 @@ public:
 	//template<typename PARAM, typename TFUNC>
 	//void draw(PARAM& param, const QMatrix4x4& proj, const QMatrix4x4& view, const TFUNC& draw_func);
 
-
 	/**
 	 * @brief draw the transparent objects (can draw several meshes)
 	 * @param draw_func the func/lambda that draw transparent objects (must bind/unbind ShaderFlatTransp::Param or ShaderPhongTransp::Param)
 	 */
 	template<typename TFUNC>
 	void draw(const TFUNC& draw_func);
-
 
 	/**
 	 * @brief draw the transparent object with local ShaderFlatTransp::Param (can draw only one mesh)
@@ -145,7 +143,6 @@ public:
 		});
 
 	}
-
 
 	/**
 	 * @brief set the max number of layers (eq drawing passes)
@@ -191,7 +188,6 @@ public:
 		param_phong_->set_normal_vbo(vbo_norm);
 	}
 
-
 	inline void set_back_face_culling(bool cull)
 	{
 		param_flat_->bf_culling_ = cull;
@@ -202,11 +198,7 @@ public:
 	{
 		param_flat_->lighted_=lighted;
 	}
-
 };
-
-
-
 
 template<typename TFUNC>
 void SurfaceTransparencyDrawer::draw(const TFUNC& draw_func)
@@ -225,10 +217,10 @@ void SurfaceTransparencyDrawer::draw(const TFUNC& draw_func)
 	ogl33_->glEnable(GL_TEXTURE_2D);
 	ogl33_->glBindTexture(GL_TEXTURE_2D, depthTexture_);
 	ogl33_->glReadBuffer(GL_BACK);
-	ogl33_->glCopyTexSubImage2D(GL_TEXTURE_2D,0,0,0,0,0, width_, height_);
+	ogl33_->glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, width_, height_);
 
 	QVector<GLuint> textures = fbo_layer_->textures();
-	GLenum buffs[2] = {GL_COLOR_ATTACHMENT0,GL_COLOR_ATTACHMENT2};
+	GLenum buffs[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT2 };
 
 	sh_flat->bind();
 	sh_flat->set_rgba_sampler(0);
@@ -245,17 +237,17 @@ void SurfaceTransparencyDrawer::draw(const TFUNC& draw_func)
 
 	fbo_layer_->bind();
 
-	GLenum clear_buff[1] = {GL_COLOR_ATTACHMENT3};
-	ogl33_->glDrawBuffers(1,clear_buff);
-	ogl33_->glClearColor(0.0f,0.0f,0.0f,1.0f);
+	GLenum clear_buff[1] = { GL_COLOR_ATTACHMENT3 };
+	ogl33_->glDrawBuffers(1, clear_buff);
+	ogl33_->glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	ogl33_->glClear(GL_COLOR_BUFFER_BIT);
 
-	ogl33_->glDrawBuffers(1,buffs);
+	ogl33_->glDrawBuffers(1, buffs);
 	ogl33_->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	GLenum opaq_buff[1] = { GL_COLOR_ATTACHMENT5 };
 
-	for (int p=0;p<max_nb_layers_;++p)
+	for (int p = 0; p < max_nb_layers_; ++p)
 	{
 		ogl33_->glClear(GL_DEPTH_BUFFER_BIT);
 
@@ -270,7 +262,7 @@ void SurfaceTransparencyDrawer::draw(const TFUNC& draw_func)
 			param_copy_depth_->release();
 		}
 
-		ogl33_->glDrawBuffers(2,buffs);
+		ogl33_->glDrawBuffers(2, buffs);
 		sh_flat->bind();
 		sh_flat->set_layer(p);
 		sh_flat->release();
@@ -281,11 +273,10 @@ void SurfaceTransparencyDrawer::draw(const TFUNC& draw_func)
 		sh_vol->set_layer(p);
 		sh_vol->release();
 
-
 		ogl33_->glActiveTexture(GL_TEXTURE0);
-		ogl33_->glBindTexture(GL_TEXTURE_2D,textures[3]);
+		ogl33_->glBindTexture(GL_TEXTURE_2D, textures[3]);
 		ogl33_->glActiveTexture(GL_TEXTURE1);
-		ogl33_->glBindTexture(GL_TEXTURE_2D,textures[1]);
+		ogl33_->glBindTexture(GL_TEXTURE_2D, textures[1]);
 
 		ogl33_->glBeginQuery(GL_SAMPLES_PASSED, oq_transp_);
 		draw_func();
@@ -294,23 +285,23 @@ void SurfaceTransparencyDrawer::draw(const TFUNC& draw_func)
 		GLuint nb_samples;
 		ogl33_->glGetQueryObjectuiv(oq_transp_, GL_QUERY_RESULT, &nb_samples);
 
-		if (nb_samples==0) // finished ?
+		if (nb_samples == 0) // finished ?
 			p = max_nb_layers_;
 		else
 		{
 			ogl33_->glReadBuffer(GL_COLOR_ATTACHMENT2);
 			ogl33_->glBindTexture(GL_TEXTURE_2D,textures[1]);
-			ogl33_->glCopyTexImage2D(GL_TEXTURE_2D,0,GL_R32F,0,0,width_,height_,0);
+			ogl33_->glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, 0, 0, width_, height_, 0);
 
-			if (p==0)
+			if (p == 0)
 			{
 				ogl33_->glBindTexture(GL_TEXTURE_2D,textures[4]);
-				ogl33_->glCopyTexImage2D(GL_TEXTURE_2D,0,GL_R32F,0,0,width_,height_,0);
+				ogl33_->glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, 0, 0, width_, height_, 0);
 			}
 
 			ogl33_->glReadBuffer(GL_COLOR_ATTACHMENT0);
 			ogl33_->glBindTexture(GL_TEXTURE_2D,textures[3]);
-			ogl33_->glCopyTexImage2D(GL_TEXTURE_2D,0, GL_RGBA32F,0,0,width_,height_,0);
+			ogl33_->glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 0, 0, width_, height_, 0);
 		}
 	}
 
@@ -322,23 +313,20 @@ void SurfaceTransparencyDrawer::draw(const TFUNC& draw_func)
 	param_trq_->depth_texture_sampler_ = 1;
 
 	ogl33_->glActiveTexture(GL_TEXTURE0);
-	ogl33_->glBindTexture(GL_TEXTURE_2D,textures[3]);
+	ogl33_->glBindTexture(GL_TEXTURE_2D, textures[3]);
 
 	ogl33_->glActiveTexture(GL_TEXTURE1);
-	ogl33_->glBindTexture(GL_TEXTURE_2D,textures[4]);
+	ogl33_->glBindTexture(GL_TEXTURE_2D, textures[4]);
 
 	ogl33_->glEnable(GL_BLEND);
 	ogl33_->glBlendFunc(GL_ONE,GL_SRC_ALPHA);
-	param_trq_->bind(fake_mat,fake_mat);
+	param_trq_->bind(fake_mat, fake_mat);
 	ogl33_->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	param_trq_->release();
 	ogl33_->glDisable(GL_BLEND);
 
-	ogl33_->glClearColor(bkColor[0],bkColor[1],bkColor[2],bkColor[3]);
-
+	ogl33_->glClearColor(bkColor[0], bkColor[1], bkColor[2], bkColor[3]);
 }
-
-
 
 } // namespace rendering
 
