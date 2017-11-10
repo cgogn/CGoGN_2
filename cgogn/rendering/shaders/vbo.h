@@ -167,7 +167,7 @@ void update_vbo(const std::vector<VEC>& vector, VBO* vbo)
 	using Scalar = typename geometry::vector_traits<VEC>::Scalar;
 	static_assert(std::is_same<Scalar, float32>::value || std::is_same<Scalar, float64>::value, "only float or double allowed for vbo");
 
-	const uint32 vec_dim = geometry::nb_components_traits<VEC>::value;
+	const uint32 vec_dim = geometry::vector_traits<VEC>::SIZE;
 	uint32 vec_sz = uint32(vector.size());
 	vbo->allocate(vec_sz, vec_dim);
 	const uint32 vbo_bytes =  vec_dim * vec_sz * uint32(sizeof(float32));
@@ -238,7 +238,7 @@ void update_vbo(const ATTR& attr, VBO* vbo)
 	std::vector<const void*> chunk_addr = ca->chunks_pointers(byte_chunk_size);
 	const uint32 nb_chunks = uint32(chunk_addr.size());
 
-	const uint32 vec_dim = geometry::nb_components_traits<typename ATTR::value_type>::value;
+	const uint32 vec_dim = geometry::vector_traits<typename ATTR::value_type>::SIZE;
 
 	vbo->allocate(nb_chunks * ATTR::CHUNK_SIZE, vec_dim);
 

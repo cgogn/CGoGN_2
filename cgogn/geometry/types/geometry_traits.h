@@ -36,11 +36,11 @@ namespace cgogn
 namespace geometry
 {
 
-template <typename Vec_T>
+template <typename Vec_T, typename Enable = void>
 struct vector_traits
 {};
 
-// specialization 1 : cgogn::geometry::Vec_T with a fixed-size array
+// specialization : cgogn::geometry::Vec_T with a fixed-size array
 template <typename Scalar_, std::size_t Size>
 struct vector_traits<geometry::Vec_T<std::array<Scalar_, Size>>>
 {
@@ -48,7 +48,7 @@ struct vector_traits<geometry::Vec_T<std::array<Scalar_, Size>>>
 	using Scalar = Scalar_;
 };
 
-// specialization 2 : Eigen::Vector
+// specialization : Eigen::Vector
 template <typename Scalar_, int32 Rows, int32 Options>
 struct vector_traits<Eigen::Matrix<Scalar_, Rows, 1, Options, Rows, 1>>
 {
@@ -56,7 +56,7 @@ struct vector_traits<Eigen::Matrix<Scalar_, Rows, 1, Options, Rows, 1>>
 	using Scalar = Scalar_;
 };
 
-// specialization 3 : Eigen::AlignedVector3
+// specialization : Eigen::AlignedVector3
 template <typename Scalar_>
 struct vector_traits<Eigen::AlignedVector3<Scalar_>>
 {
@@ -64,56 +64,26 @@ struct vector_traits<Eigen::AlignedVector3<Scalar_>>
 	using Scalar = Scalar_;
 };
 
-// specialization 3 & 4: is for uniform manip of vec & scalar (vbo)
-// specialization 3 : float
-template <>
-struct vector_traits<float32>
+// next specializations are for uniform manip of vec & scalar (vbo)
+template <typename T>
+struct vector_traits<T, typename std::enable_if<std::is_integral<T>::value || std::is_floating_point<T>::value>::type>
 {
 	static const std::size_t SIZE = 1;
-	using Scalar = float32;
+	using Scalar = T;
 };
 
-// specialization 4 : double
-template <>
-struct vector_traits<float64>
-{
-	static const std::size_t SIZE = 1;
-	using Scalar = float64;
-};
-
-template <typename T, typename Enable = void>
-struct nb_components_traits
-{};
 
 template <typename T>
-struct nb_components_traits<T, typename std::enable_if<std::is_integral<T>::value || std::is_floating_point<T>::value>::type>
+auto set_zero(T& t) -> typename std::enable_if<(vector_traits<T>::SIZE > 1)>::type
 {
-	const static uint32 value = 1u;
-};
+	t.setZero();
+}
 
-template <typename Scalar, std::size_t size>
-struct nb_components_traits<geometry::Vec_T<std::array<Scalar, size>>>
+template <typename T>
+auto set_zero(T& t) -> typename std::enable_if<(vector_traits<T>::SIZE == 1)>::type
 {
-	const static uint32 value = size;
-};
-
-template <typename Scalar_, int32 Rows, int32 Options>
-struct nb_components_traits<Eigen::Matrix<Scalar_, Rows, 1, Options, Rows, 1>>
-{
-	const static uint32 value = Rows;
-};
-
-template <typename Scalar_>
-struct nb_components_traits<Eigen::AlignedVector3<Scalar_>>
-{
-	const static uint32 value = 3;
-};
-
-template <typename T, typename std::enable_if<(nb_components_traits<T>::value > 1)>::type* = nullptr>
-void set_zero(T& t) { t.setZero(); }
-
-template <typename T, typename std::enable_if<(nb_components_traits<T>::value == 1)>::type* = nullptr>
-void set_zero(T& t) { t = 0; }
+	t = 0;
+}
 
 } // namespace geometry
 
