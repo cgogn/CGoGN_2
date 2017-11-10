@@ -71,7 +71,7 @@ protected:
         io::getline_safe(fp, line);
         if (line.rfind("ID") == std::string::npos)
         {
-                cgogn_log_error("SkelSkeletonImport::import_file_impl") << "File \"" << filename << "\" is not a valid off file.";
+				cgogn_log_error("SkelGraphImport::import_file_impl") << "File \"" << filename << "\" is not a valid skel file.";
                 return false;
         }
 
