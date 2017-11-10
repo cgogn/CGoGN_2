@@ -39,6 +39,21 @@ namespace cgogn
 namespace geometry
 {
 
+template <typename VEC3, typename MAP>
+inline typename vector_traits<VEC3>::Scalar angle(
+	const MAP& map,
+	const Cell<Orbit::DART> v,
+	const typename MAP::template VertexAttribute<VEC3>& position
+)
+{
+	using Vertex = typename MAP::Vertex;
+
+	const VEC3& p = position[Vertex(v.dart)];
+	VEC3 v1 = position[Vertex(map.phi1(v.dart))] - p;
+	VEC3 v2 = position[Vertex(map.phi_1(v.dart))] - p;
+	return angle(v1, v2);
+}
+
 /**
  * compute and return the angle formed by the normals of the two faces incident to the given edge
  */
