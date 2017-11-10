@@ -38,7 +38,6 @@ namespace cgogn
 namespace modeling
 {
 
-///
 /// \brief Subdivides a surface mesh with the Doo Sabin algorithm
 /// \param[in, out] map the surface to be subdivded
 /// \param[in, out] position the geometric position of the surface
@@ -51,13 +50,14 @@ void doo_sabin(MAP& map, typename MAP::template VertexAttribute<VEC3>& position)
 	using Edge = typename MAP::Edge;
 	using Face = typename MAP::Face;
 	using Builder = typename MAP::Builder;
+	using CellCache = typename MAP::CellCache;
 
 	// storage of boundary of hole (missing vertex faces)
 	std::vector<Dart>* fp = cgogn::dart_buffers()->buffer();
 
 	Builder mbuild(map);
 
-	CellCache<MAP> initial_cache(map);
+	CellCache initial_cache(map);
 	initial_cache.template build<Edge>();
 	initial_cache.template build<Face>();
 
