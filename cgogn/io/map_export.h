@@ -53,12 +53,6 @@ template <typename MAP>
 inline std::unique_ptr<VolumeExport<MAP>> new_volume_export(const std::string& filename);
 
 template <class MAP>
-inline void export_surface(MAP& map2, const ExportOptions& options);
-
-template <class MAP>
-inline void export_volume(MAP& map3, const ExportOptions& options);
-
-template <class MAP>
 inline void export_surface(MAP& map2, const ExportOptions& options)
 {
 	static_assert(MAP::DIMENSION == 2, "export_surface is designed for 2D maps.");

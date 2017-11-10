@@ -34,6 +34,7 @@ template <typename MAP_TYPE>
 class UndirectedGraph_T : public MapBase<MAP_TYPE>
 {
 public:
+
 	static const uint8 DIMENSION = 2;
 	static const uint8 PRIM_SIZE = 1;
 
@@ -97,18 +98,16 @@ protected:
 	}
 
 public:
+
 	UndirectedGraph_T() : Inherit()
 	{
 		init();
 	}
 
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(UndirectedGraph_T);
+
 	~UndirectedGraph_T() override
 	{}
-
-	UndirectedGraph_T(Self const&) = delete;
-	UndirectedGraph_T(Self &&) = delete;
-	Self& operator=(Self const&) = delete;
-	Self& operator=(Self &&) = delete;
 
 	inline bool check_embedding_integrity()
 	{
@@ -127,6 +126,7 @@ public:
 	}
 
 protected:
+
 	inline void init_dart(Dart d)
 	{
 		(*alpha0_)[d.index] = d;
@@ -141,8 +141,7 @@ protected:
 				alpha_1(alpha1(d)) == d;
 	}
 
-	/* alpha0 is an involution
-		 */
+	/* alpha0 is an involution */
 	inline void alpha0_sew(Dart d, Dart e)
 	{
 		(*alpha0_)[d.index] = e;
@@ -156,8 +155,7 @@ protected:
 		(*alpha0_)[e.index] = e;
 	}
 
-	/* alpha1 is a permutation
-		 */
+	/* alpha1 is a permutation */
 	inline void alpha1_sew(Dart d, Dart e)
 	{
 		Dart f = alpha1(d);
@@ -179,6 +177,7 @@ protected:
 	}
 
 public:
+
 	inline Dart alpha0(Dart d) const
 	{
 		return (*alpha0_)[d.index];
@@ -195,6 +194,7 @@ public:
 	}
 
 protected:
+
 	inline Dart add_vertex_topo(std::size_t size)
 	{
 		cgogn_message_assert(size > 0u, "Cannot create an empty vertex");
@@ -202,7 +202,7 @@ protected:
 		Dart d = this->add_topology_element();
 		Dart first = d;
 		Dart dit;
-		for(size_t i = 0 ; i < size - 1 ; ++i)
+		for (size_t i = 0 ; i < size - 1 ; ++i)
 		{
 			dit = this->add_topology_element();
 			alpha1_sew(d,dit);
@@ -239,14 +239,15 @@ protected:
 	}
 
 public:
+
 	inline Vertex insert_vertex(Edge e)
 	{
 		Vertex v(insert_vertex_topo(e.dart));
 
-		if(this->template is_embedded<Vertex>())
+		if (this->template is_embedded<Vertex>())
 			this->new_orbit_embedding(v);
 
-		if(this->template is_embedded<Edge>())
+		if (this->template is_embedded<Edge>())
 		{
 			this->template set_orbit_embedding<Edge>(e, this->embedding(e));
 			Edge e2(alpha1(v.dart));
@@ -257,6 +258,7 @@ public:
 	}
 
 protected:
+
 	inline Dart collapse_vertex_topo(Dart d)
 	{
 		Dart e = alpha0(d);
@@ -269,17 +271,35 @@ protected:
 	}
 
 public:
+
 	inline void collapse_vertex(Vertex v)
 	{
 		cgogn_message_assert(degree(v) == 2, "Can only collapse vertex of degree 2");
 
 		Edge e(collapse_vertex_topo(v.dart));
 
-		if(this->template is_embedded<Edge>())
-			this->template set_orbit_embedding<Edge>(Edge(e), this->embedding(e));
+		if (this->template is_embedded<Edge>())
+			this->template set_orbit_embedding<Edge>(e, this->embedding(e));
 	}
 
 protected:
+
+	inline void merge_vertices_topo(Dart v1, Dart v2)
+	{
+		alpha1_sew(v1, v2);
+	}
+
+public:
+
+	inline void merge_vertices(Vertex v1, Vertex v2)
+	{
+		merge_vertices_topo(v1.dart, v2.dart);
+		if (this->template is_embedded<Vertex>())
+			this->template set_orbit_embedding<Vertex>(v1, this->embedding(v1));
+	}
+
+protected:
+
 	inline Dart add_edge_topo()
 	{
 		Dart d = this->add_topology_element();
@@ -291,39 +311,41 @@ protected:
 	}
 
 public:
+
 	inline Edge add_edge()
 	{
 		Edge e(add_edge_topo());
 
-		if(this->template is_embedded<Vertex>())
+		if (this->template is_embedded<Vertex>())
 		{
 			this->new_orbit_embedding(Vertex(e.dart));
 			this->new_orbit_embedding(Vertex(alpha0(e.dart)));
 		}
 
-		if(this->template is_embedded<Edge>())
+		if (this->template is_embedded<Edge>())
 			this->new_orbit_embedding(e);
 
 		return e;
 	}
 
 protected:
+
 	inline void disconnect_edge_topo(Dart e)
 	{
 		alpha1_unsew(e);
 	}
 
 public:
+
 	inline void disconnect_edge(Edge e)
 	{
 		disconnect_edge_topo(e.dart);
-		if(this->template is_embedded<Vertex>())
-		{
-			this->new_orbit_embedding(Vertex(e.dart));			
-		}
+		if (this->template is_embedded<Vertex>())
+			this->new_orbit_embedding(Vertex(e.dart));
 	}
 
 protected:
+
 	inline Dart collapse_edge_topo(Dart e)
 	{
 		Dart e0 = alpha0(e);
@@ -341,10 +363,11 @@ protected:
 	}
 
 public:
+
 	inline Vertex collapse_edge(Edge e)
 	{
 		Vertex v(collapse_edge_topo(e.dart));
-		if(this->template is_embedded<Vertex>())
+		if (this->template is_embedded<Vertex>())
 		{
 			this->template set_orbit_embedding<Vertex>(v, this->embedding(v));
 		}
@@ -353,18 +376,19 @@ public:
 	}
 
 public:
+
 	inline Vertex make_polyline(uint32 n)
 	{
 		Vertex last;
 
-		for(uint32 i = 0; i < n - 1; ++i)
+		for (uint32 i = 0; i < n - 1; ++i)
 		{
 			Edge cur = add_edge();
-			if(last.is_valid())
+			if (last.is_valid())
 			{
 				alpha1_sew(last.dart, cur.dart);
 
-				if(this->template is_embedded<Vertex>())
+				if (this->template is_embedded<Vertex>())
 					this->template copy_embedding<Vertex>(cur.dart, last.dart);
 			}
 			last = Vertex(alpha0(cur.dart));
@@ -378,14 +402,14 @@ public:
 		Vertex last;
 		Vertex first;
 
-		for(uint32 i = 0; i < n; ++i)
+		for (uint32 i = 0; i < n; ++i)
 		{
 			Edge cur = add_edge();
-			if(last.is_valid())
+			if (last.is_valid())
 			{
 				alpha1_sew(last.dart, cur.dart);
 
-				if(this->template is_embedded<Vertex>())
+				if (this->template is_embedded<Vertex>())
 					this->template copy_embedding<Vertex>(cur.dart, last.dart);
 			}
 			else
@@ -395,7 +419,7 @@ public:
 		}
 		alpha1_sew(first.dart, last.dart);
 
-		if(this->template is_embedded<Vertex>())
+		if (this->template is_embedded<Vertex>())
 			this->template copy_embedding<Vertex>(last.dart, first.dart);
 
 		return first;
@@ -409,13 +433,14 @@ public:
 	/*******************************************************************************
 	 * Connectivity information
 	 *******************************************************************************/
+
 public:
+
 	inline uint32 degree(Vertex v) const
 	{
 		return this->nb_darts_of_orbit(v);
 	}
 
-public:
 	/*******************************************************************************
 	* Orbits traversal                                                             *
 	*******************************************************************************/
@@ -455,7 +480,7 @@ protected:
 		Dart it = d;
 		do
 		{
-			if(!internal::void_to_true_binder(f, it))
+			if (!internal::void_to_true_binder(f, it))
 				break;
 			it = alpha1(alpha0(it));
 		} while (it != d);
@@ -464,7 +489,7 @@ protected:
 	template <typename FUNC>
 	inline void foreach_dart_of_ALPHA0(Dart d, const FUNC& f) const
 	{
-		if(internal::void_to_true_binder(f, d))
+		if (internal::void_to_true_binder(f, d))
 			f(alpha0(d));
 	}
 
@@ -474,13 +499,14 @@ protected:
 		Dart it = d;
 		do
 		{			
-			if(!internal::void_to_true_binder(f, it))
+			if (!internal::void_to_true_binder(f, it))
 				break;
 			it = alpha1(it);
 		} while (it != d);
 	}
 
-public:	
+public:
+
 	/******************************************************************************
 	* Incidence traversal                                                         *
 	******************************************************************************/
@@ -566,15 +592,15 @@ public:
 	*/
 	void merge_check_embedding(const Self& map)
 	{
-		const static auto create_embedding = [=](Self* map_ptr, Orbit orb)
+		const static auto create_embedding = [=] (Self* map_ptr, Orbit orb)
 		{
 			switch (orb)
 			{
-			case Orbit::DART: map_ptr->template create_embedding<Orbit::DART>(); break;
-			case Orbit::PHI1: map_ptr->template create_embedding<Orbit::PHI1>(); break;
-			case Orbit::PHI2: map_ptr->template create_embedding<Orbit::PHI2>(); break;
-			case Orbit::PHI21: map_ptr->template create_embedding<Orbit::PHI21>(); break;
-			default: break;
+				case Orbit::DART: map_ptr->template create_embedding<Orbit::DART>(); break;
+				case Orbit::PHI1: map_ptr->template create_embedding<Orbit::PHI1>(); break;
+				case Orbit::PHI2: map_ptr->template create_embedding<Orbit::PHI2>(); break;
+				case Orbit::PHI21: map_ptr->template create_embedding<Orbit::PHI21>(); break;
+				default: break;
 			}
 		};
 
@@ -589,15 +615,15 @@ public:
 	*/
 	void merge_finish_embedding(uint32 first)
 	{
-		const static auto new_orbit_embedding = [=](Self* map, Dart d, cgogn::Orbit orb)
+		const static auto new_orbit_embedding = [=] (Self* map, Dart d, cgogn::Orbit orb)
 		{
 			switch (orb)
 			{
-			case Orbit::DART: map->new_orbit_embedding(Cell<Orbit::DART>(d)); break;
-			case Orbit::PHI1: map->new_orbit_embedding(Cell<Orbit::PHI1>(d)); break;
-			case Orbit::PHI2: map->new_orbit_embedding(Cell<Orbit::PHI2>(d)); break;
-			case Orbit::PHI21: map->new_orbit_embedding(Cell<Orbit::PHI21>(d)); break;
-			default: break;
+				case Orbit::DART: map->new_orbit_embedding(Cell<Orbit::DART>(d)); break;
+				case Orbit::PHI1: map->new_orbit_embedding(Cell<Orbit::PHI1>(d)); break;
+				case Orbit::PHI2: map->new_orbit_embedding(Cell<Orbit::PHI2>(d)); break;
+				case Orbit::PHI21: map->new_orbit_embedding(Cell<Orbit::PHI21>(d)); break;
+				default: break;
 			}
 		};
 
