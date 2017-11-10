@@ -29,12 +29,33 @@ namespace cgogn
 namespace io
 {
 
-void GraphImport::clear()
+uint32 GraphImport::insert_line_vertex_container()
 {
-	edges_nb_vertices_.clear();
-	edges_vertex_indices_.clear();
-	vertex_attributes_.remove_chunk_arrays();
-	edge_attributes_.remove_chunk_arrays();
+	return vertex_attributes_.template insert_lines<1>();
+}
+
+void GraphImport::reserve(uint32 nb_edges)
+{
+	edges_nb_vertices_.reserve(nb_edges);
+	edges_vertex_indices_.reserve(nb_edges);
+}
+
+void GraphImport::add_edge(uint32 p0, uint32 p1)
+{
+	edges_nb_vertices_.push_back(2);
+	edges_vertex_indices_.push_back(p0);
+	edges_vertex_indices_.push_back(p1);
+}
+
+void GraphImport::add_edge_attribute(const DataInputGen& in_data, const std::string& att_name)
+{
+	ChunkArrayGen* att = in_data.add_attribute(edge_attributes_, att_name);
+	in_data.to_chunk_array(att);
+}
+
+uint32 GraphImport::nb_edges() const
+{
+	return uint32(edges_nb_vertices_.size());
 }
 
 } // namespace io
