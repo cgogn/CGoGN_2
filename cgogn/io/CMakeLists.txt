@@ -90,6 +90,8 @@ target_link_libraries(${PROJECT_NAME} ${Zlib_LIBRARIES} cgogn_core cgogn_geometr
 file(GLOB HEADERS "." "*.h")
 install(FILES ${HEADERS}
 	DESTINATION include/cgogn/io)
+install(DIRECTORY formats
+	DESTINATION include/cgogn/io/	FILES_MATCHING PATTERN "*.h")
 
 cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CGOGN_SOURCE_DIR}" "include;include/cgogn/thirdparty")
 

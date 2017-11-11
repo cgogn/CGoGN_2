@@ -179,7 +179,7 @@ endif()
 
 
 install(FILES "dll.h" DESTINATION "include/cgogn/core/")
-install(DIRECTORY basic cmap container utils
+install(DIRECTORY basic cmap container utils graph
 	DESTINATION "include/cgogn/core/"
 	FILES_MATCHING PATTERN "*.h"
 )

@@ -37,10 +37,23 @@ namespace geometry
  */
 template <typename VEC3, typename VEC3b, typename VEC3c>
 inline auto area(const VEC3& p1, const VEC3b& p2, const VEC3c& p3)
--> typename std::enable_if <is_same3vector<VEC3, VEC3b, VEC3c>::value, typename vector_traits<VEC3>::Scalar>::type
+-> typename std::enable_if <(vector_traits<VEC3>::SIZE == 3) && is_same3vector<VEC3, VEC3b, VEC3c>::value, typename vector_traits<VEC3>::Scalar>::type
 {
-	using Scalar = typename vector_traits<VEC3>::Scalar;
+	using Scalar = typename vector_traits<VEC>::Scalar;
 	return (Scalar(0.5) * ((p2 - p1).cross(p3 - p1)).norm());
+}
+
+/**
+ * area of the triangle formed by 3 points in 2D
+ */
+template <typename VEC2, typename VEC2b, typename VEC2c>
+inline auto area(const VEC2& p1, const VEC2b& p2, const VEC2c& p3)
+-> typename std::enable_if <(vector_traits<VEC2>::SIZE == 2) && is_same3vector<VEC2, VEC2b, VEC2c>::value, typename vector_traits<VEC3>::Scalar>::type
+{
+	using Scalar = typename vector_traits<VEC>::Scalar;
+	VEC v1 = p2 - p1;
+	VEC v2 = p3 - p1;
+	return (Scalar(0.5) * (v1[0] * v2[1] - v1[1] * v2[0]));
 }
 
 } // namespace geometry

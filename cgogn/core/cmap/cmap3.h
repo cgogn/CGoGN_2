@@ -88,8 +88,9 @@ public:
 	template <Orbit ORBIT>
 	using CellMarkerStore = typename cgogn::CellMarkerStore<Self, ORBIT>;
 
-	using CellCache = typename cgogn::CellCache<Self>;
+	using FilteredQuickTraversor = typename cgogn::FilteredQuickTraversor<Self>;
 	using QuickTraversor = typename cgogn::QuickTraversor<Self>;
+	using CellCache = typename cgogn::CellCache<Self>;
 	using BoundaryCache = typename cgogn::BoundaryCache<Self>;
 
 protected:
@@ -628,7 +629,7 @@ protected:
 
 		this->Inherit::split_vertex_topo(prev, this->phi2(this->phi_1(this->phi2(this->phi_1(prev)))));
 
-		for(uint32 i = 1; i < vd.size(); ++i)
+		for (uint32 i = 1; i < vd.size(); ++i)
 		{
 			prev = vd[i];
 			const Dart fs = this->phi_1(this->phi2(this->phi_1(prev)));	//first side
@@ -643,7 +644,7 @@ protected:
 		if (this->is_incident_to_boundary(Face(this->phi2(this->phi_1(prev)))))
 			db2 = this->phi2(phi3(this->phi2(this->phi_1(prev))));
 
-		if(!db1.is_nil() && !db2.is_nil())
+		if (!db1.is_nil() && !db2.is_nil())
 		{
 			this->Inherit::split_vertex_topo(db1, db2);
 			phi3_sew(this->phi1(this->phi2(db2)), this->phi_1(phi3(this->phi2(db2))));
@@ -704,7 +705,7 @@ public:
 
 		if (this->template is_embedded<Volume>())
 		{
-			for(auto dit1 : vd)
+			for (auto dit1 : vd)
 				this->template set_orbit_embedding<Volume>(Volume(dit1), this->embedding(Volume(dit1)));
 		}
 
@@ -929,7 +930,7 @@ protected:
 				Dart d3 = phi3(fit);
 				Dart d32 = this->phi2(d3);
 
-				if(res.is_nil())
+				if (res.is_nil())
 					res = d2;
 
 				this->phi2_unsew(d2);
@@ -1194,7 +1195,7 @@ protected:
 		{
 			const Dart fa_it2 = this->phi2(fa_it);
 			const Dart fb_it2 = this->phi2(fb_it);
-			if(fa_it2 != fb_it)
+			if (fa_it2 != fb_it)
 			{
 				this->phi2_unsew(fa_it);
 				this->phi2_unsew(fb_it);
@@ -1406,7 +1407,7 @@ protected:
 		uint32 count = 0u;
 
 		// For every face added to the list
-		for(uint32 i = 0u; i < visitedFaces.size(); ++i)
+		for (uint32 i = 0u; i < visitedFaces.size(); ++i)
 		{
 			Dart it = visitedFaces[i];
 			Dart f = it;
@@ -1709,7 +1710,7 @@ protected:
 		const std::vector<Dart>& marked_darts = marker.marked_darts();
 
 		marker.mark(d);
-		for(uint32 i = 0; i < marked_darts.size(); ++i)
+		for (uint32 i = 0; i < marked_darts.size(); ++i)
 		{
 			const Dart curr_dart = marked_darts[i];
 			if ( !(this->is_boundary(curr_dart) && this->is_boundary(phi3(curr_dart))) )
@@ -1720,9 +1721,9 @@ protected:
 			const Dart d2_1 = this->phi2(d_1); // turn in volume
 			const Dart d3_1 = phi3(d_1); // change volume
 
-			if(!marker.is_marked(d2_1))
+			if (!marker.is_marked(d2_1))
 				marker.mark(d2_1);
-			if(!marker.is_marked(d3_1))
+			if (!marker.is_marked(d3_1))
 				marker.mark(d3_1);
 		}
 	}
@@ -1774,7 +1775,7 @@ protected:
 		visited_face2->push_back(d); // Start with the face of d
 
 		// For every face added to the list
-		for(uint32 i = 0; i < visited_face2->size(); ++i)
+		for (uint32 i = 0; i < visited_face2->size(); ++i)
 		{
 			const Dart e = (*visited_face2)[i];
 			if (!marker.is_marked(e))	// Face2 has not been visited yet
@@ -2504,7 +2505,7 @@ public:
 	bool merge(const CMap2& map2, DartMarker& newdarts)
 	{
 		// check attributes compatibility
-		for(uint32 i = 0; i < NB_ORBITS; ++i)
+		for (uint32 i = 0; i < NB_ORBITS; ++i)
 		{
 			if (this->embeddings_[i] != nullptr)
 			{
@@ -2584,7 +2585,7 @@ public:
 		}
 
 		// change embedding indices of moved lines
-		for(uint32 i = 0; i < NB_ORBITS; ++i)
+		for (uint32 i = 0; i < NB_ORBITS; ++i)
 		{
 			ChunkArray<uint32>* emb = this->embeddings_[i];
 			if (emb != nullptr)

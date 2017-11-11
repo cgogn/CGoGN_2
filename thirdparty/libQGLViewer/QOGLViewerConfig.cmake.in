@@ -3,6 +3,12 @@
 set(QOGLViewer_LIBRARIES "QOGLViewer")
 set(QOGLViewer_INCLUDE_DIRS "@PACKAGE_QOGLVIEWER_INCLUDE_DIRS@")
 
+if (EXISTS ${QOGLViewer_INCLUDE_DIRS}/qt_inst.conf) 
+	file(READ ${QOGLViewer_INCLUDE_DIRS}/qt_inst.conf Qt5_DIR )
+endif()
+
+find_package(Qt5 5.4.0 COMPONENTS Widgets REQUIRED QUIET)
+
 if(NOT TARGET QOGLViewer)
 	include("${CMAKE_CURRENT_LIST_DIR}/QOGLViewerTargets.cmake")
 endif()

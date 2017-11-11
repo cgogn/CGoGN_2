@@ -5,42 +5,40 @@
 # version format
 version: 1.0.{build}
 
-# you can use {branch} name in version format too
-# version: 1.0.{build}-{branch}
-
-# branches to build
 branches:
-  # whitelist
   only:
     - develop
 
-  # blacklist
-#  except:
-#    - gh-pages
-
-# Skipping commits with particular message or from specific user
 skip_commits:
-  message: /WIP/      # Regex for matching commit message
- 
-# Do not build feature branch with open Pull Requests
-#skip_branch_with_pr: true
+  message: /\[skip ci\]|\[ci skip\]|\[skip appveyor\]|\[ci appveyor\]/
+  files:
+    - .travis*
+    - data/
+    - '*.md'
 
-# Maximum number of concurrent jobs for the project
-max_jobs: 4
-
-# clone directory
 clone_folder: c:\projects\myproject
 
 # fetch repository as zip archive
-shallow_clone: true                 # default is "false"
-
-# set clone depth
-clone_depth: 1                      # clone entire repository history if not defined
+shallow_clone: true 
 
 environment:
     GENERATOR: "Visual Studio 14 Win64"
-    CONFIG: Debug
+    CONFIG: Release
+
+build:
+  parallel: true
+  verbosity: minimal
 
 build_script:
-  - cmake "-G%GENERATOR%" -DQt5_DIR="C:\Qt\5.8\msvc2015_64\lib\cmake\Qt5"
-  - cmake --build . --config "%CONFIG%"
+  - md build
+  - cd build
+  - cmake -Wno-dev -Wno-deprecated "-G%GENERATOR%" .. -DCMAKE_SUPPRESS_REGENERATION=1 -DQt5_DIR="C:\Qt\5.8\msvc2015_64\lib\cmake\Qt5" -DCGOGN_BUILD_TESTS=ON -DCGOGN_BUILD_EXAMPLES=ON -DCGOGN_BUILD_BENCHS=ON
+  - cmake --build . --config "%CONFIG%" -- /verbosity:minimal
+  - cmake --build . --config "%CONFIG%" --target RUN_TESTS -- /verbosity:minimal
+  - cmake --build . --config "%CONFIG%" --target INSTALL -- /verbosity:minimal
+  - cd ..
+  - mkdir build_app
+  - cd build_app
+  - cmake "-G%GENERATOR%" ../cgogn/geometry/examples/ -DCMAKE_SUPPRESS_REGENERATION=1 -DCGOGN_USE_QT=ON -DCMAKE_PREFIX_PATH="C:\Program Files\CGoGN"
+  - cmake --build . --config "%CONFIG%" -- /verbosity:minimal
+  
