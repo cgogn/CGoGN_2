@@ -40,10 +40,13 @@ namespace modeling
 
 /// \brief Subdivides a surface mesh with the Doo Sabin algorithm
 /// \param[in, out] map the surface to be subdivded
+/// \param[in] mask personalized cell filtering function
 /// \param[in, out] position the geometric position of the surface
 /// \todo handle objects with open boundaries
-template <typename VEC3, typename MAP>
-void doo_sabin(MAP& map, typename MAP::template VertexAttribute<VEC3>& position)
+template <typename VEC3, typename MAP, typename MASK>
+void doo_sabin(MAP& map,
+			   const MASK& mask,
+			   typename MAP::template VertexAttribute<VEC3>& position)
 {
 	using Scalar = typename VEC3::Scalar;
 	using Vertex = typename MAP::Vertex;
@@ -58,8 +61,8 @@ void doo_sabin(MAP& map, typename MAP::template VertexAttribute<VEC3>& position)
 	Builder mbuild(map);
 
 	CellCache initial_cache(map);
-	initial_cache.template build<Edge>();
-	initial_cache.template build<Face>();
+	initial_cache.template build<Edge>(mask);
+	initial_cache.template build<Face>(mask);
 
 	// create the edge faces
 	map.foreach_cell([&] (Edge e)
@@ -159,6 +162,18 @@ void doo_sabin(MAP& map, typename MAP::template VertexAttribute<VEC3>& position)
 		buffer.clear();
 	},
 	initial_cache);
+}
+
+
+/// \brief Subdivides a surface mesh with the Doo Sabin algorithm
+/// \param[in, out] map the surface to be subdivded
+/// \param[in, out] position the geometric position of the surface
+/// \todo handle objects with open boundaries
+template <typename VEC3, typename MAP>
+void doo_sabin(MAP& map,
+			   typename MAP::template VertexAttribute<VEC3>& position)
+{
+	doo_sabin<VEC3>(map, AllCellsFilter(), position);
 }
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_DOO_SABIN_CPP_))
