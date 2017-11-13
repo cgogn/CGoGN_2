@@ -26,6 +26,8 @@
 
 #include <cgogn/core/cmap/map_base_data.h>
 
+#include <cgogn/io/dll.h>
+
 #include <cgogn/io/mesh_io_gen.h>
 #include <cgogn/io/data_io.h>
 
@@ -35,7 +37,7 @@ namespace cgogn
 namespace io
 {
 
-class GraphImport
+class CGOGN_IO_API GraphImport
 {
 public:
 
