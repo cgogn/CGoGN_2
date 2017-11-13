@@ -42,7 +42,7 @@ namespace modeling
 /// \param[in, out] map the surface to be subdivded
 /// \param[in, out] position the geometric position of the surface
 /// \todo handle objects with open boundaries
-template <typename VEC3, typename MAP, typename MASK>
+template <typename VEC3, typename MAP>
 void doo_sabin(MAP& map,
 			   typename MAP::template VertexAttribute<VEC3>& position)
 {
