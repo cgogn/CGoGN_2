@@ -66,7 +66,6 @@ protected:
 		ChunkArray<VEC3>* position = this->template add_vertex_attribute<VEC3>("position");
 		ChunkArray<VEC3>* normal;
 		std::vector<VEC3> norm_buff;
-		std::vector<uint32> norm_nb;
 
 		std::string line, tag;
 		bool has_normals = false;
@@ -145,7 +144,6 @@ protected:
 		{
 			normal = this->template add_vertex_attribute<VEC3>("normal");
 			normal->set_all_values(VEC3(0,0,0));
-			norm_nb.assign(max_id,0);
 		}
 
 		fp.clear();
@@ -216,17 +214,8 @@ protected:
 					this->faces_vertex_indices_.push_back(vertices_id[index]);
 					if (has_normals)
 					{
-						// ensure copy with no operation if 1 normal (no precision pb)
-						if (norm_nb[vertices_id[index]] == 0)
-						{
-							(*normal)[vertices_id[index]] = norm_buff[tableN[j] - 1];
-							norm_nb[vertices_id[index]] = 1;
-						}
-						else
-						{
-							(*normal)[vertices_id[index]] += norm_buff[tableN[j] - 1];
-							norm_nb[vertices_id[index]]++;
-						}
+						auto k = vertices_id[index];
+						(*normal)[k] += norm_buff[tableN[j] - 1];
 					}
 				}
 			}
@@ -234,20 +223,12 @@ protected:
 			getline_safe(fp, line);
 		} while (!fp.eof());
 
-		// normalize only if more than one N in the sum
+		// normalize
 		if (has_normals)
 		{
-			bool has_normalized = false;
 			for(auto i: vertices_id)
-				if (norm_nb[i]>1)
-				{
-					(*normal)[i].normalize();
-					has_normalized = true;
-				}
-			if (has_normalized)
-				cgogn_log_warning("import obj") << " some vertices have more than one normal, normalized sums done ";
+				(*normal)[i].normalize();
 		}
-
 		return true;
 	}
 };
