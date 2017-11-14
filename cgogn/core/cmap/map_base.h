@@ -1504,7 +1504,7 @@ public:
 	bool merge(const ConcreteMap& map, DartMarker& newdarts)
 	{
 		// check attributes compatibility
-		for(uint32 i = 0; i < NB_ORBITS; ++i)
+		for (uint32 i = 0; i < NB_ORBITS; ++i)
 		{
 			if (this->embeddings_[i] != nullptr)
 			{
@@ -1552,7 +1552,7 @@ public:
 		});
 
 		// change embedding indices of moved lines
-		for(uint32 i = 0; i < NB_ORBITS; ++i)
+		for (uint32 i = 0; i < NB_ORBITS; ++i)
 		{
 			ChunkArray<uint32>* emb = this->embeddings_[i];
 			if (emb != nullptr)

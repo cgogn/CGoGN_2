@@ -86,8 +86,9 @@ public:
 	template <Orbit ORBIT>
 	using CellMarkerStore = typename cgogn::CellMarkerStore<Self, ORBIT>;
 
-	using CellCache = typename cgogn::CellCache<Self>;
+	using FilteredQuickTraversor = typename cgogn::FilteredQuickTraversor<Self>;
 	using QuickTraversor = typename cgogn::QuickTraversor<Self>;
+	using CellCache = typename cgogn::CellCache<Self>;
 	using BoundaryCache = typename cgogn::BoundaryCache<Self>;
 
 protected:
@@ -497,7 +498,7 @@ protected:
 			darts->push_back(e);
 		});
 
-		for(Dart e: *darts)
+		for (Dart e: *darts)
 			this->remove_topology_element(e);
 	}
 
@@ -763,19 +764,19 @@ public:
 		uint32 val_v1 = degree(v.first);
 		uint32 val_v2 = degree(v.second);
 
-		if(val_v1 + val_v2 < 8 || val_v1 + val_v2 > 14)
+		if (val_v1 + val_v2 < 8 || val_v1 + val_v2 > 14)
 			return false;
 
 		Dart e1 = e.dart;
 		Dart e2 = phi2(e.dart);
 
-		if(codegree(Face(e1)) == 3)
+		if (codegree(Face(e1)) == 3)
 		{
 			if (degree(Vertex(this->phi_1(e1))) < 4)
 				return false;
 		}
 
-		if(codegree(Face(e2)) == 3)
+		if (codegree(Face(e2)) == 3)
 		{
 			if (degree(Vertex(this->phi_1(e2))) < 4)
 				return false;
@@ -797,7 +798,7 @@ public:
 		do
 		{
 			auto vn1it = std::find(vn1->begin(), vn1->end(), this->embedding(Vertex(this->phi1(it))));
-			if(vn1it != vn1->end())
+			if (vn1it != vn1->end())
 				return false;
 			it = next_edge(it);
 		} while(it != end);
@@ -1115,10 +1116,10 @@ protected:
 		Dart f = this->boundary_dart(Vertex(d));
 		Dart ff = this->boundary_dart(Vertex(dd));
 
-		if(!f.is_nil())
+		if (!f.is_nil())
 			this->phi1_sew(e, this->phi_1(f));
 
-		if(!ff.is_nil())
+		if (!ff.is_nil())
 			this->phi1_sew(ee, this->phi_1(ff));
 
 		phi2_unsew(d);
@@ -1295,7 +1296,7 @@ protected:
 
 			e_darts->push_back(e_fit);
 			e_fit = this->phi_1(e_fit);
-		}while(d_fit != d);
+		} while(d_fit != d);
 
 		std::vector<Dart>::iterator d_it, e_it;
 
@@ -1344,23 +1345,23 @@ public:
 			if (this->template is_embedded<Vertex>())
 				v_emb->push_back(this->embedding(Vertex(phi2(f_it))));
 
-			if(this->template is_embedded<Edge>())
+			if (this->template is_embedded<Edge>())
 				e_emb->push_back(this->embedding(Edge(f_it)));
 
 			f_it = this->phi1(f_it);
-		}while(f_it != d);
+		} while(f_it != d);
 
-		if(this->template is_embedded<Volume>())
+		if (this->template is_embedded<Volume>())
 			this->template set_orbit_embedding<Volume>(Volume(e), this->embedding(Volume(d)));
 
 		merge_volumes_topo(d, e);
 
-		for(uint32 i = 0 ; i < darts->size() ; ++i)
+		for (uint32 i = 0 ; i < darts->size() ; ++i)
 		{
-			if(this->template is_embedded<Vertex>())
+			if (this->template is_embedded<Vertex>())
 				this->template set_orbit_embedding<Vertex>(Vertex((*darts)[i]), (*v_emb)[i]);
 
-			if(this->template is_embedded<Edge>())
+			if (this->template is_embedded<Edge>())
 				this->template set_orbit_embedding<Edge>(Edge((*darts)[i]), (*e_emb)[i]);
 		}
 
@@ -1491,7 +1492,7 @@ public:
 	{
 		CGOGN_CHECK_CONCRETE_TYPE;
 
-		if(this->template is_embedded<Vertex::ORBIT>())
+		if (this->template is_embedded<Vertex::ORBIT>())
 		{
 			ChunkArray<uint32>* emb0 = this->embeddings_[Vertex::ORBIT];
 			ChunkArray<uint32>* new_emb0 = this->topology_.template add_chunk_array<uint32>("new_EMB_0");
@@ -1593,11 +1594,11 @@ public:
 		Dart prev = path.back();
 		for (Dart d : path)
 		{
-			if(dm.is_marked(d))
+			if (dm.is_marked(d))
 				return false;
 			dm.mark_orbit(Vertex(d));
 
-			if(!this->same_cell(Vertex(d), Vertex(this->phi1(prev))))
+			if (!this->same_cell(Vertex(d), Vertex(this->phi1(prev))))
 				return false;
 
 			prev = d;
@@ -1702,7 +1703,7 @@ protected:
 		visited_faces->push_back(d); // Start with the face of d
 
 		// For every face added to the list
-		for(uint32 i = 0; i < visited_faces->size(); ++i)
+		for (uint32 i = 0; i < visited_faces->size(); ++i)
 		{
 			const Dart e = (*visited_faces)[i];
 			if (!marker.is_marked(e))	// Face has not been visited yet

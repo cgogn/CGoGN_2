@@ -141,7 +141,6 @@ public:
 			chunk_array_->add_external_ref(reinterpret_cast<ChunkArrayGen**>(&chunk_array_));
 	}
 
-
 	inline Attribute_T& operator=(const Self& att)
 	{
 		if (this != &att)
@@ -283,7 +282,6 @@ public:
 		{
 			return index_;
 		}
-
 	};
 
 	inline const_iterator begin() const
@@ -341,8 +339,6 @@ public:
 		{
 			return index_;
 		}
-
-
 	};
 
 	inline iterator begin()

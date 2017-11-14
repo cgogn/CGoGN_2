@@ -44,7 +44,6 @@ namespace geometry
 template <typename VEC_T>
 class AABB
 {
-
 public:
 
 	using Vec = VEC_T;
@@ -54,6 +53,7 @@ public:
 	// https://eigen.tuxfamily.org/dox-devel/group__TopicStructHavingEigenMembers.html
 	static const bool eigen_make_aligned = std::is_same<Eigen::AlignedVector3<Scalar>, Vec>::value;
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW_IF(eigen_make_aligned)
+
 private:
 
 	bool initialized_;
@@ -224,11 +224,11 @@ public:
 		cgogn_message_assert(initialized_, "Axis-Aligned Bounding box not initialized");
 		Vec bbmin = bb.min();
 		Vec bbmax = bb.max();
-		for(uint32 i = 0; i < dim_; ++i)
+		for (uint32 i = 0; i < dim_; ++i)
 		{
-			if(bbmin[i] < p_min_[i])
+			if (bbmin[i] < p_min_[i])
 				p_min_[i] = bbmin[i];
-			if(bbmax[i] > p_max_[i])
+			if (bbmax[i] > p_max_[i])
 				p_max_[i] = bbmax[i];
 		}
 	}
@@ -237,11 +237,11 @@ public:
 	bool contains(const Vec& p) const
 	{
 		cgogn_message_assert(initialized_, "Axis-Aligned Bounding box not initialized");
-		for(uint32 i = 0; i < dim_; ++i)
+		for (uint32 i = 0; i < dim_; ++i)
 		{
-			if(p_min_[i] > p[i])
+			if (p_min_[i] > p[i])
 				return false;
-			if(p[i] > p_max_[i])
+			if (p[i] > p_max_[i])
 				return false;
 		}
 			return true;
@@ -272,10 +272,11 @@ public:
 		p_max_ = ((p_max_ - center) * size) + center;
 	}
 
-	/// \brief Test if a ray intersectes an axis-aligned box
+	/// \brief Test if a ray intersects an axis-aligned box
 	/// \tparam VEC3 the domain of the box. Has to be of dimension 3
+	template <bool B = true>
 	auto ray_intersect(const Vec& P, const Vec& V) const
-	  -> typename std::enable_if<nb_components_traits<Vec>::value == 3, bool>::type
+	  -> typename std::enable_if<B && vector_traits<Vec>::SIZE == 3, bool>::type
 	{
 		if (!cgogn::almost_equal_relative(V[2], Scalar(0)))
 		{
