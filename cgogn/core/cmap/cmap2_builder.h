@@ -96,6 +96,11 @@ public:
 		map_.phi2_unsew(d);
 	}
 
+	inline void remove_face_topo_fp(Dart d)
+	{
+		map_.remove_face_topo_fp(d);
+	}
+
 	inline Dart add_face_topo_fp(uint32 nb_edges)
 	{
 		return map_.add_face_topo_fp(nb_edges);

@@ -21,21 +21,19 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_IO_MAP_IMPORT_CPP_
+#define CGOGN_MODELING_ALGOS_DOO_SABIN_CPP_
 
-#include <cgogn/io/map_import.h>
+#include <cgogn/modeling/algos/doo_sabin.h>
 
 namespace cgogn
 {
 
-namespace io
+namespace modeling
 {
-template CGOGN_IO_API void import_graph<Eigen::Vector3f>(UndirectedGraph&, const std::string&);
-template CGOGN_IO_API void import_graph<Eigen::Vector3d>(UndirectedGraph&, const std::string&);
-template CGOGN_IO_API void import_surface<Eigen::Vector3f>(CMap2&, const std::string&);
-template CGOGN_IO_API void import_surface<Eigen::Vector3d>(CMap2&, const std::string&);
-template CGOGN_IO_API void import_volume<Eigen::Vector3f>(CMap3&, const std::string&);
-template CGOGN_IO_API void import_volume<Eigen::Vector3d>(CMap3&, const std::string&);
-} // namespace io
+
+template CGOGN_MODELING_API void doo_sabin<Eigen::Vector3f, CMap2>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&);
+template CGOGN_MODELING_API void doo_sabin<Eigen::Vector3d, CMap2>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&);
+
+} // namespace modeling
 
 } // namespace cgogn

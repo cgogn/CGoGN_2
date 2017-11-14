@@ -73,6 +73,8 @@ namespace io
 ///the eccentricity value and the indices of the vertices
 ///of the dual Delaunay triangle in the original triangle
 ///mesh.
+///
+/// \todo import/export of the edge properties
 template <typename VEC3>
 class CskelGraphImport : public GraphFileImport
 {
@@ -98,14 +100,6 @@ protected:
 
         std::string line;
         line.reserve(512);
-
-//        // read SKEL header
-//        io::getline_safe(fp, line);
-//        if (line.rfind("ID") == std::string::npos)
-//        {
-//                cgogn_log_error("SkelSkeletonImport::import_file_impl") << "File \"" << filename << "\" is not a valid off file.";
-//                return false;
-//        }
 
         // reading number of points and number of edges
         uint32 nb_vertices = 0u, nb_edges = 0u;
@@ -177,7 +171,28 @@ public:
 protected:
     virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& ) override
     {
+		// Header
+		output << map.template nb_cells<Vertex::ORBIT>() << " " << map.template nb_cells<Edge::ORBIT>() << std::endl;
 
+		// Vertices
+		map.foreach_cell([&] (Vertex v)
+		{
+			this->position_attribute(Vertex::ORBIT)->export_element(map.embedding(v), output, false, false);
+			output << std::endl;
+		}, *(this->cell_cache_));
+
+
+		// Edges
+		map.foreach_cell([&] (Edge e)
+		{
+			std::pair<Vertex, Vertex> vs = map.vertices(e);
+			output << (this->vindices_[vs.first]) << " " << (this->vindices_[vs.second]) << std::endl;
+			output << "0" << std::endl;
+			output << "0" << std::endl;
+			output << "0" << std::endl;
+			output << "0" << std::endl;
+
+		}, *(this->cell_cache_));
     }
 };
 

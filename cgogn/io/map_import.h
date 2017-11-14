@@ -30,10 +30,15 @@
 #include <cgogn/core/utils/logger.h>
 #include <cgogn/core/cmap/cmap2.h>
 #include <cgogn/core/cmap/cmap3.h>
+#include <cgogn/core/graph/undirected_graph.h>
 
 #include <cgogn/io/surface_import.h>
 #include <cgogn/io/volume_import.h>
-#include <cgogn/io/formats/vtk.h>
+#include <cgogn/io/graph_import.h>
+
+#include <cgogn/io/formats/cg.h>
+#include <cgogn/io/formats/cskel.h>
+#include <cgogn/io/formats/dot.h>
 #include <cgogn/io/formats/off.h>
 #include <cgogn/io/formats/obj.h>
 #include <cgogn/io/formats/2dm.h>
@@ -43,8 +48,10 @@
 #include <cgogn/io/formats/tetgen.h>
 #include <cgogn/io/formats/nastran.h>
 #include <cgogn/io/formats/tet.h>
+#include <cgogn/io/formats/skel.h>
 #include <cgogn/io/formats/stl.h>
 #include <cgogn/io/formats/tetmesh.h>
+#include <cgogn/io/formats/vtk.h>
 
 namespace cgogn
 {
@@ -52,8 +59,26 @@ namespace cgogn
 namespace io
 {
 
+template <typename VEC3>
+inline std::unique_ptr<GraphFileImport> new_graph_import(const std::string& filename)
+{
+	const FileType ft = file_type(filename);
+	switch (ft)
+	{
+		case FileType::FileType_SKEL:		return make_unique<SkelGraphImport<VEC3>>();
+		case FileType::FileType_VTK_LEGACY:	return make_unique<VtkGraphImport<VEC3>>();
+		case FileType::FileType_CG:			return make_unique<CgGraphImport<VEC3>>();
+		case FileType::FileType_CSKEL:		return make_unique<CskelGraphImport<VEC3>>();
+		case FileType::FileType_DOT:		return make_unique<DotGraphImport<VEC3>>();
+		case FileType::FileType_OBJ:		return make_unique<ObjGraphImport<VEC3>>();
+		default:
+			cgogn_log_warning("GraphImport") << "GraphImport does not handle files with extension \"" << extension(filename) << "\".";
+			return std::unique_ptr<GraphFileImport> ();
+	}
+}
+
 template <typename VEC3, typename MAP>
-inline std::unique_ptr<SurfaceFileImport<MAP>> newSurfaceImport(MAP& map, const std::string& filename)
+inline std::unique_ptr<SurfaceFileImport<MAP>> new_surface_import(MAP& map, const std::string& filename)
 {
 	const FileType ft = file_type(filename);
 	switch (ft)
@@ -69,13 +94,13 @@ inline std::unique_ptr<SurfaceFileImport<MAP>> newSurfaceImport(MAP& map, const 
 		case FileType::FileType_MSH: return make_unique<MshSurfaceImport<MAP, VEC3>>(map);
 		case FileType::FileType_MESHB: return make_unique<LM6SurfaceImport<MAP, VEC3>>(map);
 		default:
-			cgogn_log_warning("newSurfaceImport") << "SurfaceImport does not handle files with extension \"" << extension(filename) << "\".";
+			cgogn_log_warning("SurfaceImport") << "SurfaceImport does not handle files with extension \"" << extension(filename) << "\".";
 			return std::unique_ptr<SurfaceFileImport<MAP>>();
 	}
 }
 
 template <typename VEC3, typename MAP>
-inline std::unique_ptr<VolumeFileImport<MAP>> newVolumeImport(MAP& map, const std::string& filename)
+inline std::unique_ptr<VolumeFileImport<MAP>> new_volume_import(MAP& map, const std::string& filename)
 {
 	const FileType ft = file_type(filename);
 	switch (ft)
@@ -95,28 +120,37 @@ inline std::unique_ptr<VolumeFileImport<MAP>> newVolumeImport(MAP& map, const st
 }
 
 template <typename VEC3, typename MAP>
+inline void import_graph(MAP& map, const std::string& filename)
+{
+	auto si = new_graph_import<VEC3>(filename);
+
+	if(si)
+		if(si->import_file(filename))
+			si->create(map);
+}
+
+template <typename VEC3, typename MAP>
 inline void import_surface(MAP& map, const std::string& filename)
 {
-	auto si = newSurfaceImport<VEC3>(map, filename);
+	auto si = new_surface_import<VEC3>(map, filename);
 	if (si)
-	{
 		if (si->import_file(filename))
 			si->create_map();
-	}
 }
 
 template <typename VEC3, typename MAP>
 inline void import_volume(MAP& map, const std::string& filename)
 {
-	auto si = newVolumeImport<VEC3>(map, filename);
+	auto si = new_volume_import<VEC3>(map, filename);
 	if (si)
-	{
 		if (si->import_file(filename))
 			si->create_map();
-	}
 }
 
+
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_MAP_IMPORT_CPP_))
+extern template CGOGN_IO_API void import_graph<Eigen::Vector3f>(UndirectedGraph&, const std::string&);
+extern template CGOGN_IO_API void import_graph<Eigen::Vector3d>(UndirectedGraph&, const std::string&);
 extern template CGOGN_IO_API void import_surface<Eigen::Vector3f>(CMap2&, const std::string&);
 extern template CGOGN_IO_API void import_surface<Eigen::Vector3d>(CMap2&, const std::string&);
 extern template CGOGN_IO_API void import_volume<Eigen::Vector3f>(CMap3&, const std::string&);

@@ -44,7 +44,8 @@
 #include <cgogn/geometry/functions/intersection.h>
 
 #include <cgogn/modeling/algos/curves.h>
-#include <cgogn/io/graph_export.h>
+#include <cgogn/io/map_import.h>
+#include <cgogn/io/map_export.h>
 
 using namespace cgogn;
 
@@ -70,6 +71,8 @@ public:
 
 	virtual void keyPressEvent(QKeyEvent *);
 
+	void import(const std::string& filename);
+
 private:
 
 	//Curve
@@ -86,6 +89,9 @@ private:
 
 	std::chrono::time_point<std::chrono::system_clock> start_fps_;
 	int nb_fps_;
+	bool imported_;
+
+	geometry::AABB<Vec3> bb_;
 };
 
 
@@ -98,13 +104,28 @@ void Viewer::closeEvent(QCloseEvent*)
 
 Viewer::Viewer() :
 	map_(),
-	vertex_position_()
+	vertex_position_(),
+	imported_(false)
 {}
 
 void Viewer::keyPressEvent(QKeyEvent *ev)
 {
 	switch (ev->key())
 	{
+		case Qt::Key_E:
+		{
+			const Orbit orbv = Vertex::ORBIT;
+
+			auto export_options = cgogn::io::ExportOptions::create()
+					.filename("test.skc")
+					.binary(false)
+					.compress(false)
+					.overwrite(true)
+					.position_attribute(orbv, "position");
+
+			cgogn::io::export_graph(map_, export_options);
+			break;
+		}
 		case Qt::Key_0:
 		{
 			map_.clear_and_remove_attributes();
@@ -263,6 +284,11 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 	drawer_->end();
 	drawer_->end_list();
 
+	geometry::compute_AABB(vertex_position_, bb_);
+	setSceneRadius(bb_.diag_size()/2.0);
+	Vec3 center = bb_.center();
+	setSceneCenter(qoglviewer::Vec(center[0], center[1], center[2]));
+
 	// enable QGLViewer keys
 	QOGLViewer::keyPressEvent(ev);
 	//update drawing
@@ -292,6 +318,36 @@ void Viewer::init()
 
 	frame_drawer_ = std::make_shared<cgogn::rendering::DisplayListDrawer>();
 	frame_drawer_rend_ = frame_drawer_->generate_renderer();
+
+	if(imported_)
+	{
+		drawer_->new_list();
+		drawer_->ball_size(0.05f);
+		drawer_->color3f(1.0,0.0,0.0);
+		drawer_->begin(GL_POINTS);
+		map_.foreach_cell([&](UndirectedGraph::Vertex v)
+		{
+			drawer_->vertex3fv(vertex_position_[v]);
+		});
+		drawer_->end();
+		drawer_->line_width_aa(0.8);
+		drawer_->begin(GL_LINES);
+		drawer_->color3f(0.0,0.0,0.0);
+		map_.foreach_cell([&](UndirectedGraph::Edge e)
+		{
+			std::pair<Vertex, Vertex> vs = map_.vertices(e);
+			drawer_->vertex3fv(vertex_position_[vs.first]);
+			drawer_->vertex3fv(vertex_position_[vs.second]);
+		});
+		drawer_->end();
+		drawer_->end_list();
+
+		geometry::compute_AABB(vertex_position_, bb_);
+		setSceneRadius(bb_.diag_size()/2.0);
+		Vec3 center = bb_.center();
+		setSceneCenter(qoglviewer::Vec(center[0], center[1], center[2]));
+		showEntireScene();
+	}
 }
 
 void Viewer::resizeGL(int w ,int h)
@@ -299,6 +355,18 @@ void Viewer::resizeGL(int w ,int h)
 	QOGLViewer::resizeGL(w,h);
 }
 
+void Viewer::import(const std::string& filename)
+{
+	cgogn::io::import_graph<Vec3>(map_, filename);
+
+	if (!map_.check_map_integrity())
+	{
+		cgogn_log_error("Viewer::import") << "Integrity of map not respected. Aborting.";
+		std::exit(EXIT_FAILURE);
+	}
+	vertex_position_ = map_.get_attribute<Vec3, Vertex>("position");
+	imported_ = true;
+}
 
 int main(int argc, char** argv)
 {
@@ -308,6 +376,9 @@ int main(int argc, char** argv)
 	// Instantiate the viewer.
 	Viewer viewer;
 	viewer.setWindowTitle("skeleton_viewer");
+
+	if (argc == 2)
+		viewer.import(argv[1]);
 
 	viewer.show();
 

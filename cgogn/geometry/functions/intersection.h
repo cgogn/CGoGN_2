@@ -166,7 +166,7 @@ Intersection intersection_segment_segment(
 	)
 		return NO_INTERSECTION;
 
-	if(numerics::almost_equal_absolute(PA, Inter) || numerics::almost_equal_absolute(PB, Inter) || numerics::almost_equal_absolute(QA, Inter) || numerics::almost_equal_absolute(QB, Inter))
+	if(PA.isApprox(Inter) || PB.isApprox(Inter) || QA.isApprox(Inter) || QB.isApprox(Inter))
 		return VERTEX_INTERSECTION;
 
 	return EDGE_INTERSECTION;

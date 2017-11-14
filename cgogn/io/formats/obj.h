@@ -373,14 +373,6 @@ public:
 protected:
     virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& ) override
     {
-        const ChunkArrayGen* radius_attribute(nullptr);
-
-        for(const ChunkArrayGen* vatt: this->vertex_attributes())
-		{
-            if(to_lower(vatt->name()) == "radius" || to_lower(vatt->name()) == "radii")
-                radius_attribute = vatt;
-		}
-
         // set precision for float output
         output << std::setprecision(12);
 
