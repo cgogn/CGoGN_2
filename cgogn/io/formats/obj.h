@@ -90,7 +90,8 @@ protected:
 					oss >> x;
 					oss >> y;
 					oss >> z;
-					norm_buff.emplace_back(Scalar(x), Scalar(y), Scalar(z));
+					float64 n = std::sqrt(x*x+y*y+z*z);
+					norm_buff.emplace_back(Scalar(x/n), Scalar(y/n), Scalar(z/n));
 				}
 
 				fp >> tag;
