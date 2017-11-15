@@ -113,7 +113,7 @@ inline void compute_area(
 	Attribute<typename vector_traits<VEC3>::Scalar, CellType::ORBIT>& cell_area
 )
 {
-	compute_area<VEC3, CellType>(map, CellFilters(true), position, cell_area);
+	compute_area<VEC3, CellType>(map, AllCellsFilter(), position, cell_area);
 }
 
 template <typename VEC3, typename CellType, typename MAP>
@@ -156,7 +156,7 @@ inline void compute_incident_faces_area(
 	Attribute<typename vector_traits<VEC3>::Scalar, CellType::ORBIT>& area
 )
 {
-	compute_incident_faces_area<VEC3, CellType>(map, CellFilters(true), position, area);
+	compute_incident_faces_area<VEC3, CellType>(map, AllCellsFilter(), position, area);
 }
 
 } // namespace geometry

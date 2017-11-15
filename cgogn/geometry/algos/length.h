@@ -80,7 +80,7 @@ inline void compute_length(
 	typename MAP::template EdgeAttribute<VEC3>& edge_length
 )
 {
-	compute_length<VEC3>(map, CellFilters(true), position, edge_length);
+	compute_length<VEC3>(map, AllCellsFilter(), position, edge_length);
 }
 
 template <typename VEC3, typename MAP, typename MASK>
@@ -118,7 +118,7 @@ inline typename vector_traits<VEC3>::Scalar mean_edge_length(
 	const typename MAP::template VertexAttribute<VEC3>& position
 )
 {
-	return mean_edge_length<VEC3>(map, CellFilters(true), position);
+	return mean_edge_length<VEC3>(map, AllCellsFilter(), position);
 }
 
 } // namespace geometry

@@ -46,17 +46,6 @@ public:
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CellFilters);
 
 	inline CellFilters() : filtered_cells_(0u) {}
-
-	inline CellFilters(bool all) : CellFilters()
-	{
-		if (all)
-		{
-			filtered_cells_ = ALL_CELLS_MASK;
-			for (auto& f : filters_)
-				f = [] (Dart) { return true; };
-		}
-	}
-
 	virtual ~CellFilters();
 	virtual void operator() (uint32) const final;
 
@@ -85,6 +74,16 @@ protected:
 
 	std::array<std::function<bool(Dart)>, NB_ORBITS> filters_;
 	uint32 filtered_cells_;
+};
+
+// dummy class for all cells traversal
+class CGOGN_CORE_API AllCellsFilter
+{
+public:
+
+	inline AllCellsFilter() {}
+	virtual ~AllCellsFilter();
+	virtual void operator() (uint32) const final;
 };
 
 /**

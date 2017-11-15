@@ -958,6 +958,14 @@ public:
 		foreach_cell<STRATEGY>(f, [] (CellType) { return true; });
 	}
 
+	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
+	inline void foreach_cell(const FUNC& f, const AllCellsFilter&) const
+	{
+		using CellType = func_parameter_type<FUNC>;
+
+		foreach_cell<STRATEGY>(f, [] (CellType) { return true; });
+	}
+
 	/**
 	 * \brief apply a function in parallel on each cell of the map (boundary cells excluded)
 	 * the dimension of the traversed cells is determined based on the parameter of the given callable
@@ -966,6 +974,14 @@ public:
 	 */
 	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
 	inline void parallel_foreach_cell(const FUNC& f) const
+	{
+		using CellType = func_parameter_type<FUNC>;
+
+		parallel_foreach_cell<STRATEGY>(f, [] (CellType) { return true; });
+	}
+
+	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
+	inline void parallel_foreach_cell(const FUNC& f, const AllCellsFilter&) const
 	{
 		using CellType = func_parameter_type<FUNC>;
 
