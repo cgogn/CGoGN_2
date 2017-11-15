@@ -61,12 +61,10 @@ TEST(ImportTest, obj_normal_surface_import)
 	const std::string expected_empty_error_output = testing::internal::GetCapturedStderr();
 
 	auto pos = map2.get_attribute<Vec3, Map2::Vertex>("position");
-	auto normal = map2.get_attribute<Vec3, Map2::Vertex>("normal");
 	const uint32 nbv = map2.nb_cells<Map2::Vertex::ORBIT>();
 	const uint32 nbf = map2.nb_cells<Map2::Face::ORBIT>();
 
 	EXPECT_TRUE(pos.is_valid());
-	EXPECT_TRUE(normal.is_valid());
 	EXPECT_TRUE(map2.check_map_integrity());
 	EXPECT_EQ(nbv, 706u);
 	EXPECT_EQ(nbf, 1408u);
