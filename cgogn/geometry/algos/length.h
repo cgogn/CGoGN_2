@@ -80,7 +80,7 @@ inline void compute_length(
 	typename MAP::template EdgeAttribute<VEC3>& edge_length
 )
 {
-	compute_length<VEC3>(map, AllCellsFilter(), position, edge_length);
+	compute_length<VEC3>(map, CellFilters(true), position, edge_length);
 }
 
 template <typename VEC3, typename MAP, typename MASK>
@@ -98,8 +98,8 @@ inline typename vector_traits<VEC3>::Scalar mean_edge_length(
 
 	map.parallel_foreach_cell([&] (Edge e)
 	{
-		uint32 thread_index =cgogn::current_thread_index();
-		edge_length_per_thread[thread_index] += ::cgogn::geometry::length<VEC3>(map, e, position);
+		uint32 thread_index = current_thread_index();
+		edge_length_per_thread[thread_index] += length<VEC3>(map, e, position);
 		++nb_edges_per_thread[thread_index];
 	},
 	mask);
@@ -118,7 +118,7 @@ inline typename vector_traits<VEC3>::Scalar mean_edge_length(
 	const typename MAP::template VertexAttribute<VEC3>& position
 )
 {
-	return mean_edge_length<VEC3>(map, AllCellsFilter(), position);
+	return mean_edge_length<VEC3>(map, CellFilters(true), position);
 }
 
 } // namespace geometry

@@ -21,20 +21,20 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_TOPLOGY_DLL_H_
-#define CGOGN_TOPLOGY_DLL_H_
+#ifndef CGOGN_TOPOLOGY_DLL_H_
+#define CGOGN_TOPOLOGY_DLL_H_
 
 /**
 * \brief Linkage declaration for CGOGN symbols.
 */
 #ifdef WIN32
-#if defined CGOGN_TOPLOGY_DLL_EXPORT
-#define CGOGN_TOPLOGY_API __declspec(dllexport)
+#if defined CGOGN_TOPOLOGY_DLL_EXPORT
+#define CGOGN_TOPOLOGY_API __declspec(dllexport)
 #else
-#define CGOGN_TOPLOGY_API __declspec(dllimport)
+#define CGOGN_TOPOLOGY_API __declspec(dllimport)
 #endif
 #else
-#define CGOGN_TOPLOGY_API
+#define CGOGN_TOPOLOGY_API
 #endif
 
-#endif // CGOGN_TOPLOGY_DLL_H_
+#endif // CGOGN_TOPOLOGY_DLL_H_

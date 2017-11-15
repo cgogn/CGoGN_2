@@ -947,7 +947,6 @@ public:
 	 * \brief apply a function on each cell of the map (boundary cells excluded)
 	 * the dimension of the traversed cells is determined based on the parameter of the given callable
 	 * if the function returns a boolean, the traversal stops when it first returns false
-	 * if the function takes a second integer parameter, it is given the cell index along with each cell
 	 * @tparam FUNC type of the callable
 	 * @param f a callable
 	 */
@@ -962,7 +961,6 @@ public:
 	/**
 	 * \brief apply a function in parallel on each cell of the map (boundary cells excluded)
 	 * the dimension of the traversed cells is determined based on the parameter of the given callable
-	 * if the function takes a second integer parameter, it is given the cell index along with each cell
 	 * @tparam FUNC type of the callable
 	 * @param f a callable
 	 */
@@ -979,7 +977,6 @@ public:
 	 * the dimension of the traversed cells is determined based on the parameter of the given callable
 	 * only cells selected by the given FilterFunction (CellType -> bool) are processed
 	 * if the function returns a boolean, the traversal stops when it first returns false
-	 * if the function takes a second integer parameter, it is given the cell index along with each cell
 	 * @tparam FUNC type of the callable
 	 * @tparam FilterFunction type of the cell filtering function (CellType -> bool)
 	 * @param f a callable
@@ -1015,7 +1012,6 @@ public:
 	 * \brief apply a function in parallel on each cell of the map (boundary cells excluded)
 	 * the dimension of the traversed cells is determined based on the parameter of the given callable
 	 * only cells selected by the given FilterFunction (CellType -> bool) are processed
-	 * if the function takes a second integer parameter, it is given the cell index along with each cell
 	 * @tparam FUNC type of the callable
 	 * @tparam FilterFunction type of the cell filtering function (CellType -> bool)
 	 * @param f a callable
@@ -1050,17 +1046,14 @@ public:
 	/**
 	 * \brief apply a function on each cell of the map (boundary cells excluded)
 	 * the dimension of the traversed cells is determined based on the parameter of the given callable
-	 * only cells selected by the filter function of the corresponding CellType within the given Filters object are processed
+	 * only cells selected by the filter function of the corresponding CellType within the given CellFilters object are processed
 	 * if the function returns a boolean, the traversal stops when it first returns false
-	 * if the function takes a second integer parameter, it is given the cell index along with each cell
 	 * @tparam FUNC type of the callable
-	 * @tparam Filters type of the CellFilters object (inherits from CellFilters)
 	 * @param f a callable
 	 * @param filters a CellFilters object (contains a filtering function for each CellType)
 	 */
-	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC, typename Filters>
-	inline auto foreach_cell(const FUNC& f, const Filters& filters) const
-		-> typename std::enable_if<std::is_base_of<CellFilters, Filters>::value>::type
+	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
+	inline void foreach_cell(const FUNC& f, const CellFilters& filters) const
 	{
 		using CellType = func_parameter_type<FUNC>;
 
@@ -1074,15 +1067,12 @@ public:
 	 * \brief apply a function in parallel on each cell of the map (boundary cells excluded)
 	 * the dimension of the traversed cells is determined based on the parameter of the given callable
 	 * only cells selected by the filter function of the corresponding CellType within the given Filters object are processed
-	 * if the function takes a second integer parameter, it is given the cell index along with each cell
 	 * @tparam FUNC type of the callable
-	 * @tparam Filters type of the CellFilters object (inherits from CellFilters)
 	 * @param f a callable
 	 * @param filters a CellFilters object (contains a filtering function for each CellType)
 	 */
-	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC, typename Filters>
-	inline auto parallel_foreach_cell(const FUNC& f, const Filters& filters) const
-		-> typename std::enable_if<std::is_base_of<CellFilters, Filters>::value>::type
+	template <TraversalStrategy STRATEGY = TraversalStrategy::AUTO, typename FUNC>
+	inline void parallel_foreach_cell(const FUNC& f, const CellFilters& filters) const
 	{
 		using CellType = func_parameter_type<FUNC>;
 

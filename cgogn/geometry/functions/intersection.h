@@ -43,7 +43,6 @@ enum Intersection
 	FACE_INTERSECTION = 3
 } ;
 
-
 template <typename VEC3>
 bool intersection_ray_triangle(const VEC3& P, const VEC3& Dir, const VEC3& Ta, const VEC3& Tb, const VEC3& Tc, VEC3* inter = nullptr)
 {
@@ -83,7 +82,7 @@ bool intersection_ray_triangle(const VEC3& P, const VEC3& Dir, const VEC3& Ta, c
 	Scalar gamma =Scalar(1) - alpha - beta;
 	VEC3 I = Ta * alpha + Tb * beta + Tc * gamma;
 
-	//  it's a ray not a line !
+	// it's a ray not a line !
 	if (Dir.dot(I-P) < 0.0)
 		return false;
 
@@ -133,7 +132,6 @@ Intersection intersection_segment_segment(
 		VEC3& Inter)
 {
 	using Scalar = typename vector_traits<VEC3>::Scalar;
-	const Scalar PRECISION = std::numeric_limits<Scalar>::epsilon();
 
 	VEC3 vp1p2 = PB - PA;
 	VEC3 vq1q2 = QB - QA;
@@ -141,13 +139,13 @@ Intersection intersection_segment_segment(
 	Scalar delta = vp1p2[0] * vq1q2[1] - vp1p2[1] * vq1q2[0] ;
 	Scalar coeff = vp1q1[0] * vq1q2[1] - vp1q1[1] * vq1q2[0] ;
 
-	if (delta == 0) //parallel
+	if (delta == 0) // parallel
 	{
-		//test if collinear
+		// test if colinear
 		if (coeff == 0)
 		{
-			//collinear
-			//TODO : check if there is a common point between the two edges
+			// colinear
+			// TODO : check if there is a common point between the two edges
 			Inter = QA;
 			return EDGE_INTERSECTION;
 		}
@@ -157,8 +155,8 @@ Intersection intersection_segment_segment(
 	else
 		Inter = VEC3((PA[0] * delta + vp1p2[0] * coeff) / delta, (PA[1] * delta + vp1p2[1] * coeff) / delta, (PA[2] * delta + vp1p2[2] * coeff) / delta) ;
 
-	//test if inter point is outside the edges
-	if(
+	// test if inter point is outside the edges
+	if (
 		(Inter[0] < PA[0] && Inter[0] < PB[0]) || (Inter[0] > PA[0] && Inter[0] > PB[0]) ||
 		(Inter[0] < QA[0] && Inter[0] < QB[0]) || (Inter[0] > QA[0] && Inter[0] > QB[0]) ||
 		(Inter[1] < PA[1] && Inter[1] < PB[1]) || (Inter[1] > PA[1] && Inter[1] > PB[1]) ||
@@ -166,7 +164,7 @@ Intersection intersection_segment_segment(
 	)
 		return NO_INTERSECTION;
 
-	if(PA.isApprox(Inter) || PB.isApprox(Inter) || QA.isApprox(Inter) || QB.isApprox(Inter))
+	if (PA.isApprox(Inter) || PB.isApprox(Inter) || QA.isApprox(Inter) || QB.isApprox(Inter))
 		return VERTEX_INTERSECTION;
 
 	return EDGE_INTERSECTION;
@@ -180,7 +178,6 @@ bool intersection_line_plane(const VEC3& point_line, const VEC3& dir_line, const
 
 	Scalar b = normal_plane.dot(dir_line);
 
-
 	if (std::abs(b) < PRECISION)
 		return false;
 
@@ -190,8 +187,6 @@ bool intersection_line_plane(const VEC3& point_line, const VEC3& dir_line, const
 
 	return true;
 }
-
-
 
 } // namespace geometry
 
