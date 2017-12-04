@@ -36,37 +36,54 @@ namespace cgogn
 
 /**
  * @brief The CellFilters class
- * Classes inheriting from CellFilters can be used as a parameter to map.foreach_cell()
- * They can personalize the filtering function used to filter each Orbit traversal
- * The filtered_cell method must return a combination of the orbit_masks of the handled orbits
+ * A CellFilters instance can be used as a parameter to map.foreach_cell()
+ * They can set the filtering function used to filter each Orbit traversal
  */
 class CGOGN_CORE_API CellFilters
 {
 public:
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CellFilters);
-	inline CellFilters() {}
+
+	inline CellFilters() : filtered_cells_(0u) {}
 	virtual ~CellFilters();
 	virtual void operator() (uint32) const final;
 
+	template <typename CellType, typename FilterFunction>
+	inline void set_filter(const FilterFunction&& filter)
+	{
+		static_assert(is_func_return_same<FilterFunction, bool>::value && is_func_parameter_same<FilterFunction, CellType>::value, "Badly formed FilterFunction");
+		static const Orbit ORBIT = CellType::ORBIT;
+		filters_[ORBIT] = [filter] (Dart d) -> bool { return filter(CellType(d)); };
+		filtered_cells_ |= orbit_mask<CellType>();
+	}
+
 	template <typename CellType>
-	inline bool filter(CellType) const { return true; }
-
-	virtual uint32 filtered_cells() const = 0;
-};
-
-class CGOGN_CORE_API AllCellsFilter : public CellFilters
-{
-public:
+	inline bool filter(CellType c) const
+	{
+		static const Orbit ORBIT = CellType::ORBIT;
+		return filters_[ORBIT](c.dart);
+	}
 
 	inline uint32 filtered_cells() const
 	{
-		return ALL_CELLS_MASK;
-//		uint32 result = 0u;
-//		for (Orbit o : { DART, PHI1, PHI2, PHI21, PHI1_PHI2, PHI1_PHI3, PHI2_PHI3, PHI21_PHI31, PHI1_PHI2_PHI3 })
-//			result |= orbit_mask(o);
-//		return result;
+		return filtered_cells_;
 	}
+
+protected:
+
+	std::array<std::function<bool(Dart)>, NB_ORBITS> filters_;
+	uint32 filtered_cells_;
+};
+
+// dummy class for all cells traversal
+class CGOGN_CORE_API AllCellsFilter
+{
+public:
+
+	inline AllCellsFilter() {}
+	virtual ~AllCellsFilter();
+	virtual void operator() (uint32) const final;
 };
 
 /**
@@ -298,11 +315,11 @@ public:
 	}
 
 	template <typename CellType, typename FilterFunction>
-	inline void set_filter(const FilterFunction& filter)
+	inline void set_filter(const FilterFunction&& filter)
 	{
-		static_assert(is_func_return_same<FilterFunction, bool>::value && is_func_parameter_same<FilterFunction, Dart>::value, "Badly formed FilterFunction");
+		static_assert(is_func_return_same<FilterFunction, bool>::value && is_func_parameter_same<FilterFunction, CellType>::value, "Badly formed FilterFunction");
 		static const Orbit ORBIT = CellType::ORBIT;
-		qt_filters_[ORBIT] = filter;
+		qt_filters_[ORBIT] = [filter] (Dart d) -> bool { return filter(CellType(d)); };
 	}
 
 	template <typename CellType, typename DartSelectionFunction>

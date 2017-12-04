@@ -24,20 +24,22 @@
 #define CGOGN_CORE_UTILS_MASKS_CPP_
 
 #include <cgogn/core/utils/masks.h>
-#include <cgogn/core/cmap/cmap3.h>
 
 namespace cgogn
 {
 
 CellFilters::~CellFilters()
 {}
-
 void CellFilters::operator()(uint32) const
+{}
+
+AllCellsFilter::~AllCellsFilter()
+{}
+void AllCellsFilter::operator()(uint32) const
 {}
 
 CellTraversor::~CellTraversor()
 {}
-
 void CellTraversor::operator()(uint32) const
 {}
 
