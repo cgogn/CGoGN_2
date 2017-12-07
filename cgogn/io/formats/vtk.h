@@ -287,8 +287,21 @@ private:
 				output << "POINT_DATA " << nbv << std::endl;
 				for(ChunkArrayGen const* vatt : vertex_attributes)
 				{
-					output << "SCALARS " << vatt->name() << " " << cgogn_name_of_type_to_vtk_legacy_data_type(vatt->nested_type_name()) << " " << vatt->nb_components() << std::endl;
-					output << "LOOKUP_TABLE default" << std::endl;
+					if(vatt->nb_components() == 1)
+					{
+						output << "SCALARS " << vatt->name() << " " << cgogn_name_of_type_to_vtk_legacy_data_type(vatt->nested_type_name()) << " " << vatt->nb_components() << std::endl;
+						output << "LOOKUP_TABLE default" << std::endl;
+					}
+					else
+					{
+						if(vatt->name() == "color")
+							output << "COLOR_SCALARS " << vatt->name() << " " << cgogn_name_of_type_to_vtk_legacy_data_type(vatt->nested_type_name()) << " " << vatt->nb_components() << std::endl;
+						else if(vatt->name() == "normal")
+							output << "NORMALS " << vatt->name() << " " << cgogn_name_of_type_to_vtk_legacy_data_type(vatt->nested_type_name()) << std::endl;
+						else
+							output << "VECTORS " << vatt->name() << " " << cgogn_name_of_type_to_vtk_legacy_data_type(vatt->nested_type_name()) << std::endl;
+					}
+
 					map.foreach_cell([&](Vertex v)
 					{
 						vatt->export_element(map.embedding(v), output, bin, false);
@@ -654,9 +667,22 @@ private:
 				const auto& vertex_attributes = this->vertex_attributes();
 				output << "POINT_DATA " << nbv << std::endl;
 				for(ChunkArrayGen const* vatt : vertex_attributes)
-				{
-					output << "SCALARS " << vatt->name() << " " << cgogn_name_of_type_to_vtk_legacy_data_type(vatt->nested_type_name()) << " " << vatt->nb_components() << std::endl;
-					output << "LOOKUP_TABLE default" << std::endl;
+				{					
+					if(vatt->nb_components() == 1)
+					{
+						output << "SCALARS " << vatt->name() << " " << cgogn_name_of_type_to_vtk_legacy_data_type(vatt->nested_type_name()) << " " << vatt->nb_components() << std::endl;
+						output << "LOOKUP_TABLE default" << std::endl;
+					}
+					else
+					{
+						if(vatt->name() == "color")
+							output << "COLOR_SCALARS " << vatt->name() << " " << cgogn_name_of_type_to_vtk_legacy_data_type(vatt->nested_type_name()) << " " << vatt->nb_components() << std::endl;
+						else if(vatt->name() == "normal")
+							output << "NORMALS " << vatt->name() << " " << cgogn_name_of_type_to_vtk_legacy_data_type(vatt->nested_type_name()) << std::endl;
+						else
+							output << "VECTORS " << vatt->name() << " " << cgogn_name_of_type_to_vtk_legacy_data_type(vatt->nested_type_name()) << std::endl;
+					}
+
 					map.foreach_cell([&](Vertex v)
 					{
 						vatt->export_element(map.embedding(v), output, bin, false);
@@ -1972,8 +1998,6 @@ private:
 		{ // point data section
 			if (!this->vertex_attributes().empty())
 			{
-				std::cout << "this->vertex_attributes().size() = " << this->vertex_attributes().size() << std::endl;
-
 				const auto& vertex_attributes = this->vertex_attributes();
 				output << "POINT_DATA " << nbv << std::endl;
 				for(ChunkArrayGen const* vatt : vertex_attributes)
@@ -1985,9 +2009,9 @@ private:
 					}
 					else
 					{
-						if(vatt->nested_type_name() == "color")
+						if(vatt->name() == "color")
 							output << "COLOR_SCALARS " << vatt->name() << " " << cgogn_name_of_type_to_vtk_legacy_data_type(vatt->nested_type_name()) << " " << vatt->nb_components() << std::endl;
-						else if(vatt->nested_type_name() == "normal")
+						else if(vatt->name() == "normal")
 							output << "NORMALS " << vatt->name() << " " << cgogn_name_of_type_to_vtk_legacy_data_type(vatt->nested_type_name()) << std::endl;
 						else
 							output << "VECTORS " << vatt->name() << " " << cgogn_name_of_type_to_vtk_legacy_data_type(vatt->nested_type_name()) << std::endl;
