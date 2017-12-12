@@ -443,6 +443,13 @@ public:
 		this->add<CellType>(c, [] (CellType c) -> Dart { return c.dart; });
 	}
 
+	template <typename CellType>
+	inline void clear()
+	{
+		static const Orbit ORBIT = CellType::ORBIT;
+		cells_[ORBIT].clear();
+	}
+
 private:
 
 	const MAP& map_;
