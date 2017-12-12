@@ -287,8 +287,21 @@ private:
 				output << "POINT_DATA " << nbv << std::endl;
 				for(ChunkArrayGen const* vatt : vertex_attributes)
 				{
-					output << "SCALARS " << vatt->name() << " " << cgogn_name_of_type_to_vtk_legacy_data_type(vatt->nested_type_name()) << " " << vatt->nb_components() << std::endl;
-					output << "LOOKUP_TABLE default" << std::endl;
+					if(vatt->nb_components() == 1)
+					{
+						output << "SCALARS " << vatt->name() << " " << cgogn_name_of_type_to_vtk_legacy_data_type(vatt->nested_type_name()) << " " << vatt->nb_components() << std::endl;
+						output << "LOOKUP_TABLE default" << std::endl;
+					}
+					else
+					{
+						if(vatt->name() == "color")
+							output << "COLOR_SCALARS " << vatt->name() << " " << cgogn_name_of_type_to_vtk_legacy_data_type(vatt->nested_type_name()) << " " << vatt->nb_components() << std::endl;
+						else if(vatt->name() == "normal")
+							output << "NORMALS " << vatt->name() << " " << cgogn_name_of_type_to_vtk_legacy_data_type(vatt->nested_type_name()) << std::endl;
+						else
+							output << "VECTORS " << vatt->name() << " " << cgogn_name_of_type_to_vtk_legacy_data_type(vatt->nested_type_name()) << std::endl;
+					}
+
 					map.foreach_cell([&](Vertex v)
 					{
 						vatt->export_element(map.embedding(v), output, bin, false);
@@ -654,9 +667,22 @@ private:
 				const auto& vertex_attributes = this->vertex_attributes();
 				output << "POINT_DATA " << nbv << std::endl;
 				for(ChunkArrayGen const* vatt : vertex_attributes)
-				{
-					output << "SCALARS " << vatt->name() << " " << cgogn_name_of_type_to_vtk_legacy_data_type(vatt->nested_type_name()) << " " << vatt->nb_components() << std::endl;
-					output << "LOOKUP_TABLE default" << std::endl;
+				{					
+					if(vatt->nb_components() == 1)
+					{
+						output << "SCALARS " << vatt->name() << " " << cgogn_name_of_type_to_vtk_legacy_data_type(vatt->nested_type_name()) << " " << vatt->nb_components() << std::endl;
+						output << "LOOKUP_TABLE default" << std::endl;
+					}
+					else
+					{
+						if(vatt->name() == "color")
+							output << "COLOR_SCALARS " << vatt->name() << " " << cgogn_name_of_type_to_vtk_legacy_data_type(vatt->nested_type_name()) << " " << vatt->nb_components() << std::endl;
+						else if(vatt->name() == "normal")
+							output << "NORMALS " << vatt->name() << " " << cgogn_name_of_type_to_vtk_legacy_data_type(vatt->nested_type_name()) << std::endl;
+						else
+							output << "VECTORS " << vatt->name() << " " << cgogn_name_of_type_to_vtk_legacy_data_type(vatt->nested_type_name()) << std::endl;
+					}
+
 					map.foreach_cell([&](Vertex v)
 					{
 						vatt->export_element(map.embedding(v), output, bin, false);
@@ -1820,9 +1846,22 @@ protected:
 
 	virtual bool import_file_impl(const std::string& filename) override
 	{
-		std::ifstream fp(filename.c_str(), std::ios::in | std::ios_base::binary);
-		cgogn_assert(fp.good());
-		return this->read_vtk_legacy_file(fp);
+		this->vtk_file_type_ = file_type(filename);
+		switch (this->vtk_file_type_)
+		{
+			case FileType::FileType_VTK_LEGACY:
+			{
+				std::ifstream fp(filename.c_str(), std::ios::in | std::ios_base::binary);
+				cgogn_assert(fp.good());
+				return this->read_vtk_legacy_file(fp);
+			}
+//			case FileType::FileType_VTU:
+//			case FileType::FileType_VTP:
+//				return this->read_xml_file(filename);
+			default:
+				cgogn_log_warning("VtkGraphImport::import_file_impl")<< "VtkGraphImport does not handle the files of type \"" << extension(filename) << "\".";
+				return false;
+		}
 	}
 private:
 	inline void fill_graph_import()
@@ -1963,13 +2002,28 @@ private:
 				output << "POINT_DATA " << nbv << std::endl;
 				for(ChunkArrayGen const* vatt : vertex_attributes)
 				{
-					output << "SCALARS " << vatt->name() << " " << cgogn_name_of_type_to_vtk_legacy_data_type(vatt->nested_type_name()) << " " << vatt->nb_components() << std::endl;
-					output << "LOOKUP_TABLE default" << std::endl;
+					if(vatt->nb_components() == 1)
+					{
+						output << "SCALARS " << vatt->name() << " " << cgogn_name_of_type_to_vtk_legacy_data_type(vatt->nested_type_name()) << " " << vatt->nb_components() << std::endl;
+						output << "LOOKUP_TABLE default" << std::endl;
+					}
+					else
+					{
+						if(vatt->name() == "color")
+							output << "COLOR_SCALARS " << vatt->name() << " " << cgogn_name_of_type_to_vtk_legacy_data_type(vatt->nested_type_name()) << " " << vatt->nb_components() << std::endl;
+						else if(vatt->name() == "normal")
+							output << "NORMALS " << vatt->name() << " " << cgogn_name_of_type_to_vtk_legacy_data_type(vatt->nested_type_name()) << std::endl;
+						else
+							output << "VECTORS " << vatt->name() << " " << cgogn_name_of_type_to_vtk_legacy_data_type(vatt->nested_type_name()) << std::endl;
+					}
+
 					map.foreach_cell([&](Vertex v)
 					{
 						vatt->export_element(map.embedding(v), output, false, false);
 						output << std::endl;
 					}, *(this->cell_cache_));
+
+					output << std::endl ;
 				}
 
 				output << std::endl ;
