@@ -51,6 +51,9 @@ using uint64 = std::uint64_t;
 using float32 = float;
 using float64 = double;
 
+//FYI MSVC doesn't support  std::numeric_limits<uint32>::max() when declaring static const variables
+static const uint32 INVALID_INDEX = UINT32_MAX;
+
 template <class Scalar>
 inline auto almost_equal_relative(Scalar x, Scalar y, const Scalar max_rel_diff = std::numeric_limits<Scalar>::epsilon() ) -> typename std::enable_if<std::is_floating_point<Scalar>::value, bool>::type
 {
