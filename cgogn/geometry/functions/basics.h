@@ -55,7 +55,7 @@ inline void normalize_safe(VEC& v)
 template <typename VEC>
 typename VEC::Scalar cos_angle(const VEC& a, const VEC& b)
 {
-	using Scalar = typename VEC::Scalar;
+	using Scalar = typename vector_traits<VEC>::Scalar;
 
 	Scalar na2 = a.squaredNorm();
 	Scalar nb2 = b.squaredNorm();
