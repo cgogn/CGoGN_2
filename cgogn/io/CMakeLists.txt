@@ -3,7 +3,7 @@ project(cgogn_io
 )
 
 find_package(ply REQUIRED)
-find_package(libMeshb REQUIRED)
+find_package(Meshb REQUIRED)
 find_package(tinyxml2 REQUIRED)
 find_package(Zlib REQUIRED NO_CMAKE_ENVIRONMENT_PATH)
 
@@ -78,14 +78,14 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE "-DCGOGN_IO_DLL_EXPORT")
 target_include_directories(${PROJECT_NAME} PUBLIC
 	$<BUILD_INTERFACE:${CGOGN_SOURCE_DIR}>
 	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_TINYXML2_INCLUDE_DIR}>
-	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_LIBMESHB_INCLUDE_DIR}>
+	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_MESHB_INCLUDE_DIR}>
 	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_PLY_INCLUDE_DIR}>
 	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_ZLIB_INCLUDE_DIR}>
 	$<INSTALL_INTERFACE:include>
 	$<INSTALL_INTERFACE:include/cgogn/thirdparty>
 )
 
-target_link_libraries(${PROJECT_NAME} ${Zlib_LIBRARIES} cgogn_core cgogn_geometry ${ply_LIBRARIES} ${libMeshb_LIBRARIES} ${tinyxml2_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${Zlib_LIBRARIES} cgogn_core cgogn_geometry ${ply_LIBRARIES} ${Meshb_LIBRARIES} ${tinyxml2_LIBRARIES})
 
 file(GLOB HEADERS "." "*.h")
 install(FILES ${HEADERS}

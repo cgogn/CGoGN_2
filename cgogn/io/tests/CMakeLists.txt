@@ -5,14 +5,14 @@ project(cgogn_io_test
 find_package(cgogn_geometry REQUIRED)
 find_package(cgogn_io REQUIRED)
 find_package(ply REQUIRED)
-find_package(lm6 REQUIRED)
+find_package(Meshb REQUIRED)
 find_package(tinyxml2 REQUIRED)
 find_package(Zlib REQUIRED NO_CMAKE_ENVIRONMENT_PATH)
 
 set(SOURCE_FILES
 	main.cpp
 	vtk_import_test.cpp
-	medit_import_test.cpp
+	meshb_import_test.cpp
 	msh_import_test.cpp
 	obj_import_test.cpp
 	off_import_test.cpp
