@@ -21,9 +21,9 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_IO_FORMATS_LM6_CPP_
+#define CGOGN_IO_FORMATS_MESHB_CPP_
 
-#include <cgogn/io/formats/lm6.h>
+#include <cgogn/io/formats/meshb.h>
 
 namespace cgogn
 {
@@ -31,13 +31,13 @@ namespace cgogn
 namespace io
 {
 
-template class CGOGN_IO_API LM6VolumeImport<CMap3, Eigen::Vector3d>;
-template class CGOGN_IO_API LM6VolumeImport<CMap3, Eigen::Vector3f>;
-template class CGOGN_IO_API LM6VolumeImport<CMap3, geometry::Vec_T<std::array<float64,3>>>;
-template class CGOGN_IO_API LM6VolumeImport<CMap3, geometry::Vec_T<std::array<float32,3>>>;
+template class CGOGN_IO_API MeshbVolumeImport<CMap3, Eigen::Vector3d>;
+template class CGOGN_IO_API MeshbVolumeImport<CMap3, Eigen::Vector3f>;
+template class CGOGN_IO_API MeshbVolumeImport<CMap3, geometry::Vec_T<std::array<float64,3>>>;
+template class CGOGN_IO_API MeshbVolumeImport<CMap3, geometry::Vec_T<std::array<float32,3>>>;
 
-template class CGOGN_IO_API LM6SurfaceImport<CMap2, Eigen::Vector3d>;
-template class CGOGN_IO_API LM6SurfaceImport<CMap2, Eigen::Vector3f>;
+template class CGOGN_IO_API MeshbSurfaceImport<CMap2, Eigen::Vector3d>;
+template class CGOGN_IO_API MeshbSurfaceImport<CMap2, Eigen::Vector3f>;
 
 } // namespace io
 

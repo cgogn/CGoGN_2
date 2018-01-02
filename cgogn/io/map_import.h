@@ -43,7 +43,7 @@
 #include <cgogn/io/formats/obj.h>
 #include <cgogn/io/formats/2dm.h>
 #include <cgogn/io/formats/ply.h>
-#include <cgogn/io/formats/lm6.h>
+#include <cgogn/io/formats/meshb.h>
 #include <cgogn/io/formats/msh.h>
 #include <cgogn/io/formats/tetgen.h>
 #include <cgogn/io/formats/nastran.h>
@@ -92,7 +92,7 @@ inline std::unique_ptr<SurfaceFileImport<MAP>> new_surface_import(MAP& map, cons
 		case FileType::FileType_PLY: return make_unique<PlySurfaceImport<MAP, VEC3>>(map);
 		case FileType::FileType_STL: return make_unique<StlSurfaceImport<MAP, VEC3>>(map);
 		case FileType::FileType_MSH: return make_unique<MshSurfaceImport<MAP, VEC3>>(map);
-		case FileType::FileType_MESHB: return make_unique<LM6SurfaceImport<MAP, VEC3>>(map);
+		case FileType::FileType_MESHB: return make_unique<MeshbSurfaceImport<MAP, VEC3>>(map);
 		default:
 			cgogn_log_warning("SurfaceImport") << "SurfaceImport does not handle files with extension \"" << extension(filename) << "\".";
 			return std::unique_ptr<SurfaceFileImport<MAP>>();
@@ -107,7 +107,7 @@ inline std::unique_ptr<VolumeFileImport<MAP>> new_volume_import(MAP& map, const 
 	{
 		case FileType::FileType_VTK_LEGACY:
 		case FileType::FileType_VTU:		return make_unique<VtkVolumeImport<MAP, VEC3>>(map);
-		case FileType::FileType_MESHB:		return make_unique<LM6VolumeImport<MAP, VEC3>>(map);
+		case FileType::FileType_MESHB:		return make_unique<MeshbVolumeImport<MAP, VEC3>>(map);
 		case FileType::FileType_MSH:		return make_unique<MshVolumeImport<MAP, VEC3>>(map);
 		case FileType::FileType_TETGEN:		return make_unique<TetgenVolumeImport<MAP, VEC3>>(map);
 		case FileType::FileType_NASTRAN:	return make_unique<NastranVolumeImport<MAP, VEC3>>(map);
