@@ -21,34 +21,24 @@
 *                                                                              *
 *******************************************************************************/
 
+#define CGOGN_IO_FORMATS_MESHB_CPP_
 
-#include <gtest/gtest.h>
-#include <string>
-#include <cgogn/io/map_import.h>
+#include <cgogn/io/formats/meshb.h>
 
-#define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
-
-using namespace cgogn::numerics;
-using Vec3 = Eigen::Vector3d;
-using Map2 = cgogn::CMap2;
-using Map3 = cgogn::CMap3;
-
-const std::string mesh_path(DEFAULT_MESH_PATH);
-
-TEST(ImportTest, medit_surface_import)
+namespace cgogn
 {
-	Map2 map2;
-	testing::internal::CaptureStderr();
-	cgogn::io::import_surface<Vec3>(map2, mesh_path + "medit/tshirt_tri.mesh");
-	const std::string expected_empty_error_output = testing::internal::GetCapturedStderr();
-	auto pos = map2.get_attribute<Vec3, Map2::Vertex>("position");
-	const uint32 nbv = map2.nb_cells<Map2::Vertex::ORBIT>();
-	const uint32 nbf = map2.nb_cells<Map2::Face::ORBIT>();
 
-	EXPECT_TRUE(pos.is_valid());
-	EXPECT_TRUE(map2.check_map_integrity());
-	EXPECT_EQ(nbv, 2180u);
-	EXPECT_EQ(nbf, 4265u);
-	EXPECT_TRUE(expected_empty_error_output.empty());
-}
+namespace io
+{
 
+template class CGOGN_IO_API MeshbVolumeImport<CMap3, Eigen::Vector3d>;
+template class CGOGN_IO_API MeshbVolumeImport<CMap3, Eigen::Vector3f>;
+template class CGOGN_IO_API MeshbVolumeImport<CMap3, geometry::Vec_T<std::array<float64,3>>>;
+template class CGOGN_IO_API MeshbVolumeImport<CMap3, geometry::Vec_T<std::array<float32,3>>>;
+
+template class CGOGN_IO_API MeshbSurfaceImport<CMap2, Eigen::Vector3d>;
+template class CGOGN_IO_API MeshbSurfaceImport<CMap2, Eigen::Vector3f>;
+
+} // namespace io
+
+} // namespace cgogn

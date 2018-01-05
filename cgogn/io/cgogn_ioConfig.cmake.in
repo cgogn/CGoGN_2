@@ -4,7 +4,7 @@ find_package(Zlib REQUIRED NO_CMAKE_ENVIRONMENT_PATH)
 find_package(cgogn_core REQUIRED)
 find_package(cgogn_geometry REQUIRED)
 find_package(ply REQUIRED)
-find_package(lm6 REQUIRED)
+find_package(Meshb REQUIRED)
 find_package(tinyxml2 REQUIRED)
 
 set(cgogn_io_LIBRARIES "cgogn_io")
