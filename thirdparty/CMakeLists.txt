@@ -24,7 +24,7 @@ endif(CGOGN_BUILD_BENCHS)
 
 add_subdirectory(ply)
 add_subdirectory(OffBinConverter)
-add_subdirectory(lm6)
+add_subdirectory(libMeshb)
 add_subdirectory(termcolor)
 add_subdirectory(zlib-1.2.8)
 add_subdirectory(OpenNL)

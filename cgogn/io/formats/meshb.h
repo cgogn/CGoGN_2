@@ -21,10 +21,13 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_IO_FORMATS_LM6_H_
-#define CGOGN_IO_FORMATS_LM6_H_
+#ifndef CGOGN_IO_FORMATS_MESHB_H_
+#define CGOGN_IO_FORMATS_MESHB_H_
 
-#include <libmesh6.h>
+extern "C" {
+#include <libmeshb.h>
+}
+
 #include <cgogn/io/volume_import.h>
 #include <cgogn/io/surface_import.h>
 
@@ -35,30 +38,33 @@ namespace io
 {
 
 template <typename MAP, typename VEC3>
-class LM6VolumeImport : public VolumeFileImport<MAP>
+class MeshbVolumeImport : public VolumeFileImport<MAP>
 {
 public:
 
-	using Self = LM6VolumeImport<MAP, VEC3>;
+	using Self = MeshbVolumeImport<MAP, VEC3>;
 	using Inherit = VolumeFileImport<MAP>;
 	using Scalar = typename VEC3::Scalar;
 
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
-	inline LM6VolumeImport(MAP& map) : Inherit(map) {}
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(LM6VolumeImport);
-	virtual ~LM6VolumeImport() override {}
+	inline MeshbVolumeImport(MAP& map) : Inherit(map) {}
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(MeshbVolumeImport);
+	virtual ~MeshbVolumeImport() override {}
 
 protected:
 
 	virtual bool import_file_impl(const std::string& filename) override
 	{
-		int version = -1;
-		int dimension = -1;
-		int mesh_index = GmfOpenMesh(filename.c_str(), GmfRead, &version, &dimension);
+		int32 version, dimension;
+		int64 mesh_index = GmfOpenMesh(filename.c_str(), GmfRead, &version, &dimension);
 		if (mesh_index == 0)
 			return false;
+
+		cgogn_log_info("MeshbSurfaceImport") << "version = " << version << ", dimension = " << dimension;
+
+		bool use_floats = (version == GmfFloat);
 
 		const uint32 number_of_vertices = uint32(GmfStatKwd(mesh_index, GmfVertices));
 		const uint32 number_of_tetras = uint32(GmfStatKwd(mesh_index, GmfTetrahedra));
@@ -71,7 +77,7 @@ protected:
 
 		if (number_of_vertices == 0u || nb_volumes == 0u)
 		{
-			cgogn_log_warning("LM6VolumeImport") << "Error while reading the file \"" << filename << "\".";
+			cgogn_log_warning("MeshbVolumeImport") << "Error while reading the file \"" << filename << "\".";
 			GmfCloseMesh(mesh_index);
 			return false;
 		}
@@ -80,15 +86,26 @@ protected:
 		int32 ref;
 
 		GmfGotoKwd(mesh_index, GmfVertices);
-		for (uint32 i = 0u ; i < number_of_vertices; ++i)
-		{
-			uint32 idx = this->insert_line_vertex_container();
-			std::array<float32, 3> v;
-			(void) GmfGetLin(mesh_index, GmfVertices, &v[0],&v[1], &v[2], &ref);
-			position->operator[](idx)[0] = v[0];
-			position->operator[](idx)[1] = v[1];
-			position->operator[](idx)[2] = v[2];
-		}
+		if(use_floats)
+			for (uint32 i = 0u ; i < number_of_vertices; ++i)
+			{
+				uint32 idx = this->insert_line_vertex_container();
+				std::array<float32, 3> v;
+				(void) GmfGetLin(mesh_index, GmfVertices, &v[0],&v[1], &v[2], &ref);
+				position->operator[](idx)[0] = v[0];
+				position->operator[](idx)[1] = v[1];
+				position->operator[](idx)[2] = v[2];
+			}
+		else
+			for (uint32 i = 0u ; i < number_of_vertices; ++i)
+			{
+				uint32 idx = this->insert_line_vertex_container();
+				std::array<float64, 3> v;
+				(void) GmfGetLin(mesh_index, GmfVertices, &v[0],&v[1], &v[2], &ref);
+				position->operator[](idx)[0] = v[0];
+				position->operator[](idx)[1] = v[1];
+				position->operator[](idx)[2] = v[2];
+			}
 
 		if (number_of_tetras > 0)
 		{
@@ -148,29 +165,32 @@ protected:
 };
 
 template <typename MAP, typename VEC3>
-class LM6SurfaceImport : public SurfaceFileImport<MAP>
+class MeshbSurfaceImport : public SurfaceFileImport<MAP>
 {
 public:
 
-	using Self = LM6SurfaceImport<MAP, VEC3>;
+	using Self = MeshbSurfaceImport<MAP, VEC3>;
 	using Inherit = SurfaceFileImport<MAP>;
 
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
-	inline LM6SurfaceImport(MAP& map): Inherit(map) {}
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(LM6SurfaceImport);
-	virtual ~LM6SurfaceImport() override {}
+	inline MeshbSurfaceImport(MAP& map): Inherit(map) {}
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(MeshbSurfaceImport);
+	virtual ~MeshbSurfaceImport() override {}
 
 protected:
 
 	virtual bool import_file_impl(const std::string& filename) override
 	{
-		int version = -1;
-		int dimension = -1;
-		int mesh_index = GmfOpenMesh(filename.c_str(), GmfRead, &version, &dimension);
+		int32 version, dimension;
+		int64 mesh_index = GmfOpenMesh(filename.c_str(), GmfRead, &version, &dimension);
 		if (mesh_index == 0)
 			return false;
+
+		bool use_floats = (version == GmfFloat);
+
+		cgogn_log_info("MeshbSurfaceImport") << "version = " << version << ", dimension = " << dimension;
 
 		const uint32 number_of_vertices = uint32(GmfStatKwd(mesh_index, GmfVertices));
 		const uint32 number_of_triangles = uint32(GmfStatKwd(mesh_index, GmfTriangles));
@@ -181,7 +201,7 @@ protected:
 
 		if (number_of_vertices == 0u || nb_faces == 0u)
 		{
-			cgogn_log_warning("LM6SurfaceImport") << "Error while reading the file \"" << filename << "\".";
+			cgogn_log_warning("MeshbSurfaceImport") << "Error while reading the file \"" << filename << "\".";
 			GmfCloseMesh(mesh_index);
 			return false;
 		}
@@ -190,15 +210,26 @@ protected:
 		int32 ref;
 
 		GmfGotoKwd(mesh_index, GmfVertices);
-		for (uint32 i = 0u ; i < number_of_vertices; ++i)
-		{
-			const uint32 idx = this->insert_line_vertex_container();
-			std::array<float32, 3> v;
-			(void) GmfGetLin(mesh_index, GmfVertices, &v[0],&v[1], &v[2], &ref);
-			position->operator[](idx)[0] = v[0];
-			position->operator[](idx)[1] = v[1];
-			position->operator[](idx)[2] = v[2];
-		}
+		if(use_floats)
+			for (uint32 i = 0u ; i < number_of_vertices; ++i)
+			{
+				uint32 idx = this->insert_line_vertex_container();
+				std::array<float32, 3> v;
+				(void) GmfGetLin(mesh_index, GmfVertices, &v[0],&v[1], &v[2], &ref);
+				position->operator[](idx)[0] = v[0];
+				position->operator[](idx)[1] = v[1];
+				position->operator[](idx)[2] = v[2];
+			}
+		else
+			for (uint32 i = 0u ; i < number_of_vertices; ++i)
+			{
+				uint32 idx = this->insert_line_vertex_container();
+				std::array<float64, 3> v;
+				(void) GmfGetLin(mesh_index, GmfVertices, &v[0],&v[1], &v[2], &ref);
+				position->operator[](idx)[0] = v[0];
+				position->operator[](idx)[1] = v[1];
+				position->operator[](idx)[2] = v[2];
+			}
 
 		if (number_of_triangles > 0)
 		{
@@ -206,10 +237,10 @@ protected:
 			std::array<int, 3> ids;
 			for (uint32 i = 0; i < number_of_triangles; ++i)
 			{
-				(void) GmfGetLin(mesh_index, GmfTriangles, &ids[0],&ids[1], &ids[2], &ref);
+				(void) GmfGetLin(mesh_index, GmfTriangles, &ids[0], &ids[1], &ids[2], &ref);
 				for (auto& id : ids)
 					--id;
-				this->add_triangle(ids[0],ids[1], ids[2]);
+				this->add_triangle(ids[0], ids[1], ids[2]);
 			}
 		}
 
@@ -219,10 +250,10 @@ protected:
 			std::array<int, 4> ids;
 			for (uint32 i = 0; i < number_of_quads; ++i)
 			{
-				(void) GmfGetLin(mesh_index, GmfQuadrilaterals, &ids[0],&ids[1], &ids[2], &ids[3], &ref);
+				(void) GmfGetLin(mesh_index, GmfQuadrilaterals, &ids[0], &ids[1], &ids[2], &ids[3], &ref);
 				for (auto& id : ids)
 					--id;
-				this->add_quad(ids[0],ids[1], ids[2], ids[3]);
+				this->add_quad(ids[0], ids[1], ids[2], ids[3]);
 			}
 		}
 
@@ -231,18 +262,18 @@ protected:
 	}
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_FORMATS_LM6_CPP_))
-extern template class CGOGN_IO_API LM6VolumeImport<CMap3, Eigen::Vector3d>;
-extern template class CGOGN_IO_API LM6VolumeImport<CMap3, Eigen::Vector3f>;
-extern template class CGOGN_IO_API LM6VolumeImport<CMap3, geometry::Vec_T<std::array<float64, 3>>>;
-extern template class CGOGN_IO_API LM6VolumeImport<CMap3, geometry::Vec_T<std::array<float32, 3>>>;
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_FORMATS_MESHB_CPP_))
+extern template class CGOGN_IO_API MeshbVolumeImport<CMap3, Eigen::Vector3d>;
+extern template class CGOGN_IO_API MeshbVolumeImport<CMap3, Eigen::Vector3f>;
+extern template class CGOGN_IO_API MeshbVolumeImport<CMap3, geometry::Vec_T<std::array<float64, 3>>>;
+extern template class CGOGN_IO_API MeshbVolumeImport<CMap3, geometry::Vec_T<std::array<float32, 3>>>;
 
-extern template class CGOGN_IO_API LM6SurfaceImport<CMap2, Eigen::Vector3d>;
-extern template class CGOGN_IO_API LM6SurfaceImport<CMap2, Eigen::Vector3f>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_FORMATS_LM6_CPP_))
+extern template class CGOGN_IO_API MeshbSurfaceImport<CMap2, Eigen::Vector3d>;
+extern template class CGOGN_IO_API MeshbSurfaceImport<CMap2, Eigen::Vector3f>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_FORMATS_MESHB_CPP_))
 
 } // namespace io
 
 } // namespace cgogn
 
-#endif // CGOGN_IO_FORMATS_LM6_H_
+#endif // CGOGN_IO_FORMATS_MESHB_H_

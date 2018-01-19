@@ -24,12 +24,13 @@
 #ifndef CGOGN_TOPOLOGY_ADAPTIVE_TRI_QUAD_CMAP2_H_
 #define CGOGN_TOPOLOGY_ADAPTIVE_TRI_QUAD_CMAP2_H_
 
+#include <cgogn/topology/dll.h>
 #include <cgogn/core/cmap/cmap2.h>
 
 namespace cgogn
 {
 
-class AdaptiveTriQuadCMap2
+class CGOGN_TOPOLOGY_API AdaptiveTriQuadCMap2
 {
 public:
 
@@ -247,10 +248,10 @@ public:
 		return resF;
 	}
 
-	inline uint8 dart_level(Dart d) { return dart_level_[d]; }
+	uint8 dart_level(Dart d);
 	uint8 face_level(Face f);
 	FaceType face_type(Face f);
-	inline bool is_triangle_face(Face f) { return tri_face_[f]; }
+	bool is_triangle_face(Face f);
 	Dart oldest_dart(Face f);
 
 protected:

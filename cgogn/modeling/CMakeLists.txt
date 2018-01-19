@@ -5,6 +5,7 @@
 set(HEADER_ALGOS
 	algos/catmull_clark.h
 	algos/curves.h
+        algos/doo_sabin.h
 	algos/loop.h
 	algos/refinements.h
 	algos/pliant_remeshing.h
@@ -34,6 +35,7 @@ set(HEADER_FILES dll.h ${HEADER_ALGOS} ${HEADER_TILING} ${HEADER_DECIMATION})
 
 set(SOURCE_ALGOS
 	algos/catmull_clark.cpp
+        algos/doo_sabin.cpp
 	algos/loop.cpp
 	algos/refinements.cpp
 	algos/pliant_remeshing.cpp

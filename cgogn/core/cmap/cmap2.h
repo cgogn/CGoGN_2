@@ -282,6 +282,11 @@ protected:
 		return Inherit::add_face_topo(size);
 	}
 
+	void remove_face_topo_fp(Dart d)
+	{
+		Inherit::remove_face_topo(d);
+	}
+
 public:
 
 	/**

@@ -91,7 +91,7 @@ inline typename vector_traits<VEC3>::Scalar angle_between_face_normals(
 		if (s >= 0) a = std::acos(c);
 		else a = -std::acos(c);
 	}
-	if(a != a)
+	if (a != a)
 		cgogn_log_warning("angle_between_face_normals") << "NaN computed";
 
 	return a;

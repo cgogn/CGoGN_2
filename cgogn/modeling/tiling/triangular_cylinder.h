@@ -80,6 +80,9 @@ public:
 				c->vertex_table_[pos + (nb_x-1)] = Vertex();
 			}
 
+			//mark last vertex
+			c->vertex_table_[(z*nb_x) + (nb_x-1)] = Vertex();
+
 			//suppress the last n vertex (in y direction) from the vertex_table_
 			c->vertex_table_.erase(
 				std::remove_if(

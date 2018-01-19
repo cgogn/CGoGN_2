@@ -35,6 +35,9 @@
 #include <cgogn/io/formats/obj.h>
 #include <cgogn/io/formats/stl.h>
 #include <cgogn/io/formats/ply.h>
+#include <cgogn/io/formats/cg.h>
+#include <cgogn/io/formats/cskel.h>
+#include <cgogn/io/formats/skel.h>
 #include <cgogn/io/formats/tet.h>
 #include <cgogn/io/formats/msh.h>
 #include <cgogn/io/formats/nastran.h>
@@ -47,27 +50,19 @@ namespace io
 {
 
 template <typename MAP>
-inline std::unique_ptr<SurfaceExport<MAP>> new_surface_export(const std::string& filename);
-
-template <typename MAP>
-inline std::unique_ptr<VolumeExport<MAP>> new_volume_export(const std::string& filename);
-
-template <class MAP>
-inline void export_surface(MAP& map2, const ExportOptions& options)
+inline std::unique_ptr<GraphExport<MAP>> new_graph_export(const std::string& filename)
 {
-	static_assert(MAP::DIMENSION == 2, "export_surface is designed for 2D maps.");
-	auto se = new_surface_export<MAP>(options.filename_);
-	if (se)
-		se->export_file(map2,options);
-}
-
-template <class MAP>
-inline void export_volume(MAP& map3, const ExportOptions& options)
-{
-	static_assert(MAP::DIMENSION == 3, "export_volume is designed for 3D maps.");
-	auto ve = new_volume_export<MAP>(options.filename_);
-	if (ve)
-		ve->export_file(map3,options);
+	const FileType ft = file_type(filename);
+	switch(ft) {
+		case FileType::FileType_SKEL:		return make_unique<SkelGraphExport<MAP>>();
+		case FileType::FileType_VTK_LEGACY:	return make_unique<VtkGraphExport<MAP>>();
+		case FileType::FileType_CG:			return make_unique<CgGraphExport<MAP>>();
+		case FileType::FileType_CSKEL:		return make_unique<CskelGraphExport<MAP>>();
+		case FileType::FileType_OBJ:		return make_unique<ObjGraphExport<MAP>>();
+		default:
+			cgogn_log_warning("new_graph_export") << "GraphExport does not handle files with extension \"" << extension(filename) << "\".";
+			return std::unique_ptr<GraphExport<MAP>>();
+	}
 }
 
 template <typename MAP>
@@ -107,7 +102,34 @@ inline std::unique_ptr<VolumeExport<MAP>> new_volume_export(const std::string& f
 	}
 }
 
+template <typename MAP>
+inline void export_graph(MAP& map, const ExportOptions& options)
+{
+	auto se = new_graph_export<MAP>(options.filename_);
+	if (se)
+		se->export_file(map, options);
+}
+
+template <class MAP>
+inline void export_surface(MAP& map2, const ExportOptions& options)
+{
+	static_assert(MAP::DIMENSION == 2, "export_surface is designed for 2D maps.");
+	auto se = new_surface_export<MAP>(options.filename_);
+	if (se)
+		se->export_file(map2, options);
+}
+
+template <class MAP>
+inline void export_volume(MAP& map3, const ExportOptions& options)
+{
+	static_assert(MAP::DIMENSION == 3, "export_volume is designed for 3D maps.");
+	auto ve = new_volume_export<MAP>(options.filename_);
+	if (ve)
+		ve->export_file(map3, options);
+}
+
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_MAP_EXPORT_CPP_))
+extern template CGOGN_IO_API void export_graph(UndirectedGraph& , const ExportOptions&);
 extern template CGOGN_IO_API void export_surface(CMap2& , const ExportOptions&);
 extern template CGOGN_IO_API void export_volume(CMap3& , const ExportOptions&);
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_MAP_EXPORT_CPP_))

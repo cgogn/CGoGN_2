@@ -43,6 +43,7 @@
 
 #include <cgogn/modeling/algos/loop.h>
 #include <cgogn/modeling/algos/catmull_clark.h>
+#include <cgogn/modeling/algos/doo_sabin.h>
 #include <cgogn/geometry/algos/length.h>
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
@@ -167,6 +168,20 @@ public:
 			}
 			case Qt::Key_C: {
 				cgogn::modeling::catmull_clark<Vec3>(map_, vertex_position_);
+
+				Scalar mel = cgogn::geometry::mean_edge_length<Vec3>(map_, vertex_position_);
+				param_point_sprite_->size_ = mel / 6.0;
+
+				cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
+
+				render_->init_primitives(map_, cgogn::rendering::POINTS);
+				render_->init_primitives(map_, cgogn::rendering::LINES);
+				render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
+
+				break;
+			}
+			case Qt::Key_D: {
+				cgogn::modeling::doo_sabin<Vec3>(map_, vertex_position_);
 
 				Scalar mel = cgogn::geometry::mean_edge_length<Vec3>(map_, vertex_position_);
 				param_point_sprite_->size_ = mel / 6.0;

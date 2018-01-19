@@ -26,12 +26,12 @@
 
 #include <cgogn/core/utils/numerics.h>
 #include <iostream>
+
 namespace cgogn
 {
 
 namespace topology
 {
-
 
 struct CriticalPoint
 {

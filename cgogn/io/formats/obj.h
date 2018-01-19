@@ -64,8 +64,43 @@ protected:
 		std::ifstream fp(filename.c_str(), std::ios::in);
 
 		ChunkArray<VEC3>* position = this->template add_vertex_attribute<VEC3>("position");
+		ChunkArray<VEC3>* normal;
+		std::vector<VEC3> norm_buff;
 
 		std::string line, tag;
+		bool has_normals = false;
+
+		do
+		{
+			fp >> tag;
+			getline_safe(fp, line);
+		} while (tag != std::string("vn") && (!fp.eof()));
+
+		if (tag == "vn")
+		{
+			has_normals = true;
+			norm_buff.reserve(1024);
+			do
+			{
+				if (tag == std::string("vn"))
+				{
+					std::stringstream oss(line);
+
+					float64 x, y, z;
+					oss >> x;
+					oss >> y;
+					oss >> z;
+					float64 n = std::sqrt(x*x+y*y+z*z);
+					norm_buff.emplace_back(Scalar(x/n), Scalar(y/n), Scalar(z/n));
+				}
+
+				fp >> tag;
+				getline_safe(fp, line);
+			} while (!fp.eof());
+		}
+
+		fp.clear();
+		fp.seekg(0, std::ios::beg);
 
 		do
 		{
@@ -76,6 +111,7 @@ protected:
 		// lecture des sommets
 		std::vector<uint32> vertices_id;
 		vertices_id.reserve(102400);
+		uint32 max_id = 0;
 
 		uint32 i = 0;
 		do
@@ -95,6 +131,9 @@ protected:
 				(*position)[vertex_id] = pos;
 
 				vertices_id.push_back(vertex_id);
+
+				if (vertex_id > max_id)
+					max_id = vertex_id;
 				i++;
 			}
 
@@ -102,37 +141,10 @@ protected:
 			getline_safe(fp, line);
 		} while (!fp.eof());
 
-		fp.clear();
-		fp.seekg(0, std::ios::beg);
-
-		do
+		if (has_normals)
 		{
-			fp >> tag;
-			getline_safe(fp, line);
-		} while (tag != std::string("vn") && (!fp.eof()));
-
-		if (tag == "vn")
-		{
-			uint32 counter{0u};
-			ChunkArray<VEC3>* normal = this->vertex_container().template add_chunk_array<VEC3>("normal");
-			do
-			{
-				if (tag == std::string("vn"))
-				{
-					std::stringstream oss(line);
-
-					float64 x, y, z;
-					oss >> x;
-					oss >> y;
-					oss >> z;
-
-					VEC3 norm{Scalar(x), Scalar(y), Scalar(z)};
-					(*normal)[vertices_id[counter++]] = norm;
-				}
-
-				fp >> tag;
-				getline_safe(fp, line);
-			} while (!fp.eof());
+			normal = this->template add_vertex_attribute<VEC3>("normal");
+			normal->set_all_values(VEC3(0,0,0));
 		}
 
 		fp.clear();
@@ -149,6 +161,8 @@ protected:
 
 		std::vector<uint32> table;
 		table.reserve(64);
+		std::vector<uint32> tableN;
+		table.reserve(64);
 		do
 		{
 			if (tag == std::string("f")) // lecture d'une face
@@ -156,6 +170,7 @@ protected:
 				std::stringstream oss(line);
 
 				table.clear();
+				tableN.clear();
 				while (!oss.eof())  // lecture de tous les indices
 				{
 					std::string str;
@@ -173,6 +188,23 @@ protected:
 						iss >> index;
 						table.push_back(index);
 					}
+					if (has_normals)
+					{
+						// jump over /?/ (v/vt/vn)
+						++ind;
+						while ((ind < str.length()) && (str[ind] != '/'))
+							++ind;
+
+						if (ind < str.length())
+						{
+							uint32 index;
+							std::stringstream iss(str.substr(ind+1, str.length()));
+							iss >> index;
+							tableN.push_back(index);
+						}
+						else
+							tableN.push_back(table.back());
+					}
 				}
 
 				uint32 n = uint32(table.size());
@@ -181,12 +213,23 @@ protected:
 				{
 					uint32 index = table[j] - 1; // indices start at 1
 					this->faces_vertex_indices_.push_back(vertices_id[index]);
+					if (has_normals)
+					{
+						auto k = vertices_id[index];
+						(*normal)[k] += norm_buff[tableN[j] - 1];
+					}
 				}
 			}
 			fp >> tag;
 			getline_safe(fp, line);
 		} while (!fp.eof());
 
+		// normalize
+		if (has_normals)
+		{
+			for(auto i: vertices_id)
+				(*normal)[i].normalize();
+		}
 		return true;
 	}
 };
@@ -373,14 +416,6 @@ public:
 protected:
     virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& ) override
     {
-        const ChunkArrayGen* radius_attribute(nullptr);
-
-        for(const ChunkArrayGen* vatt: this->vertex_attributes())
-		{
-            if(to_lower(vatt->name()) == "radius" || to_lower(vatt->name()) == "radii")
-                radius_attribute = vatt;
-		}
-
         // set precision for float output
         output << std::setprecision(12);
 
