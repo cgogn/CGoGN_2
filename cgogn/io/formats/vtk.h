@@ -1471,39 +1471,42 @@ protected:
 				else
 				{
 					const char* ascii_data = lines_data_array->GetText();
-					std::vector<unsigned char> binary_data;
-					if (binary)
+					if(ascii_data != nullptr)
 					{
-						binary_data = read_binary_xml_data(ascii_data,compressed, data_type(header_type));
-						if (binary_data.empty())
+						std::vector<unsigned char> binary_data;
+						if (binary)
 						{
-							cgogn_log_warning("parse_xml_vtu") << "Unable to read cell attribute \"" <<  data_name << "\" of type " << type << ".";
-							continue;
+							binary_data = read_binary_xml_data(ascii_data,compressed, data_type(header_type));
+							if (binary_data.empty())
+							{
+								cgogn_log_warning("parse_xml_vtu") << "Unable to read cell attribute \"" <<  data_name << "\" of type " << type << ".";
+								continue;
+							}
 						}
-					}
 
-					std::unique_ptr<IMemoryStream> mem_stream;
-					if (binary)
-						mem_stream = make_unique<IMemoryStream>(reinterpret_cast<char*>(&binary_data[0]), binary_data.size());
-					else
-						mem_stream = make_unique<IMemoryStream>(ascii_data);
-					if (data_name == "connectivity")
-					{
-						const uint32 last_offset = this->offsets_.vec().back();
-						auto cells = DataInputGen::template newDataIO<PRIM_SIZE, uint32>(type);
-						cells->read_n(*mem_stream, last_offset,binary,!little_endian);
-						this->cells_ = *dynamic_cast_unique_ptr<DataInput<uint32>>(cells->simplify());
-					}
-					else
-					{
-						if (data_name == "offsets")
+						std::unique_ptr<IMemoryStream> mem_stream;
+						if (binary)
+							mem_stream = make_unique<IMemoryStream>(reinterpret_cast<char*>(&binary_data[0]), binary_data.size());
+						else
+							mem_stream = make_unique<IMemoryStream>(ascii_data);
+						if (data_name == "connectivity")
 						{
-							auto offsets = DataInputGen::template newDataIO<PRIM_SIZE, uint32>(type);
-							offsets->read_n(*mem_stream, nb_lines,binary,!little_endian);
-							this->offsets_ = *dynamic_cast_unique_ptr<DataInput<uint32>>(offsets->simplify());
+							const uint32 last_offset = this->offsets_.vec().back();
+							auto cells = DataInputGen::template newDataIO<PRIM_SIZE, uint32>(type);
+							cells->read_n(*mem_stream, last_offset,binary,!little_endian);
+							this->cells_ = *dynamic_cast_unique_ptr<DataInput<uint32>>(cells->simplify());
 						}
 						else
-							cgogn_log_debug("parse_xml_vtu") << "Ignoring cell attribute \"" <<  data_name << "\" of type " << type << ".";
+						{
+							if (data_name == "offsets")
+							{
+								auto offsets = DataInputGen::template newDataIO<PRIM_SIZE, uint32>(type);
+								offsets->read_n(*mem_stream, nb_lines,binary,!little_endian);
+								this->offsets_ = *dynamic_cast_unique_ptr<DataInput<uint32>>(offsets->simplify());
+							}
+							else
+								cgogn_log_debug("parse_xml_vtu") << "Ignoring cell attribute \"" <<  data_name << "\" of type " << type << ".";
+						}
 					}
 				}
 			}
