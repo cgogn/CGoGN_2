@@ -209,7 +209,8 @@ public:
 			while(i < n && (!fp.eof()) && (!fp.bad()))
 			{
 				getline_safe(fp,line);
-				line = cgogn::trim_left(rest + line);
+				if(line.length() > 0)
+					line = cgogn::trim_left(rest + line);
 				rest.clear();
 
 				uint32 count_spaces = std::count(line.begin(), line.end(), ' ');
