@@ -1,12 +1,12 @@
 language: cpp
 
-dist: trusty
-
-sudo: required
-
-os:
-  - linux
-  - osx
+matrix:
+    include:
+        - os: linux
+          sudo: required
+          dist: trusty
+        - os: osx
+          osx_image: xcode8.3
 
 install:
   - bash .travis_install.sh
