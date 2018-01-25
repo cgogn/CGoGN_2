@@ -66,7 +66,9 @@ inline std::unique_ptr<GraphFileImport> new_graph_import(const std::string& file
 	switch (ft)
 	{
 		case FileType::FileType_SKEL:		return make_unique<SkelGraphImport<VEC3>>();
-		case FileType::FileType_VTK_LEGACY:	return make_unique<VtkGraphImport<VEC3>>();
+		case FileType::FileType_VTK_LEGACY:
+		case FileType::FileType_VTU:
+		case FileType::FileType_VTP:		return make_unique<VtkGraphImport<VEC3>>();
 		case FileType::FileType_CG:			return make_unique<CgGraphImport<VEC3>>();
 		case FileType::FileType_CSKEL:		return make_unique<CskelGraphImport<VEC3>>();
 		case FileType::FileType_DOT:		return make_unique<DotGraphImport<VEC3>>();
