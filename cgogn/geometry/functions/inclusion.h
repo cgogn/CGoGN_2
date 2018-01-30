@@ -36,22 +36,35 @@ namespace geometry
 /**
  * \todo geometric predicate : move it to a specific location with other geometric predicates
  */
-template <typename VEC3, typename VEC3b>
-auto in_sphere(const VEC3& point, const VEC3b& center, const typename vector_traits<VEC3>::Scalar radius)
--> typename std::enable_if <is_same2vector<VEC3, VEC3b>::value, bool>::type
+template <typename VEC3a, typename VEC3b>
+bool in_sphere(const Eigen::MatrixBase<VEC3a>& point, const Eigen::MatrixBase<VEC3b>& center, const typename vector_traits<VEC3a>::Scalar radius)
 {
+	static_assert(is_same_vectors<VEC3a,VEC3b>::value, "parameters must have same type");
 	return (point - center).norm() < radius;
 }
 
-template <typename VEC3, typename VEC3b, typename VEC3c, typename VEC3d, typename VEC3e>
-auto in_triangle(const VEC3& P, const VEC3b& normal, const VEC3c& Ta,  const VEC3d& Tb, const VEC3e& Tc)
--> typename std::enable_if <is_same5vector<VEC3, VEC3b, VEC3c, VEC3d, VEC3e>::value, bool>::type
+template <typename VEC3>
+auto in_sphere(const VEC3& point, const VEC3& center, const typename vector_traits<VEC3>::Scalar radius)
+-> typename std::enable_if < !is_eigen<VEC3>::value, bool >::type
 {
-	using Scalar = typename vector_traits<VEC3>::Scalar;
-	static const auto triple_positive = [] (const VEC3& U, const VEC3& V, const VEC3& W) -> bool
-	{
-		return U.dot(V.cross(W)) >= Scalar(0);
-	};
+	return in_sphere(eigenize(point),eigenize(center),radius);
+}
+
+
+template <typename VEC3a, typename VEC3b, typename VEC3c>
+bool triple_positive(const Eigen::MatrixBase<VEC3a>& U, const Eigen::MatrixBase<VEC3b>& V, const Eigen::MatrixBase<VEC3c>& W)
+{
+	static_assert(is_same_vectors<VEC3a,VEC3b,VEC3c>::value, "parameters must have same type");
+	using Scalar = typename vector_traits<VEC3a>::Scalar;
+	return U.dot(V.cross(W)) >= Scalar(0);
+}
+
+
+template <typename VEC3a, typename VEC3b, typename VEC3c, typename VEC3d, typename VEC3e>
+bool in_triangle(const Eigen::MatrixBase<VEC3a>& P, const Eigen::MatrixBase<VEC3b>& normal,
+				 const Eigen::MatrixBase<VEC3c>& Ta,  const Eigen::MatrixBase<VEC3d>& Tb, const VEC3e& Tc)
+{
+	static_assert(is_same_vectors<VEC3a,VEC3b,VEC3c,VEC3d,VEC3e>::value, "parameters must have same type");
 
 	if (triple_positive(P-Ta, Tb-Ta, normal) ||
 		triple_positive(P-Tb, Tc-Tb, normal) ||
@@ -61,12 +74,30 @@ auto in_triangle(const VEC3& P, const VEC3b& normal, const VEC3c& Ta,  const VEC
 	return true;
 }
 
-template <typename VEC3, typename VEC3b, typename VEC3c, typename VEC3d>
-auto in_triangle(const VEC3& P, const VEC3b& Ta,  const VEC3c& Tb, const VEC3d& Tc)
--> typename std::enable_if <is_same4vector<VEC3, VEC3b, VEC3c, VEC3d>::value, bool>::type
+template <typename VEC3>
+auto in_triangle(const VEC3& P, const VEC3& N, const VEC3& Ta, const VEC3& Tb, const VEC3& Tc)
+-> typename std::enable_if < vector_traits<VEC3>::OK && !is_eigen<VEC3>::value, bool >::type
 {
+	return in_triangle(eigenize(P),eigenize(N),eigenize(Ta),eigenize(Tb),eigenize(Tc));
+}
+
+
+
+template <typename VEC3a, typename VEC3b, typename VEC3c, typename VEC3d>
+bool in_triangle(const Eigen::MatrixBase<VEC3a>& P, const Eigen::MatrixBase<VEC3b>& Ta,  const Eigen::MatrixBase<VEC3c>& Tb, const Eigen::MatrixBase<VEC3d>& Tc)
+{
+	static_assert(is_same_vectors<VEC3a,VEC3b,VEC3c,VEC3d>::value, "parameters must have same type");
 	return in_triangle(P, normal(Ta, Tb, Tc), Ta, Tb,Tc );
 }
+
+template <typename VEC3>
+auto in_triangle(const VEC3& P, const VEC3& Ta, const VEC3& Tb, const VEC3& Tc)
+-> typename std::enable_if < vector_traits<VEC3>::OK && !is_eigen<VEC3>::value, bool >::type
+{
+	return in_triangle(eigenize(P),eigenize(Ta),eigenize(Tb),eigenize(Tc));
+}
+
+
 
 } // namespace geometry
 

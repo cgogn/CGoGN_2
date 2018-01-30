@@ -314,15 +314,15 @@ public:
 			if (geometry::in_sphere(position[Vertex(g)], center_position, radius_)) // Vertex(g) is inside
 			{
 				Scalar alpha, beta;
-				geometry::intersection_sphere_segment<VEC3>(center_position, radius_, position[Vertex(d)], position[Vertex(f)], alpha);
-				geometry::intersection_sphere_segment<VEC3>(center_position, radius_, position[Vertex(g)], position[Vertex(f)], beta);
+				geometry::intersection_sphere_segment(position[Vertex(d)], position[Vertex(f)], center_position, radius_, alpha);
+				geometry::intersection_sphere_segment(position[Vertex(g)], position[Vertex(f)], center_position, radius_, beta);
 				result += (alpha+beta - alpha*beta) * geometry::area<VEC3>(this->map_, Face(d), position);
 			}
 			else // Vertex(g) is outside
 			{
 				Scalar alpha, beta;
-				geometry::intersection_sphere_segment<VEC3>(center_position, radius_, position[Vertex(d)], position[Vertex(f)], alpha);
-				geometry::intersection_sphere_segment<VEC3>(center_position, radius_, position[Vertex(d)], position[Vertex(g)], beta);
+				geometry::intersection_sphere_segment(position[Vertex(d)], position[Vertex(f)], center_position, radius_, alpha);
+				geometry::intersection_sphere_segment(position[Vertex(d)], position[Vertex(g)], center_position, radius_, beta);
 				result += alpha * beta * geometry::area<VEC3>(this->map_, Face(d), position);
 			}
 		}

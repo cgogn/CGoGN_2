@@ -85,7 +85,8 @@ void curvature(
 		const VEC3& p2 = position[vv.second];
 		Eigen::Vector3d ev = Eigen::Vector3d(p2[0], p2[1], p2[2]) - Eigen::Vector3d(p1[0], p1[1], p1[2]);
 		Scalar alpha;
-		geometry::intersection_sphere_segment<VEC3>(position[v], radius, position[Vertex2(d)], position[Vertex2(map.phi1(d))], alpha);
+//		geometry::intersection_sphere_segment<VEC3>(position[v], radius, position[Vertex2(d)], position[Vertex2(map.phi1(d))], alpha);
+		geometry::intersection_sphere_segment<VEC3>(position[Vertex2(d)], position[Vertex2(map.phi1(d))], position[v], radius, alpha);
 		tensor += (ev * ev.transpose()) * edge_angle[Edge2(d)] * (Scalar(1) / ev.norm()) * alpha;
 	});
 

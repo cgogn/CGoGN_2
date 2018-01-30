@@ -39,12 +39,20 @@ namespace geometry
  * @param P point o compute distance to line
  * @return distance
  */
-template <typename VEC3, typename VEC3b, typename VEC3c >
-inline auto squared_distance_normalized_line_point(const VEC3& A, const VEC3b& AB_norm, const VEC3c& P)
--> typename std::enable_if <is_same3vector<VEC3, VEC3b, VEC3c>::value, typename vector_traits<VEC3>::Scalar>::type
+template <typename VEC3a, typename VEC3b, typename VEC3c >
+inline typename vector_traits<VEC3a>::Scalar squared_distance_normalized_line_point(const Eigen::MatrixBase<VEC3a>& A, const Eigen::MatrixBase<VEC3b>& AB_norm, const Eigen::MatrixBase<VEC3c>& P)
 {
+	static_assert(is_same_vectors<VEC3a,VEC3b,VEC3c>::value, "parameters must have same type");
 	return ((A - P).cross(AB_norm)).squaredNorm() ;
 }
+
+template <typename VEC3>
+inline auto squared_distance_normalized_line_point(const VEC3& A, const VEC3& AB_norm, const VEC3& P)
+-> typename std::enable_if <!is_eigen<VEC3>::value, typename vector_traits<VEC3>::Scalar >::type
+{
+	return squared_distance_normalized_line_point(eigenize(A),eigenize(AB_norm),eigenize(P));
+}
+
 
 /**
  * @brief squared distance line point
@@ -53,15 +61,26 @@ inline auto squared_distance_normalized_line_point(const VEC3& A, const VEC3b& A
  * @param P point o compute distance to line
  * @return distance
  */
-template <typename VEC3, typename VEC3b, typename VEC3c >
-inline auto squared_distance_line_point(const VEC3& A, const VEC3b& B, const VEC3c& P)
--> typename std::enable_if <is_same3vector<VEC3, VEC3b, VEC3c>::value, typename vector_traits<VEC3>::Scalar > ::type
+template <typename VEC3a, typename VEC3b, typename VEC3c >
+inline typename vector_traits<VEC3a>::Scalar squared_distance_line_point(const Eigen::MatrixBase<VEC3a>& A, const Eigen::MatrixBase<VEC3b>& B, const Eigen::MatrixBase<VEC3c>& P)
 {
-	typename vector_traits<VEC3>::Type AB = B - A ;
+	static_assert(is_same_vectors<VEC3a,VEC3b,VEC3c>::value, "parameters must have same type");
+
+	typename vector_traits<VEC3a>::Type AB = B - A ;
 	cgogn_message_assert(AB.squaredNorm() > 0.0, "line must be defined by 2 different points");
 	AB.normalize();
 	return squared_distance_normalized_line_point(A, AB, P) ;
 }
+
+
+template <typename VEC3>
+inline auto squared_distance_line_point(const VEC3& A, const VEC3& B, const VEC3& P)
+-> typename std::enable_if <!is_eigen<VEC3>::value, typename vector_traits<VEC3>::Scalar >::type
+{
+	return squared_distance_line_point(eigenize(A),eigenize(B),eigenize(P));
+}
+
+
 
 /**
 * compute squared distance from line to segment
@@ -72,12 +91,13 @@ inline auto squared_distance_line_point(const VEC3& A, const VEC3b& B, const VEC
 * @param Q second point of segment
 * @return the squared distance
 */
-template <typename VEC3, typename VEC3b, typename VEC3c, typename VEC3d>
-auto squared_distance_line_seg(const VEC3& A, const VEC3b& AB, typename vector_traits<VEC3>::Scalar AB2, const VEC3c& P, const VEC3d& Q)
--> typename std::enable_if <is_same4vector<VEC3, VEC3b, VEC3c, VEC3d>::value, typename vector_traits<VEC3>::Scalar>::type
+template <typename VEC3a, typename VEC3b, typename VEC3c, typename VEC3d>
+typename vector_traits<VEC3a>::Scalar squared_distance_line_seg(const Eigen::MatrixBase<VEC3a>& A, const Eigen::MatrixBase<VEC3b>& AB, typename vector_traits<VEC3a>::Scalar AB2, const Eigen::MatrixBase<VEC3c>& P, const Eigen::MatrixBase<VEC3d>& Q)
 {
-	using Scalar = typename vector_traits<VEC3>::Scalar;
-	using NVEC3 = typename vector_traits<VEC3>::Type;
+	static_assert(is_same_vectors<VEC3a,VEC3b,VEC3c,VEC3d>::value, "parameters must have same type");
+
+	using Scalar = typename vector_traits<VEC3a>::Scalar;
+	using NVEC3 = typename vector_traits<VEC3a>::Type;
 
 	NVEC3 PQ = Q - P;
 	Scalar PQ_n2 = PQ.squaredNorm();
@@ -114,6 +134,16 @@ auto squared_distance_line_seg(const VEC3& A, const VEC3b& AB, typename vector_t
 	return (num * num) / den ;
 }
 
+
+template <typename VEC3>
+inline auto squared_distance_line_seg(const VEC3& A, const VEC3& AB, typename vector_traits<VEC3>::Scalar AB2, const VEC3& P, const VEC3& Q )
+-> typename std::enable_if <!is_eigen<VEC3>::value, typename vector_traits<VEC3>::Scalar >::type
+{
+	return squared_distance_line_seg(eigenize(A),eigenize(AB),AB2,eigenize(P),eigenize(Q));
+}
+
+
+
 /**
 * compute squared distance from line to segment
 * @warning if used many times with same line prefer version, with A, AB and AB2 parameter
@@ -123,13 +153,23 @@ auto squared_distance_line_seg(const VEC3& A, const VEC3b& AB, typename vector_t
 * @param Q second point of segment
 * @return the squared distance
 */
-template <typename VEC3, typename VEC3b, typename VEC3c, typename VEC3d>
-auto squared_distance_line_seg(const VEC3& A, const VEC3b& B, const VEC3c& P, const VEC3d& Q)
--> typename std::enable_if <is_same4vector<VEC3, VEC3b, VEC3c, VEC3d>::value, typename vector_traits<VEC3>::Scalar>::type
+template <typename VEC3a, typename VEC3b, typename VEC3c, typename VEC3d>
+inline typename vector_traits<VEC3a>::Scalar squared_distance_line_seg(const Eigen::MatrixBase<VEC3a>& A, const Eigen::MatrixBase<VEC3b>& B, const Eigen::MatrixBase<VEC3c>& P, const Eigen::MatrixBase<VEC3d>& Q)
 {
-	typename vector_traits<VEC3>::Type AB = B-A;
+	static_assert(is_same_vectors<VEC3a,VEC3b,VEC3c,VEC3d>::value, "parameters must have same type");
+	typename vector_traits<VEC3a>::Type AB = B-A;
 	return squared_distance_line_seg(A,AB, AB.dot(AB),P,Q);
 }
+
+
+template <typename VEC3>
+inline auto squared_distance_line_seg(const VEC3& A, const VEC3& B, const VEC3& P, const VEC3& Q )
+-> typename std::enable_if <!is_eigen<VEC3>::value, typename vector_traits<VEC3>::Scalar >::type
+{
+	return squared_distance_line_seg(eigenize(A),eigenize(B),eigenize(P),eigenize(Q));
+}
+
+
 
 /**
 * compute squared distance from segment to point
@@ -138,12 +178,12 @@ auto squared_distance_line_seg(const VEC3& A, const VEC3b& B, const VEC3c& P, co
 * @param P the point
 * @return the squared distance
 */
-template <typename VEC3, typename VEC3b, typename VEC3c>
-auto squared_distance_seg_point(const VEC3& A, const VEC3b& AB, const VEC3c& P)
--> typename std::enable_if <is_same3vector<VEC3, VEC3b, VEC3c>::value, typename vector_traits<VEC3>::Scalar > ::type
+template <typename VEC3a, typename VEC3b, typename VEC3c>
+typename vector_traits<VEC3a>::Scalar squared_distance_seg_point(const Eigen::MatrixBase<VEC3a>& A, const Eigen::MatrixBase<VEC3b>& AB, const Eigen::MatrixBase<VEC3c>& P)
 {
-	using Scalar = typename vector_traits<VEC3>::Scalar;
-	using NVEC3 = typename vector_traits<VEC3>::Type;
+	static_assert(is_same_vectors<VEC3a,VEC3b,VEC3c>::value, "parameters must have same type");
+	using Scalar = typename vector_traits<VEC3a>::Scalar;
+	using NVEC3 = typename vector_traits<VEC3a>::Type;
 
 	NVEC3 AP = P - A;
 
@@ -167,6 +207,14 @@ auto squared_distance_seg_point(const VEC3& A, const VEC3b& AB, const VEC3c& P)
 	// between A & B, distance is projection on (AB)
 	NVEC3 X = AB.cross(AP);
 	return X.squaredNorm() / AB2;
+}
+
+
+template <typename VEC3>
+inline auto squared_distance_seg_point(const VEC3& A, const VEC3& AB, const VEC3& P)
+-> typename std::enable_if <!is_eigen<VEC3>::value, typename vector_traits<VEC3>::Scalar >::type
+{
+	return squared_distance_seg_point(eigenize(A),eigenize(AB),eigenize(P));
 }
 
 } // namespace geometry

@@ -47,14 +47,14 @@ enum Orientation2D
  * @param Pb end point
  * @return the orientation
  */
-template <typename VEC2, typename VEC2b, typename VEC2c>
-auto side(const VEC2& P, const VEC2b& Pa, const VEC2c& Pb)
--> typename std::enable_if <is_same3vector <VEC2, VEC2b, VEC2c>::value, Orientation2D>::type
+template <typename VEC2a, typename VEC2b, typename VEC2c>
+Orientation2D side(const Eigen::MatrixBase<VEC2a>& P, const Eigen::MatrixBase<VEC2b>& Pa, const Eigen::MatrixBase<VEC2c>& Pb)
 {
-	static_assert(vector_traits<VEC2>::SIZE == 2ul, "The size of the vector must be equal to 2.");
+	static_assert(vector_traits<VEC2a>::SIZE == 2ul, "The size of the vector must be equal to 2.");
+	static_assert(is_same_vectors<VEC2a,VEC2b,VEC2c>::value, "parameters must have same type");
 
-	using Scalar = typename vector_traits<VEC2>::Scalar;
-	const Scalar zero(0.000001);
+	using Scalar = typename vector_traits<VEC2a>::Scalar;
+//	const Scalar zero(0.000001);
 
 	Scalar p = (P[0] - Pa[0]) * (Pb[1] - Pa[1]) - (Pb[0] - Pa[0]) * (P[1] - Pa[1]) ;
 
@@ -66,6 +66,14 @@ auto side(const VEC2& P, const VEC2b& Pa, const VEC2c& Pb)
 		return Orientation2D::LEFT;
 }
 
+template <typename VEC3>
+inline auto side(const VEC3& P, const VEC3& Pa, const VEC3& Pb)
+-> typename std::enable_if <!is_eigen<VEC3>::value, Orientation2D >::type
+{
+	return side(eigenize(P),eigenize(Pa),eigenize(Pb));
+}
+
+
 /**
  * return the orientation of point P w.r.t. the plane defined by 3 points
  * @param P the point
@@ -74,13 +82,21 @@ auto side(const VEC2& P, const VEC2b& Pa, const VEC2c& Pb)
  * @param C plane point 3
  * @return the orientation
  */
-template <typename VEC3, typename VEC3b, typename VEC3c, typename VEC3d>
-auto test_orientation_3D(const VEC3& P, const VEC3b& A, const VEC3c& B, const VEC3d& C)
--> typename std::enable_if <is_same4vector<VEC3, VEC3b, VEC3c, VEC3d>::value, Orientation3D>::type
+template <typename VEC3a, typename VEC3b, typename VEC3c, typename VEC3d>
+Orientation3D test_orientation_3D(const Eigen::MatrixBase<VEC3a>& P, const Eigen::MatrixBase<VEC3b>& A, const Eigen::MatrixBase<VEC3c>& B, const Eigen::MatrixBase<VEC3d>& C)
 {
-	static_assert(vector_traits<VEC3>::SIZE == 3ul, "The size of the vector must be equal to 3.");
-	return Plane3D<VEC3>(A, B, C).orient(P);
+	static_assert(is_same_vectors<VEC3a,VEC3b,VEC3c,VEC3d>::value, "parameters must have same type");
+	static_assert(vector_traits<VEC3a>::SIZE == 3ul, "The size of the vector must be equal to 3.");
+	return Plane3D(A, B, C).orient(P);
 }
+
+template <typename VEC3>
+inline auto test_orientation_3D(const VEC3& P, const VEC3& A, const VEC3& B, const VEC3& C)
+-> typename std::enable_if <!is_eigen<VEC3>::value, Orientation3D >::type
+{
+	return test_orientation_3D(eigenize(P),eigenize(A),eigenize(B),eigenize(C));
+}
+
 
 /**
  * return the orientation of point P w.r.t. the plane defined by its normal and 1 point
@@ -89,13 +105,21 @@ auto test_orientation_3D(const VEC3& P, const VEC3b& A, const VEC3c& B, const VE
  * @param PP plane point
  * @return the orientation
  */
-template <typename VEC3, typename VEC3b, typename VEC3c>
-auto test_orientation_3D(const VEC3& P, const VEC3b& N, const VEC3c& PP)
--> typename std::enable_if <is_same3vector<VEC3, VEC3b, VEC3c>::value, Orientation3D>::type
+template <typename VEC3a, typename VEC3b, typename VEC3c>
+Orientation3D test_orientation_3D(const Eigen::MatrixBase<VEC3a>& P, const Eigen::MatrixBase<VEC3b>& N, const Eigen::MatrixBase<VEC3c>& PP)
 {
-	static_assert(vector_traits<VEC3>::SIZE == 3ul, "The size of the vector must be equal to 3.");
-	return Plane3D<VEC3>(N, PP).orient(P);
+	static_assert(vector_traits<VEC3a>::SIZE == 3ul, "The size of the vector must be equal to 3.");
+	static_assert(is_same_vectors<VEC3a,VEC3b,VEC3c>::value, "parameters must have same type");
+	return Plane3D(N, PP).orient(P);
 }
+
+template <typename VEC3>
+inline auto test_orientation_3D(const VEC3& P, const VEC3& N, const VEC3& PP)
+-> typename std::enable_if <!is_eigen<VEC3>::value, Orientation3D >::type
+{
+	return test_orientation_3D(eigenize(P),eigenize(N),eigenize(PP));
+}
+
 
 } // namespace geometry
 

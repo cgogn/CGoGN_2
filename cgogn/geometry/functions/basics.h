@@ -40,22 +40,30 @@ namespace geometry
  * @param v
  */
 template <typename VEC>
-inline void normalize_safe(VEC& v)
+inline void normalize_safe(Eigen::MatrixBase<VEC>& v)
 {
 	using Scalar = typename vector_traits<VEC>::Scalar;
-
 	const Scalar norm2 = v.squaredNorm();
 	if (norm2 > Scalar(0))
 		v /= std::sqrt(norm2);
 }
 
+template <typename VEC>
+inline auto normalize_safe(VEC& v) -> typename std::enable_if <!is_eigen<VEC>::value,void>::type
+{
+	auto w = eigenize(v);
+	normalize_safe(w);
+}
+
 /**
  * @brief cosinus of the angle formed by 2 vectors
  */
-template <typename VEC, typename VECb>
-auto cos_angle(const VEC a, const VECb b) -> typename std::enable_if <is_same2vector <VEC, VECb>::value, typename vector_traits<VEC>::Scalar>::type
+template <typename VECa, typename VECb>
+typename vector_traits<VECa>::Scalar cos_angle(const Eigen::MatrixBase<VECa>& a, const Eigen::MatrixBase<VECb>& b)
 {
-	using Scalar = typename vector_traits<VEC>::Scalar;
+	static_assert(is_same_vectors<VECa,VECb>::value, "parameters must have same type");
+
+	using Scalar = typename vector_traits<VECa>::Scalar;
 
 	Scalar na2 = a.squaredNorm();
 	Scalar nb2 = b.squaredNorm();
@@ -64,14 +72,29 @@ auto cos_angle(const VEC a, const VECb b) -> typename std::enable_if <is_same2ve
 	return std::max(Scalar(-1), std::min(res, Scalar(1)));
 }
 
+//template <typename VEC>
+//inline auto cos_angle(const VEC& a, const VEC& b) -> typename std::enable_if <!is_eigen<VEC>::value, typename vector_traits<VEC>::Scalar>::type
+//{
+//	return cos_angle(eigenize(a),eigenize(b));
+//}
+
 /**
  * @brief angle formed by 2 vectors
  */
-template <typename VEC, typename VECb>
-auto angle(const VEC a, const VECb b) -> typename std::enable_if <is_same2vector<VEC, VECb>::value, typename vector_traits<VEC>::Scalar>::type
+template <typename VECa, typename VECb>
+typename vector_traits<VECa>::Scalar angle(const Eigen::MatrixBase<VECa>& a, const Eigen::MatrixBase<VECb>& b)
 {
+	static_assert(is_same_vectors<VECa,VECb>::value, "parameters must have same type");
 	return std::acos(cos_angle(a, b));
 }
+
+
+template <typename VEC>
+inline auto angle(const VEC& a, const VEC& b) -> typename std::enable_if <!is_eigen<VEC>::value, typename vector_traits<VEC>::Scalar>::type
+{
+	return angle(eigenize(a),eigenize(b));
+}
+
 
 } // namespace geometry
 

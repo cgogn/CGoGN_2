@@ -26,6 +26,7 @@
 
 #include <cmath>
 #include <cgogn/core/utils/numerics.h>
+
 #include <cgogn/geometry/types/geometry_traits.h>
 #include <cgogn/geometry/functions/inclusion.h>
 
@@ -43,10 +44,17 @@ enum Intersection
 	FACE_INTERSECTION = 3
 } ;
 
+//template <typename VEC3a, typename VEC3b, typename VEC3c, typename VEC3d, typename VEC3e>
+//auto intersection_ray_triangle(const Eigen::MatrixBase<VEC3a>& P, const Eigen::MatrixBase<VEC3b>& Dir, const Eigen::MatrixBase<VEC3c>& Ta, const Eigen::MatrixBase<VEC3d>& Tb, const VEC3e& Tc, typename vector_traits<VEC3a>::Type* inter = nullptr)
+//-> typename std::enable_if <is_same5vector<VEC3a, VEC3b, VEC3c, VEC3d, VEC3e>::value, bool>::type
 template <typename VEC3a, typename VEC3b, typename VEC3c, typename VEC3d, typename VEC3e>
-auto intersection_ray_triangle(const VEC3a& P, const VEC3b& Dir, const VEC3c& Ta, const VEC3d& Tb, const VEC3e& Tc, typename vector_traits<VEC3a>::Type* inter = nullptr)
--> typename std::enable_if <is_same5vector<VEC3a, VEC3b, VEC3c, VEC3d, VEC3e>::value, bool>::type
+bool intersection_ray_triangle(const Eigen::MatrixBase<VEC3a>& P, const Eigen::MatrixBase<VEC3b>& Dir,
+							   const Eigen::MatrixBase<VEC3c>& Ta, const Eigen::MatrixBase<VEC3d>& Tb, const Eigen::MatrixBase<VEC3e>& Tc,
+							   typename vector_traits<VEC3a>::Type* inter = nullptr)
 {
+	static_assert(is_same_vectors<VEC3a,VEC3b,VEC3c,VEC3d,VEC3e>::value, "parameters must have same type");
+	static_assert(vector_traits<VEC3a>::SIZE == 3, "parameters must be of dim 3");
+
 	using Scalar = typename vector_traits<VEC3a>::Scalar;
 	using NVEC3 = typename vector_traits<VEC3a>::Type;
 
@@ -94,6 +102,22 @@ auto intersection_ray_triangle(const VEC3a& P, const VEC3b& Dir, const VEC3c& Ta
 	return true;
 }
 
+template <typename VEC3>
+auto intersection_ray_triangle(const VEC3& P, const VEC3& Dir, const VEC3& Ta, const VEC3& Tb, const VEC3& Tc, VEC3* inter = nullptr)
+-> typename std::enable_if <!is_eigen<VEC3>::value,bool>::type
+{
+	if (inter == nullptr)
+		return intersection_ray_triangle(eigenize(P),eigenize(Dir),eigenize(Ta),eigenize(Tb),eigenize(Tc), nullptr);
+
+	Eigen::Matrix< typename vector_traits<VEC3>::Scalar,vector_traits<VEC3>::SIZE,1> I;
+	(*inter)[0] = I[0];
+	(*inter)[1] = I[1];
+	(*inter)[2] = I[2];
+	return intersection_ray_triangle(eigenize(P),eigenize(Dir),eigenize(Ta),eigenize(Tb),eigenize(Tc), &I);
+}
+
+
+
 /**
  * \param[in] center the position of the center of the sphere.
  * \param[in] radius the radius of the sphere
@@ -101,18 +125,18 @@ auto intersection_ray_triangle(const VEC3a& P, const VEC3b& Dir, const VEC3c& Ta
  * \param[in] p2 second point of the segment
  * \param[out] alpha ratio of the segment inside the sphere
  */
-template <typename VEC3, typename VEC3b, typename VEC3c>
-auto intersection_sphere_segment(
-	const VEC3& center,
-	const typename vector_traits<VEC3>::Scalar radius,
-	const VEC3b& p1,
-	const VEC3c& p2,
-	typename vector_traits<VEC3>::Scalar& alpha)
-	-> typename std::enable_if <is_same3vector <VEC3, VEC3b, VEC3c>::value, bool>::type
-
+template <typename VEC3a, typename VEC3b, typename VEC3c>
+bool intersection_sphere_segment(
+	const Eigen::MatrixBase<VEC3b>& p1,	const Eigen::MatrixBase<VEC3c>& p2,
+	const Eigen::MatrixBase<VEC3a>& center,
+	const typename vector_traits<VEC3a>::Scalar& radius,
+	typename vector_traits<VEC3a>::Scalar& alpha)
 {
-	using Scalar = typename vector_traits<VEC3>::Scalar;
-	using NVEC3 = typename vector_traits<VEC3>::Type;
+	static_assert(is_same_vectors<VEC3a,VEC3b,VEC3c>::value, "parameters must have same type");
+	static_assert(vector_traits<VEC3a>::SIZE == 3, "parameters must be of dim 3");
+
+	using Scalar = typename vector_traits<VEC3a>::Scalar;
+	using NVEC3 = typename vector_traits<VEC3a>::Type;
 
 	if (in_sphere(p1, center, radius) && !in_sphere(p2, center, radius))
 	{
@@ -127,17 +151,29 @@ auto intersection_sphere_segment(
 	return false;
 }
 
-template <typename VEC3, typename VEC3b, typename VEC3c, typename VEC3d, typename VEC3e>
-auto intersection_segment_segment(
-		const VEC3& PA,
-		const VEC3b& PB,
-		const VEC3c& QA,
-		const VEC3d& QB,
-		VEC3e& Inter)
-		-> typename std::enable_if <is_same5vector<VEC3, VEC3b, VEC3c, VEC3d, VEC3e>::value, Intersection>::type
+
+template <typename VEC3>
+auto intersection_sphere_segment(const VEC3& p1, const VEC3& p2, const VEC3& center, const typename vector_traits<VEC3>::Scalar& radius,
+	typename vector_traits<VEC3>::Scalar& alpha)
+-> typename std::enable_if <!is_eigen<VEC3>::value,bool>::type
 {
-	using Scalar = typename vector_traits<VEC3>::Scalar;
-	using NVEC3 = typename vector_traits<VEC3>::Type;
+	return intersection_sphere_segment(eigenize(center),radius,eigenize(p1),eigenize(p2),alpha);
+}
+
+
+template <typename VEC3a, typename VEC3b, typename VEC3c, typename VEC3d, typename VEC3e>
+Intersection intersection_segment_segment(
+		const Eigen::MatrixBase<VEC3a>& PA,
+		const Eigen::MatrixBase<VEC3b>& PB,
+		const Eigen::MatrixBase<VEC3c>& QA,
+		const Eigen::MatrixBase<VEC3d>& QB,
+		Eigen::MatrixBase<VEC3e>& Inter)
+{
+	static_assert(is_same_vectors<VEC3a,VEC3b,VEC3c,VEC3d,VEC3e>::value, "parameters must have same type");
+	static_assert(vector_traits<VEC3a>::SIZE == 3, "parameters must be of dim 3");
+
+	using Scalar = typename vector_traits<VEC3a>::Scalar;
+	using NVEC3 = typename vector_traits<VEC3a>::Type;
 
 	NVEC3 vp1p2 = PB - PA;
 	NVEC3 vq1q2 = QB - QA;
@@ -176,11 +212,25 @@ auto intersection_segment_segment(
 	return EDGE_INTERSECTION;
 }
 
-template <typename VEC3, typename VEC3b, typename VEC3c, typename VEC3d>
-auto intersection_line_plane(const VEC3& point_line, const VEC3b& dir_line, const VEC3c& point_plane, const VEC3d& normal_plane, typename vector_traits<VEC3>::Type* inter = nullptr)
--> typename std::enable_if <is_same4vector<VEC3, VEC3b, VEC3c, VEC3d>::value, bool>::type
+
+template <typename VEC3>
+auto intersection_segment_segment(const VEC3& PA, const VEC3& PB, const VEC3& QA, const VEC3& QB, VEC3& Inter)
+-> typename std::enable_if <!is_eigen<VEC3>::value,Intersection>::type
 {
-	using Scalar = typename vector_traits<VEC3>::Scalar;
+	auto I = eigenize(Inter);
+	intersection_segment_segment(eigenize(PA),eigenize(PB),eigenize(QA),eigenize(QB),I);
+}
+
+
+template <typename VEC3a, typename VEC3b, typename VEC3c, typename VEC3d>
+bool intersection_line_plane(const Eigen::MatrixBase<VEC3a>& point_line, const Eigen::MatrixBase<VEC3b>& dir_line,
+							 const Eigen::MatrixBase<VEC3c>& point_plane, const Eigen::MatrixBase<VEC3d>& normal_plane,
+							 typename vector_traits<VEC3a>::Type* inter = nullptr)
+{
+	static_assert(is_same_vectors<VEC3a,VEC3b,VEC3c,VEC3d>::value, "parameters must have same type");
+	static_assert(vector_traits<VEC3a>::SIZE == 3, "parameters must be of dim 3");
+
+	using Scalar = typename vector_traits<VEC3a>::Scalar;
 	const Scalar PRECISION = std::numeric_limits<Scalar>::epsilon();
 
 	Scalar b = normal_plane.dot(dir_line);
@@ -194,6 +244,30 @@ auto intersection_line_plane(const VEC3& point_line, const VEC3b& dir_line, cons
 
 	return true;
 }
+
+template <typename VEC3>
+auto intersection_line_plane(const VEC3& point_line, const VEC3& dir_line, const VEC3& point_plane, const VEC3& normal_plane, VEC3* Inter = nullptr)
+-> typename std::enable_if <!is_eigen<VEC3>::value,bool>::type
+{
+
+//	Eigen::Matrix< typename vector_traits<VEC3>::Scalar,vector_traits<VEC3>::SIZE,1>* ptrI = reinterpret_cast<Eigen::Matrix< typename vector_traits<VEC3>::Scalar,vector_traits<VEC3>::SIZE,1>*>(Inter);
+//	if (ptrI == nullptr)
+//		return intersection_line_plane(eigenize(point_line),eigenize(dir_line),eigenize(point_plane),eigenize(normal_plane), ptrI);
+	Eigen::Matrix< typename vector_traits<VEC3>::Scalar,vector_traits<VEC3>::SIZE,1>* ptrI = reinterpret_cast<Eigen::Matrix< typename vector_traits<VEC3>::Scalar,vector_traits<VEC3>::SIZE,1>*>(Inter);
+	if (Inter == nullptr)
+		return intersection_line_plane(eigenize(point_line),eigenize(dir_line),eigenize(point_plane),eigenize(normal_plane), nullptr);
+
+
+//	auto I = eigenize(*Inter);
+
+	Eigen::Matrix< typename vector_traits<VEC3>::Scalar,vector_traits<VEC3>::SIZE,1> I;
+	(*Inter)[0] = I[0];
+	(*Inter)[1] = I[1];
+	(*Inter)[2] = I[2];
+	return intersection_line_plane(eigenize(point_line),eigenize(dir_line),eigenize(point_plane),eigenize(normal_plane), &I);
+}
+
+
 
 } // namespace geometry
 
