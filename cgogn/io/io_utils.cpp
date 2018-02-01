@@ -21,7 +21,6 @@
 *                                                                              *
 *******************************************************************************/
 
-
 #include <istream>
 #include <iostream>
 #include <map>
@@ -396,6 +395,35 @@ CGOGN_IO_API std::istream& getline_safe(std::istream& is, std::string& str)
 	while (true)
 	{
 		const auto c = sb->sbumpc();
+		switch (c)
+		{
+		case '\n':
+			return is;
+		case '\r':
+			if (sb->sgetc() == '\n')
+				sb->sbumpc();
+			return is;
+		case EOF: // Also handle the case when the last line has no line ending
+			if (str.empty())
+				is.setstate(std::ios::eofbit);
+			return is;
+		default:
+			str.push_back(static_cast<char>(c));
+		}
+	}
+}
+
+CGOGN_IO_API std::istream& getline_safe(std::istream& is, std::string& str, char delim)
+{
+	str.clear();
+	std::istream::sentry se(is, true); // http://en.cppreference.com/w/cpp/io/basic_istream/sentry
+	std::streambuf* sb = is.rdbuf();
+
+	while (true)
+	{
+		const auto c = sb->sbumpc();
+		if (c == delim)
+			return is;
 		switch (c)
 		{
 		case '\n':
