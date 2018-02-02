@@ -36,14 +36,18 @@ namespace cgogn
 namespace geometry
 {
 
+
 template <typename Vec_T, typename Enable = void>
 struct vector_traits
-{};
+{
+	static const bool OK = false;
+};
 
 // specialization : cgogn::geometry::Vec_T with a fixed-size array
 template <typename Scalar_, std::size_t Size>
 struct vector_traits<geometry::Vec_T<std::array<Scalar_, Size>>>
 {
+	static const bool OK = true;
 	static const std::size_t SIZE = Size;
 	using Scalar = Scalar_;
 	using Type = geometry::Vec_T<std::array<Scalar_, Size>>;
@@ -54,6 +58,7 @@ struct vector_traits<geometry::Vec_T<std::array<Scalar_, Size>>>
 template <typename T>
 struct vector_traits<T, typename std::enable_if<std::is_integral<T>::value || std::is_floating_point<T>::value>::type>
 {
+	static const bool OK = true;
 	static const std::size_t SIZE = 1;
 	using Scalar = T;
 };
@@ -74,40 +79,69 @@ struct is_eigen : public decltype(cgogn_check_eigen_type(std::declval<T*>()))
 template <typename V>
 struct vector_traits<V, typename std::enable_if < is_eigen<V>::value >::type>
 {
-	static const std::size_t SIZE = Eigen::internal::traits<V>::RowsAtCompileTime;;
+	static const bool OK = true;
+	static const std::size_t SIZE = Eigen::internal::traits<V>::RowsAtCompileTime;
 	using Scalar = typename Eigen::internal::traits<V>::Scalar;
 	using Type = Eigen::Matrix<Scalar, SIZE, 1, 0, SIZE, 1 >;
 };
 
+
 // convenient struct for easy SFINAE
 
-template <typename V1, typename V2, typename Enable = void>
-struct is_same2vector 
+/**
+ * is_vectors_size<N,V1,V2,..>::value = true if all vectors are of size N
+ */
+template <int N, typename... Vs>
+struct is_vectors_size
+{
+	static const bool value = true;
+};
+
+template <int N, typename V, typename... Vs>
+struct is_vectors_size<N,V,Vs...>
+{
+	static const bool value = (vector_traits<V>::SIZE == N) && is_vectors_size<N,Vs...>::value;
+};
+
+
+/**
+ * is_vectors_scalar<T,V1,V2,..>::value = true if all vectors scalar type are T
+ */
+template <typename T, typename... Vs>
+struct is_vectors_scalar
+{
+	static const bool value = true;
+};
+
+template <typename T, typename V, typename... Vs>
+struct is_vectors_scalar<T,V,Vs...>
+{
+	static const bool value = std::is_same<typename vector_traits<V>::Scalar,T>::value && is_vectors_scalar<T,Vs...>::value;
+};
+
+
+/**
+ * is_same_vectors<V1,V2,..>::value = true if all vectors have same size and scalar type
+ */
+template <typename... Vs>
+struct is_same_vectors
 {};
 
 template <typename V1, typename V2>
-struct is_same2vector < V1, V2, typename std::enable_if < std::is_same<V1, V2>::value  || ( is_eigen<V1>::value && is_eigen<V2>::value )>::type>
+struct is_same_vectors<V1,V2>
 {
-	using S1 = typename vector_traits<V1>::Scalar;
-	using S2 = typename vector_traits<V2>::Scalar;
-	static const bool value = std::is_same<S1, S2>::value && (vector_traits<V1>::SIZE == vector_traits<V2>::SIZE);
+	static const bool value = (vector_traits<V1>::SIZE == vector_traits<V2>::SIZE) &&
+			std::is_same<typename vector_traits<V1>::Scalar,typename vector_traits<V2>::Scalar>::value;
 };
 
-template <typename V1, typename V2>
-struct is_same2vector < V1, V2, typename std::enable_if <!(std::is_same<V1, V2>::value || (is_eigen<V1>::value && is_eigen<V2>::value))>::type>
+
+template <typename V1, typename V2, typename... Vs>
+struct is_same_vectors<V1,V2,Vs...>
 {
-	static const bool value = false;
+	static const bool value = (vector_traits<V1>::SIZE == vector_traits<V2>::SIZE) &&
+			std::is_same<typename vector_traits<V1>::Scalar,typename vector_traits<V2>::Scalar>::value &&
+			is_same_vectors<V2,Vs...>::value;
 };
-
-template <typename V1, typename V2, typename V3>
-struct is_same3vector : public std::integral_constant < bool, is_same2vector<V1, V2>::value && is_same2vector<V1, V3>::value> {};
-
-template <typename V1, typename V2, typename V3, typename V4>
-struct is_same4vector : public std::integral_constant < bool, is_same3vector<V1, V2, V3>::value && is_same2vector<V1, V4>::value> {};
-
-template <typename V1, typename V2, typename V3, typename V4, typename V5>
-struct is_same5vector : public std::integral_constant < bool, is_same4vector<V1, V2, V3, V4>::value && is_same2vector<V1, V5>::value> {};
-
 
 
 
@@ -127,6 +161,35 @@ auto set_zero(T& t) -> typename std::enable_if<(vector_traits<T>::SIZE == 1)>::t
 {
 	t = 0;
 }
+
+template<typename V>
+using ScalarOf = typename vector_traits<V>::Scalar;
+
+template<typename V>
+constexpr std::size_t SizeOf()
+{
+	return vector_traits<V>::SIZE;
+}
+
+template<typename V>
+constexpr bool IsSizeOf(std::size_t s)
+{
+	return vector_traits<V>::SIZE==s;
+}
+
+
+template <typename VEC>
+using ConstTypeEigenize = Eigen::Map<const Eigen::Matrix< ScalarOf<VEC>,SizeOf<VEC>(),1>>;
+
+template <typename VEC>
+using TypeEigenize = Eigen::Map<Eigen::Matrix< ScalarOf<VEC>,SizeOf<VEC>(),1>>;
+
+template <typename VEC>
+inline TypeEigenize<VEC> eigenize(VEC& v) { return TypeEigenize<VEC>(&(v[0])); }
+
+template <typename VEC>
+inline ConstTypeEigenize<VEC> eigenize(const VEC& v) { return ConstTypeEigenize<VEC>(&(v[0])); }
+
 
 } // namespace geometry
 

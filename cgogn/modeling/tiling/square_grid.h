@@ -26,6 +26,8 @@
 
 #include <cgogn/core/cmap/cmap2_builder.h>
 #include <cgogn/modeling/tiling/tiling.h>
+#include <cgogn/geometry/types/geometry_traits.h>
+
 
 namespace cgogn
 {

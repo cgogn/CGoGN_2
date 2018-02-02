@@ -50,7 +50,7 @@ class OBB
 public:
 
 	using Vec = VEC_T;
-	using Scalar = typename vector_traits<Vec>::Scalar;
+	using Scalar = ScalarOf<Vec>;
 	using Self = OBB<Vec>;
 
 	/**

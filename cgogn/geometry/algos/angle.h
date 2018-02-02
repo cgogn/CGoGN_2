@@ -40,7 +40,7 @@ namespace geometry
 {
 
 template <typename VEC3, typename MAP>
-inline typename vector_traits<VEC3>::Scalar angle(
+inline ScalarOf<VEC3> angle(
 	const MAP& map,
 	const Cell<Orbit::DART> v,
 	const typename MAP::template VertexAttribute<VEC3>& position
@@ -58,13 +58,13 @@ inline typename vector_traits<VEC3>::Scalar angle(
  * compute and return the angle formed by the normals of the two faces incident to the given edge
  */
 template <typename VEC3, typename MAP>
-inline typename vector_traits<VEC3>::Scalar angle_between_face_normals(
+inline ScalarOf<VEC3> angle_between_face_normals(
 	const MAP& map,
 	const Cell<Orbit::PHI2> e,
 	const typename MAP::template VertexAttribute<VEC3>& position
 )
 {
-	using Scalar = typename vector_traits<VEC3>::Scalar;
+	using Scalar = ScalarOf<VEC3>;
 	using Vertex2 = Cell<Orbit::PHI21>;
 	using Face2 = Cell<Orbit::PHI1>;
 
@@ -102,7 +102,7 @@ inline void compute_angle_between_face_normals(
 	const MAP& map,
 	const MASK& mask,
 	const typename MAP::template VertexAttribute<VEC3>& position,
-	Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI2>& edge_angle
+	Attribute<ScalarOf<VEC3>, Orbit::PHI2>& edge_angle
 )
 {
 	map.parallel_foreach_cell([&] (Cell<Orbit::PHI2> e)
@@ -116,7 +116,7 @@ template <typename VEC3, typename MAP>
 inline void compute_angle_between_face_normals(
 	const MAP& map,
 	const typename MAP::template VertexAttribute<VEC3>& position,
-	Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI2>& edge_angle
+	Attribute<ScalarOf<VEC3>, Orbit::PHI2>& edge_angle
 )
 {
 	compute_angle_between_face_normals<VEC3>(map, AllCellsFilter(), position, edge_angle);

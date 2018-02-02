@@ -47,7 +47,7 @@ inline VEC3 normal(
 	const typename MAP::template VertexAttribute<VEC3>& position
 )
 {
-	using Scalar = typename vector_traits<VEC3>::Scalar;
+	using Scalar = ScalarOf<VEC3>;
 	using Vertex = typename MAP::Vertex;
 
 	if (map.codegree(f) == 3)
@@ -83,7 +83,7 @@ inline VEC3 normal(
 	const typename MAP::template VertexAttribute<VEC3>& position
 )
 {
-	using Scalar = typename vector_traits<VEC3>::Scalar;
+	using Scalar = ScalarOf<VEC3>;
 	using Vertex = typename MAP::Vertex;
 
 	VEC3 n{Scalar{0}, Scalar{0}, Scalar{0}};
@@ -110,7 +110,7 @@ inline VEC3 normal(
 	const Attribute<VEC3, Orbit::PHI1>& face_normal
 )
 {
-	using Scalar = typename vector_traits<VEC3>::Scalar;
+	using Scalar = ScalarOf<VEC3>;
 	using Vertex = typename MAP::Vertex;
 
 	VEC3 n{Scalar{0}, Scalar{0}, Scalar{0}};

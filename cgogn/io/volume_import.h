@@ -30,7 +30,7 @@
 #include <cgogn/core/utils/string.h>
 
 #include <cgogn/core/cmap/cmap3.h>
-
+#include <cgogn/geometry/types/geometry_traits.h>
 #include <cgogn/geometry/functions/orientation.h>
 
 #include <cgogn/io/dll.h>

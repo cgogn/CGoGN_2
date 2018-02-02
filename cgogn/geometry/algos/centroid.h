@@ -49,7 +49,7 @@ inline auto centroid(
 		result += attribute[v];
 		++count;
 	});
-	result /= typename vector_traits<VEC>::Scalar(count);
+	result /= ScalarOf<VEC>(count);
 	return result;
 }
 
@@ -104,7 +104,7 @@ inline auto centroid(
 	for (VEC& v : sum_per_thread) result += v;
 	for (uint32 n : nb_vertices_per_thread) nbv += n;
 
-	return result / typename vector_traits<VEC>::Scalar(nbv);
+	return result / ScalarOf<VEC>(nbv);
 }
 
 template <typename VEC, typename MAP>
@@ -124,7 +124,7 @@ typename MAP::Vertex central_vertex(
 )
 {
 	using Vertex = typename MAP::Vertex;
-	using Scalar = typename vector_traits<VEC>::Scalar;
+	using Scalar = ScalarOf<VEC>;
 
 	VEC center = centroid<VEC, MAP>(map, mask, attribute);
 

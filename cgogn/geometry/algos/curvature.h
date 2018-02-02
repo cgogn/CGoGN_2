@@ -41,19 +41,19 @@ template <typename VEC3, typename MAP>
 void curvature(
 	const MAP& map,
 	const Cell<Orbit::PHI21> v,
-	typename vector_traits<VEC3>::Scalar radius,
+	ScalarOf<VEC3> radius,
 	const Attribute<VEC3, Orbit::PHI21>& position,
 	const Attribute<VEC3, Orbit::PHI21>& normal,
-	const Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI2>& edge_angle,
-	const Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI2>& edge_area,
-	Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI21>& kmax,
-	Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI21>& kmin,
+	const Attribute<ScalarOf<VEC3>, Orbit::PHI2>& edge_angle,
+	const Attribute<ScalarOf<VEC3>, Orbit::PHI2>& edge_area,
+	Attribute<ScalarOf<VEC3>, Orbit::PHI21>& kmax,
+	Attribute<ScalarOf<VEC3>, Orbit::PHI21>& kmin,
 	Attribute<VEC3, Orbit::PHI21>& Kmax,
 	Attribute<VEC3, Orbit::PHI21>& Kmin,
 	Attribute<VEC3, Orbit::PHI21>& Knormal
 )
 {
-	using Scalar = typename vector_traits<VEC3>::Scalar;
+	using Scalar = ScalarOf<VEC3>;
 	using Vertex2 = Cell<Orbit::PHI21>;
 	using Edge2 = Cell<Orbit::PHI2>;
 
@@ -143,13 +143,13 @@ template <typename VEC3, typename MAP, typename MASK>
 void compute_curvature(
 	const MAP& map,
 	const MASK& mask,
-	typename vector_traits<VEC3>::Scalar radius,
+	ScalarOf<VEC3> radius,
 	const Attribute<VEC3, Orbit::PHI21>& position,
 	const Attribute<VEC3, Orbit::PHI21>& normal,
-	const Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI2>& edge_angle,
-	const Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI2>& edge_area,
-	Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI21>& kmax,
-	Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI21>& kmin,
+	const Attribute<ScalarOf<VEC3>, Orbit::PHI2>& edge_angle,
+	const Attribute<ScalarOf<VEC3>, Orbit::PHI2>& edge_area,
+	Attribute<ScalarOf<VEC3>, Orbit::PHI21>& kmax,
+	Attribute<ScalarOf<VEC3>, Orbit::PHI21>& kmin,
 	Attribute<VEC3, Orbit::PHI21>& Kmax,
 	Attribute<VEC3, Orbit::PHI21>& Kmin,
 	Attribute<VEC3, Orbit::PHI21>& Knormal
@@ -165,13 +165,13 @@ void compute_curvature(
 template <typename VEC3, typename MAP>
 void compute_curvature(
 	const MAP& map,
-	typename vector_traits<VEC3>::Scalar radius,
+	ScalarOf<VEC3> radius,
 	const Attribute<VEC3, Orbit::PHI21>& position,
 	const Attribute<VEC3, Orbit::PHI21>& normal,
-	const Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI2>& edge_angle,
-	const Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI2>& edge_area,
-	Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI21>& kmax,
-	Attribute<typename vector_traits<VEC3>::Scalar, Orbit::PHI21>& kmin,
+	const Attribute<ScalarOf<VEC3>, Orbit::PHI2>& edge_angle,
+	const Attribute<ScalarOf<VEC3>, Orbit::PHI2>& edge_area,
+	Attribute<ScalarOf<VEC3>, Orbit::PHI21>& kmax,
+	Attribute<ScalarOf<VEC3>, Orbit::PHI21>& kmin,
 	Attribute<VEC3, Orbit::PHI21>& Kmax,
 	Attribute<VEC3, Orbit::PHI21>& Kmin,
 	Attribute<VEC3, Orbit::PHI21>& Knormal

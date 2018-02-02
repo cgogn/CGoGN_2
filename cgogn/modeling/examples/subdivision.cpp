@@ -33,6 +33,8 @@
 
 #include <cgogn/io/map_import.h>
 
+#include <cgogn/io/map_export.h>
+
 #include <cgogn/geometry/algos/bounding_box.h>
 
 #include <cgogn/rendering/map_render.h>
@@ -206,6 +208,7 @@ public:
 	void import(const std::string& surface_mesh)
 	{
 		cgogn::io::import_surface<Vec3>(map_, surface_mesh);
+
 
 		vertex_position_ = map_.template get_attribute<Vec3, Map2::Vertex>("position");
 		if (!vertex_position_.is_valid())

@@ -42,9 +42,9 @@ public:
 
 	using Self = Quadric;
 
-	using Vec3f = Eigen::Vector3f;
+//	using Vec3f = Eigen::Vector3f;
 	using Vec3d = Eigen::Vector3d;
-	using Vec4f = Eigen::Vector4f;
+//	using Vec4f = Eigen::Vector4f;
 	using Vec4d = Eigen::Vector4d;
 
 	using Matrix4d = Eigen::Matrix4d;
@@ -59,8 +59,8 @@ public:
 	template <typename VEC3>
 	inline Quadric(const VEC3& p1, const VEC3& p2, const VEC3& p3)
 	{
-		Plane3D<VEC3> plane(p1, p2, p3);
-		const VEC3& n = plane.normal();
+		Plane3D plane(p1, p2, p3);
+		const Vec3d& n = plane.normal();
 		Vec4d p = Vec4d(n[0], n[1], n[2], plane.d());
 		matrix_ = p * p.transpose();
 	}
@@ -89,23 +89,21 @@ public:
 
 	template <typename VEC3>
 	auto operator()(const VEC3& v)
-		-> typename std::enable_if<vector_traits<VEC3>::SIZE == 3 && std::is_same<typename vector_traits<VEC3>::Scalar, double>::value, double>::type
+		-> typename std::enable_if<vector_traits<VEC3>::SIZE == 3 && std::is_same<ScalarOf<VEC3>, double>::value, double>::type
 	{
 		return (*this)(Vec4d(v[0], v[1], v[2], 1.));
 	}
 
 	template <typename VEC3>
 	auto operator()(const VEC3& v)
-		-> typename std::enable_if<vector_traits<VEC3>::SIZE == 3 && !std::is_same<typename vector_traits<VEC3>::Scalar, double>::value, typename vector_traits<VEC3>::Scalar>::type
+		-> typename std::enable_if<vector_traits<VEC3>::SIZE == 3 && !std::is_same<ScalarOf<VEC3>, double>::value, ScalarOf<VEC3>>::type
 	{
-		using Scalar = typename vector_traits<VEC3>::Scalar;
+		using Scalar = ScalarOf<VEC3>;
 
 		return Scalar((*this)(Vec4d(double(v[0]), double(v[1]), double(v[2]), 1.)));
 	}
 
-	template <typename VEC4>
-	auto operator()(const VEC4& v)
-		-> typename std::enable_if<vector_traits<VEC4>::SIZE == 4 && std::is_same<VEC4, Vec4d>::value, double>::type
+	inline double operator()(const Vec4d& v)
 	{
 		return v.transpose() * matrix_ * v;
 	}
@@ -129,7 +127,7 @@ public:
 	auto optimized(VEC3& v)
 		-> typename std::enable_if<vector_traits<VEC3>::SIZE == 3, bool>::type
 	{
-		using Scalar = typename vector_traits<VEC3>::Scalar;
+		using Scalar = ScalarOf<VEC3>;
 
 		Vec4d hv;
 		bool b = optimized(hv);

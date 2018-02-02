@@ -35,12 +35,22 @@ namespace geometry
 /**
  * normal of the plane spanned by 3 points in 3D
  */
-template <typename VEC3, typename VEC3b, typename VEC3c>
-inline auto normal(const VEC3& p1, const VEC3b& p2, const VEC3c& p3)
--> typename std::enable_if <is_same3vector<VEC3, VEC3b, VEC3c>::value, VEC3>::type
+template <typename VEC3a, typename VEC3b, typename VEC3c>
+inline typename vector_traits<VEC3a>::Type normal(const Eigen::MatrixBase<VEC3a>& p1, const Eigen::MatrixBase<VEC3b>& p2, const Eigen::MatrixBase<VEC3c>& p3)
 {
+	static_assert(is_same_vectors<VEC3a,VEC3b,VEC3c>::value, "parameters must have same type");
+	static_assert(IsSizeOf<VEC3a>(3ul), "The size of the vector must be equal to 3.");
 	return (p2-p1).cross(p3-p1);
 }
+
+template <typename VEC3>
+inline auto normal(const VEC3& p1, const VEC3& p2, const VEC3& p3)
+ -> typename std::enable_if <!is_eigen<VEC3>::value, VEC3>::type
+{
+	static_assert(vector_traits<VEC3>::OK, "parameters must be vectors");
+	return (p2-p1).cross(p3-p1);
+}
+
 
 } // namespace geometry
 

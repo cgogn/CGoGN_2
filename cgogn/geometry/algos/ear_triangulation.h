@@ -41,7 +41,7 @@ class EarTriangulation
 {
 	using Vertex = typename MAP::Vertex;
 	using Face   = typename MAP::Face;
-	using Scalar = typename vector_traits<VEC3>::Scalar;
+	using Scalar = ScalarOf<VEC3>;
 
 	class VertexPoly
 	{
