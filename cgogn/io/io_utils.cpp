@@ -97,13 +97,17 @@ CGOGN_IO_API std::vector<unsigned char> zlib_decompress(const char* input, DataT
 			nb_blocks = *reinterpret_cast<const std::uint64_t*>(&header_data[0]);
 			uncompressed_block_size = *reinterpret_cast<const std::uint64_t*>(&header_data[8]);
 			last_block_size = *reinterpret_cast<const std::uint64_t*>(&header_data[16]);
-		} else {
+		}
+		else
+		{
 			nb_blocks = *reinterpret_cast<const uint32*>(&header_data[0]);
 			uncompressed_block_size = *reinterpret_cast<const uint32*>(&header_data[4]);
 			last_block_size = *reinterpret_cast<const uint32*>(&header_data[8]);
 		}
 		compressed_size.resize(nb_blocks);
-	} else {
+	}
+	else
+	{
 		cgogn_log_warning("zlib_decompress") << "Unable to decode the header.";
 		return std::vector<unsigned char>();
 	}
@@ -214,7 +218,6 @@ CGOGN_IO_API std::vector<char> base64_encode(const char* input_buffer, std::size
 	return res;
 }
 
-
 CGOGN_IO_API std::vector<unsigned char> base64_decode(const char* input, std::size_t length)
 {
 	const std::locale locale;
@@ -306,11 +309,16 @@ CGOGN_IO_API FileType file_type(const std::string& filename)
 		{"nas", FileType_NASTRAN},
 		{"bdf", FileType_NASTRAN},
 		{"tet", FileType_AIMATSHAPE},
-		{"tetmesh", FileType_TETMESH}
+		{"tetmesh", FileType_TETMESH},
+		{"skel", FileType::FileType_SKEL},
+		{"cg", FileType::FileType_CG},
+		{"cskel", FileType::FileType_CSKEL},
+		{"skc", FileType::FileType_CSKEL},
+		{"dot", FileType::FileType_DOT}
 	};
 
 	const auto it = file_type_map.find(ext);
-	if ( it != file_type_map.end())
+	if (it != file_type_map.end())
 		return it->second;
 	else
 		return FileType::FileType_UNKNOWN;
@@ -443,4 +451,3 @@ ExportOptions ExportOptions::create()
 } // namespace io
 
 } // namespace cgogn
-

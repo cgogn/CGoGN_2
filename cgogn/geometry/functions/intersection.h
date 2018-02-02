@@ -43,13 +43,12 @@ enum Intersection
 	FACE_INTERSECTION = 3
 } ;
 
-
-template <typename VEC3, typename VEC3b, typename VEC3c, typename VEC3d, typename VEC3e>
-auto intersection_ray_triangle(const VEC3& P, const VEC3b& Dir, const VEC3c& Ta, const VEC3d& Tb, const VEC3e& Tc, typename vector_traits<VEC3>::Type* inter = nullptr)
--> typename std::enable_if <is_same5vector<VEC3, VEC3b, VEC3c, VEC3d, VEC3e>::value, bool>::type
+template <typename VEC3a, typename VEC3b, typename VEC3c, typename VEC3d, typename VEC3e>
+auto intersection_ray_triangle(const VEC3a& P, const VEC3b& Dir, const VEC3c& Ta, const VEC3d& Tb, const VEC3e& Tc, typename vector_traits<VEC3a>::Type* inter = nullptr)
+-> typename std::enable_if <is_same5vector<VEC3a, VEC3b, VEC3c, VEC3d, VEC3e>::value, bool>::type
 {
-	using Scalar = typename vector_traits<VEC3>::Scalar;
-	using NVEC3 = typename vector_traits<VEC3>::Type;
+	using Scalar = typename vector_traits<VEC3a>::Scalar;
+	using NVEC3 = typename vector_traits<VEC3a>::Type;
 
 	NVEC3 u = Ta - P;
 	NVEC3 v = Tb - P;
@@ -85,7 +84,7 @@ auto intersection_ray_triangle(const VEC3& P, const VEC3b& Dir, const VEC3c& Ta,
 	Scalar gamma =Scalar(1) - alpha - beta;
 	NVEC3 I = Ta * alpha + Tb * beta + Tc * gamma;
 
-	//  it's a ray not a line !
+	// it's a ray not a line !
 	if (Dir.dot(I-P) < 0.0)
 		return false;
 
@@ -138,9 +137,7 @@ auto intersection_segment_segment(
 		-> typename std::enable_if <is_same5vector<VEC3, VEC3b, VEC3c, VEC3d, VEC3e>::value, Intersection>::type
 {
 	using Scalar = typename vector_traits<VEC3>::Scalar;
-	const Scalar PRECISION = std::numeric_limits<Scalar>::epsilon();
 	using NVEC3 = typename vector_traits<VEC3>::Type;
-
 
 	NVEC3 vp1p2 = PB - PA;
 	NVEC3 vq1q2 = QB - QA;
@@ -148,13 +145,13 @@ auto intersection_segment_segment(
 	Scalar delta = vp1p2[0] * vq1q2[1] - vp1p2[1] * vq1q2[0] ;
 	Scalar coeff = vp1q1[0] * vq1q2[1] - vp1q1[1] * vq1q2[0] ;
 
-	if (delta == 0) //parallel
+	if (delta == 0) // parallel
 	{
-		//test if collinear
+		// test if colinear
 		if (coeff == 0)
 		{
-			//collinear
-			//TODO : check if there is a common point between the two edges
+			// colinear
+			// TODO : check if there is a common point between the two edges
 			Inter = QA;
 			return EDGE_INTERSECTION;
 		}
@@ -164,8 +161,8 @@ auto intersection_segment_segment(
 	else
 		Inter = NVEC3((PA[0] * delta + vp1p2[0] * coeff) / delta, (PA[1] * delta + vp1p2[1] * coeff) / delta, (PA[2] * delta + vp1p2[2] * coeff) / delta) ;
 
-	//test if inter point is outside the edges
-	if(
+	// test if inter point is outside the edges
+	if (
 		(Inter[0] < PA[0] && Inter[0] < PB[0]) || (Inter[0] > PA[0] && Inter[0] > PB[0]) ||
 		(Inter[0] < QA[0] && Inter[0] < QB[0]) || (Inter[0] > QA[0] && Inter[0] > QB[0]) ||
 		(Inter[1] < PA[1] && Inter[1] < PB[1]) || (Inter[1] > PA[1] && Inter[1] > PB[1]) ||
@@ -173,7 +170,7 @@ auto intersection_segment_segment(
 	)
 		return NO_INTERSECTION;
 
-	if(numerics::almost_equal_absolute(PA, Inter) || numerics::almost_equal_absolute(PB, Inter) || numerics::almost_equal_absolute(QA, Inter) || numerics::almost_equal_absolute(QB, Inter))
+	if (PA.isApprox(Inter) || PB.isApprox(Inter) || QA.isApprox(Inter) || QB.isApprox(Inter))
 		return VERTEX_INTERSECTION;
 
 	return EDGE_INTERSECTION;
@@ -197,8 +194,6 @@ auto intersection_line_plane(const VEC3& point_line, const VEC3b& dir_line, cons
 
 	return true;
 }
-
-
 
 } // namespace geometry
 

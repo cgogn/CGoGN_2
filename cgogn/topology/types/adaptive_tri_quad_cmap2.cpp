@@ -108,6 +108,13 @@ bool AdaptiveTriQuadCMap2::is_simplifiable(Face f)
 		default:
 			return false; // to avoid warning
 	}
+
+	return false; // should never reach
+}
+
+uint8 AdaptiveTriQuadCMap2::dart_level(Dart d)
+{
+	return dart_level_[d];
 }
 
 uint8 AdaptiveTriQuadCMap2::face_level(Face f)
@@ -120,7 +127,7 @@ uint8 AdaptiveTriQuadCMap2::face_level(Face f)
 	if (id < 341) return 4;
 	if (id < 1365) return 5;
 	if (id < 5461) return 6;
-	return 255;// to avoid warning
+	return 0; // should never reach
 }
 
 AdaptiveTriQuadCMap2::FaceType AdaptiveTriQuadCMap2::face_type(Face f)
@@ -131,6 +138,11 @@ AdaptiveTriQuadCMap2::FaceType AdaptiveTriQuadCMap2::face_type(Face f)
 		return TRI_CENTRAL;
 	else
 		return TRI_CORNER;
+}
+
+bool AdaptiveTriQuadCMap2::is_triangle_face(Face f)
+{
+	return tri_face_[f];
 }
 
 Dart AdaptiveTriQuadCMap2::oldest_dart(Face f)

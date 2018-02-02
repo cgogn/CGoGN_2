@@ -1,0 +1,10 @@
+@PACKAGE_INIT@
+
+set(Meshb_LIBRARIES "Meshb")
+set(Meshb_INCLUDE_DIRS "@PACKAGE_MESHB_INCLUDE_DIRS@")
+
+if(NOT TARGET Meshb)
+	include("${CMAKE_CURRENT_LIST_DIR}/MeshbTargets.cmake")
+endif()
+
+check_required_components(Meshb)

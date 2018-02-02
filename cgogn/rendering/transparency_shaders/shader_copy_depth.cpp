@@ -23,11 +23,9 @@
 
 #define CGOGN_RENDER_FLAT_TR_DR_CPP_
 
-
 #include <iostream>
 
 #include <cgogn/rendering/transparency_shaders/shader_copy_depth.h>
-
 
 namespace cgogn
 {
@@ -81,20 +79,17 @@ std::unique_ptr< ShaderCopyDepth::Param> ShaderCopyDepth::generate_param()
 	return cgogn::make_unique<Param>(instance_);
 }
 
-
-
 ShaderParamCopyDepth::ShaderParamCopyDepth(ShaderCopyDepth* sh) :
 	ShaderParam(sh),
 	texture_(nullptr)
 {}
-
 
 void ShaderParamCopyDepth::set_uniforms()
 {
 	ShaderCopyDepth* sh = static_cast<ShaderCopyDepth*>(this->shader_);
 	sh->set_depth_sampler(0);
 	QOpenGLContext::currentContext()->functions()->glActiveTexture(GL_TEXTURE0);
-	if (texture_!=nullptr)
+	if (texture_ != nullptr)
 		texture_->bind();
 }
 

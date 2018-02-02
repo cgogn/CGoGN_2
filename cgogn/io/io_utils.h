@@ -41,7 +41,7 @@ namespace cgogn
 template <typename T>
 inline std::ostream& operator<<(std::ostream& o, const Attribute_T<T>& att)
 {
-	for(auto it = att.begin(), end = att.end() ; it != end;)
+	for (auto it = att.begin(), end = att.end() ; it != end;)
 	{
 		o << (*it);
 		++it;
@@ -67,7 +67,6 @@ inline std::istream& operator>>(std::istream& in, Attribute_T<T>& att)
 namespace io
 {
 
-
 class CGOGN_IO_API ExportOptions final
 {
 private:
@@ -79,10 +78,12 @@ public:
 	ExportOptions(const ExportOptions& eo);
 	ExportOptions(ExportOptions&& eo);
 	inline ~ExportOptions() {}
-	inline ExportOptions& filename(const std::string & filename) { filename_ = filename; return *this; }
-	inline ExportOptions& position_attribute(Orbit orb, const std::string & name) {
-		position_attributes_.insert(std::make_pair(orb, name)); return *this;}
-	inline ExportOptions& add_attribute(Orbit orb, const std::string & name) { attributes_to_export_.push_back(std::make_pair(orb,name)); return *this; }
+	inline ExportOptions& filename(const std::string& filename) { filename_ = filename; return *this; }
+	inline ExportOptions& position_attribute(Orbit orb, const std::string& name)
+	{
+		position_attributes_.insert(std::make_pair(orb, name)); return *this;
+	}
+	inline ExportOptions& add_attribute(Orbit orb, const std::string& name) { attributes_to_export_.push_back(std::make_pair(orb, name)); return *this; }
 	inline ExportOptions& binary(bool b) { binary_ = b; return *this; }
 	inline ExportOptions& compress(bool b) { compress_ = b; return *this; }
 	inline ExportOptions& overwrite(bool b) { overwrite_ = b; return *this; }
@@ -105,6 +106,9 @@ public:
 enum FileType
 {
 	FileType_UNKNOWN = 0,
+	FileType_CG,
+	FileType_CSKEL,
+	FileType_DOT,
 	FileType_OFF,
 	FileType_OBJ,
 	FileType_2DM,
@@ -115,6 +119,7 @@ enum FileType
 	FileType_VTP,
 	FileType_MESHB,
 	FileType_MSH,
+	FileType_SKEL,
 	FileType_TETGEN,
 	FileType_NASTRAN,
 	FileType_AIMATSHAPE,
@@ -157,7 +162,7 @@ CGOGN_IO_API DataType                       data_type(const std::string& type_na
  * @param buffer_size, the number of bytes we want to encode ( with buffer_size <= strlen(input_buffer) )
  * @return a vector containing the encoded data.
  */
-CGOGN_IO_API std::vector<char>          base64_encode(const char* input_buffer, std::size_t buffer_size);
+CGOGN_IO_API std::vector<char> base64_encode(const char* input_buffer, std::size_t buffer_size);
 
 /**
  * @brief base64_decode
@@ -174,7 +179,7 @@ CGOGN_IO_API std::vector<unsigned char> base64_decode(const char* const input, s
  * @param length, the length of the data we want to decompress.
  * @return  the decompressed data if successful, otherwise an empty vector.
  */
-CGOGN_IO_API std::vector<unsigned char>              zlib_decompress(const char* input, DataType header_type, std::size_t length);
+CGOGN_IO_API std::vector<unsigned char> zlib_decompress(const char* input, DataType header_type, std::size_t length);
 
 /**
  * @brief zlib_compress
@@ -190,7 +195,7 @@ namespace internal
 
 // #1 return default value when U and T don't have the same nb of components.
 template <typename U, typename T>
-inline auto convert(const T&) -> typename std::enable_if<!std::is_same< std::integral_constant<uint32, geometry::nb_components_traits<T>::value>, std::integral_constant<uint32, geometry::nb_components_traits<U>::value>>::value,U>::type
+inline auto convert(const T&) -> typename std::enable_if<!std::is_same< std::integral_constant<uint32, geometry::vector_traits<T>::SIZE>, std::integral_constant<uint32, geometry::vector_traits<U>::SIZE>>::value,U>::type
 {
 	cgogn_log_warning("convert") << "Cannot convert data of type\"" << name_of_type(T()) << "\" to type \"" << name_of_type(U()) << "\".";
 	return U();
@@ -205,10 +210,10 @@ inline auto convert(const T&x) -> typename std::enable_if<std::is_arithmetic<T>:
 
 // #3 copy component by component if both type have the same number of components (>1)
 template <typename U, typename T>
-inline auto convert(const T& x) -> typename std::enable_if<!std::is_arithmetic<T>::value && std::is_same< std::integral_constant<uint32, geometry::nb_components_traits<T>::value>, std::integral_constant<uint32, geometry::nb_components_traits<U>::value>>::value, U>::type
+inline auto convert(const T& x) -> typename std::enable_if<!std::is_arithmetic<T>::value && std::is_same< std::integral_constant<uint32, geometry::vector_traits<T>::SIZE>, std::integral_constant<uint32, geometry::vector_traits<U>::SIZE>>::value, U>::type
 {
 	U res;
-	for(uint32 i = 0u; i < geometry::nb_components_traits<T>::value ; ++i)
+	for (uint32 i = 0u; i < geometry::vector_traits<T>::SIZE ; ++i)
 		res[i] = typename geometry::vector_traits<U>::Scalar(x[i]);
 	return res;
 }

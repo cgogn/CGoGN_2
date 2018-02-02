@@ -40,19 +40,19 @@ namespace rendering
 // forward
 class ShaderCopyDepth;
 
-
-
 class CGOGN_RENDERING_API ShaderParamCopyDepth : public ShaderParam
 {
 protected:
+
 	void set_uniforms() override;
+
 public:
+
 	using ShaderType = ShaderCopyDepth;
 	QOpenGLTexture* texture_;
 	GLuint depth_texture_sampler_;
 	ShaderParamCopyDepth(ShaderCopyDepth* sh);
 };
-
 
 class CGOGN_RENDERING_API ShaderCopyDepth : public ShaderProgram
 {
@@ -81,7 +81,6 @@ private:
 
 	ShaderCopyDepth();
 	static ShaderCopyDepth* instance_;
-
 };
 
 } // namespace rendering

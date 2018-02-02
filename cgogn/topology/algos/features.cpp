@@ -31,10 +31,10 @@ namespace cgogn
 namespace topology
 {
 
-template class CGOGN_TOPLOGY_API FeaturesFinder<float32, CMap2>;
-template class CGOGN_TOPLOGY_API FeaturesFinder<float64, CMap2>;
-template class CGOGN_TOPLOGY_API FeaturesFinder<float32, CMap3>;
-template class CGOGN_TOPLOGY_API FeaturesFinder<float64, CMap3>;
+template class CGOGN_TOPOLOGY_API FeaturesFinder<float32, CMap2>;
+template class CGOGN_TOPOLOGY_API FeaturesFinder<float64, CMap2>;
+template class CGOGN_TOPOLOGY_API FeaturesFinder<float32, CMap3>;
+template class CGOGN_TOPOLOGY_API FeaturesFinder<float64, CMap3>;
 
 } // namespace topology
 

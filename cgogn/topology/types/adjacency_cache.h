@@ -45,8 +45,7 @@ public:
 
 	inline AdjacencyCache(MAP& map) :
 		map_(map)
-	{
-	}
+	{}
 
 	inline AdjacencyCache(const AdjacencyCache& other) :
 		map_(other.map_),
