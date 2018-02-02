@@ -53,7 +53,7 @@ Orientation2D side(const Eigen::MatrixBase<VEC2a>& P, const Eigen::MatrixBase<VE
 	static_assert(vector_traits<VEC2a>::SIZE == 2ul, "The size of the vector must be equal to 2.");
 	static_assert(is_same_vectors<VEC2a,VEC2b,VEC2c>::value, "parameters must have same type");
 
-	using Scalar = typename vector_traits<VEC2a>::Scalar;
+	using Scalar = ScalarOf<VEC2a>;
 //	const Scalar zero(0.000001);
 
 	Scalar p = (P[0] - Pa[0]) * (Pb[1] - Pa[1]) - (Pb[0] - Pa[0]) * (P[1] - Pa[1]) ;
@@ -86,7 +86,7 @@ template <typename VEC3a, typename VEC3b, typename VEC3c, typename VEC3d>
 Orientation3D test_orientation_3D(const Eigen::MatrixBase<VEC3a>& P, const Eigen::MatrixBase<VEC3b>& A, const Eigen::MatrixBase<VEC3c>& B, const Eigen::MatrixBase<VEC3d>& C)
 {
 	static_assert(is_same_vectors<VEC3a,VEC3b,VEC3c,VEC3d>::value, "parameters must have same type");
-	static_assert(vector_traits<VEC3a>::SIZE == 3ul, "The size of the vector must be equal to 3.");
+	static_assert(IsSizeOf<VEC3a>(3ul), "The size of the vector must be equal to 3.");
 	return Plane3D(A, B, C).orient(P);
 }
 
@@ -94,6 +94,7 @@ template <typename VEC3>
 inline auto test_orientation_3D(const VEC3& P, const VEC3& A, const VEC3& B, const VEC3& C)
 -> typename std::enable_if <!is_eigen<VEC3>::value, Orientation3D >::type
 {
+	static_assert(vector_traits<VEC3>::OK, "parameters must be vectors");
 	return test_orientation_3D(eigenize(P),eigenize(A),eigenize(B),eigenize(C));
 }
 
@@ -108,8 +109,8 @@ inline auto test_orientation_3D(const VEC3& P, const VEC3& A, const VEC3& B, con
 template <typename VEC3a, typename VEC3b, typename VEC3c>
 Orientation3D test_orientation_3D(const Eigen::MatrixBase<VEC3a>& P, const Eigen::MatrixBase<VEC3b>& N, const Eigen::MatrixBase<VEC3c>& PP)
 {
-	static_assert(vector_traits<VEC3a>::SIZE == 3ul, "The size of the vector must be equal to 3.");
 	static_assert(is_same_vectors<VEC3a,VEC3b,VEC3c>::value, "parameters must have same type");
+	static_assert(IsSizeOf<VEC3a>(3ul), "The size of the vector must be equal to 3.");
 	return Plane3D(N, PP).orient(P);
 }
 
@@ -117,6 +118,7 @@ template <typename VEC3>
 inline auto test_orientation_3D(const VEC3& P, const VEC3& N, const VEC3& PP)
 -> typename std::enable_if <!is_eigen<VEC3>::value, Orientation3D >::type
 {
+	static_assert(vector_traits<VEC3>::OK, "parameters must be vectors");
 	return test_orientation_3D(eigenize(P),eigenize(N),eigenize(PP));
 }
 

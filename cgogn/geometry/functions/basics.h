@@ -42,7 +42,7 @@ namespace geometry
 template <typename VEC>
 inline void normalize_safe(Eigen::MatrixBase<VEC>& v)
 {
-	using Scalar = typename vector_traits<VEC>::Scalar;
+	using Scalar = ScalarOf<VEC>;
 	const Scalar norm2 = v.squaredNorm();
 	if (norm2 > Scalar(0))
 		v /= std::sqrt(norm2);
@@ -51,6 +51,7 @@ inline void normalize_safe(Eigen::MatrixBase<VEC>& v)
 template <typename VEC>
 inline auto normalize_safe(VEC& v) -> typename std::enable_if <!is_eigen<VEC>::value,void>::type
 {
+	static_assert(vector_traits<VEC>::OK, "parameters must be vectors");
 	auto w = eigenize(v);
 	normalize_safe(w);
 }
@@ -72,11 +73,15 @@ typename vector_traits<VECa>::Scalar cos_angle(const Eigen::MatrixBase<VECa>& a,
 	return std::max(Scalar(-1), std::min(res, Scalar(1)));
 }
 
-//template <typename VEC>
-//inline auto cos_angle(const VEC& a, const VEC& b) -> typename std::enable_if <!is_eigen<VEC>::value, typename vector_traits<VEC>::Scalar>::type
-//{
-//	return cos_angle(eigenize(a),eigenize(b));
-//}
+
+template <typename VEC, typename X = typename std::enable_if <!is_eigen<VEC>::value,void>::type>
+inline ScalarOf<VEC> cos_angle(const VEC& a, const VEC& b)
+{
+	static_assert(vector_traits<VEC>::OK, "parameters must be vectors");
+	return cos_angle(eigenize(a),eigenize(b));
+}
+
+
 
 /**
  * @brief angle formed by 2 vectors
@@ -89,9 +94,10 @@ typename vector_traits<VECa>::Scalar angle(const Eigen::MatrixBase<VECa>& a, con
 }
 
 
-template <typename VEC>
-inline auto angle(const VEC& a, const VEC& b) -> typename std::enable_if <!is_eigen<VEC>::value, typename vector_traits<VEC>::Scalar>::type
+template <typename VEC, typename X = typename std::enable_if <!is_eigen<VEC>::value,void>::type >
+inline ScalarOf<VEC> angle(const VEC& a, const VEC& b)
 {
+	static_assert(vector_traits<VEC>::OK, "parameters must be vectors");
 	return angle(eigenize(a),eigenize(b));
 }
 

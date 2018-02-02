@@ -46,7 +46,7 @@ public:
 	using Inherit = CellTraversor;
 	using Self = CollectorGen<VEC3>;
 
-	using Scalar = typename vector_traits<VEC3>::Scalar;
+	using Scalar = ScalarOf<VEC3>;
 	using const_iterator = std::vector<Dart>::const_iterator;
 
 	inline CollectorGen() : Inherit()
@@ -160,7 +160,7 @@ public:
 	using Inherit = Collector<VEC3, MAP>;
 	using Self = Collector_OneRing<VEC3, MAP>;
 
-	using Scalar = typename vector_traits<VEC3>::Scalar;
+	using Scalar = ScalarOf<VEC3>;
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
 	using Face = typename MAP::Face;
@@ -204,7 +204,7 @@ public:
 	using Self = Collector_WithinSphere<VEC3, MAP>;
 	using Inherit = Collector<VEC3, MAP>;
 
-	using Scalar = typename vector_traits<VEC3>::Scalar;
+	using Scalar = ScalarOf<VEC3>;
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
 	using Face = typename MAP::Face;
@@ -314,15 +314,15 @@ public:
 			if (geometry::in_sphere(position[Vertex(g)], center_position, radius_)) // Vertex(g) is inside
 			{
 				Scalar alpha, beta;
-				geometry::intersection_sphere_segment(position[Vertex(d)], position[Vertex(f)], center_position, radius_, alpha);
-				geometry::intersection_sphere_segment(position[Vertex(g)], position[Vertex(f)], center_position, radius_, beta);
+				geometry::intersection_sphere_segment(center_position, radius_, position[Vertex(d)], position[Vertex(f)], alpha);
+				geometry::intersection_sphere_segment(center_position, radius_, position[Vertex(g)], position[Vertex(f)], beta);
 				result += (alpha+beta - alpha*beta) * geometry::area<VEC3>(this->map_, Face(d), position);
 			}
 			else // Vertex(g) is outside
 			{
 				Scalar alpha, beta;
-				geometry::intersection_sphere_segment(position[Vertex(d)], position[Vertex(f)], center_position, radius_, alpha);
-				geometry::intersection_sphere_segment(position[Vertex(d)], position[Vertex(g)], center_position, radius_, beta);
+				geometry::intersection_sphere_segment(center_position, radius_, position[Vertex(d)], position[Vertex(f)], alpha);
+				geometry::intersection_sphere_segment(center_position, radius_, position[Vertex(d)], position[Vertex(g)], beta);
 				result += alpha * beta * geometry::area<VEC3>(this->map_, Face(d), position);
 			}
 		}

@@ -62,7 +62,7 @@ namespace rendering
  */
 class CGOGN_RENDERING_API TopoDrawer
 {
-	using Vec3f = std::array<float32, 3>;
+	using Vec3f = geometry::Vec_T<std::array<float32,3>>;
 
 protected:
 
@@ -456,11 +456,11 @@ void TopoDrawer::update_color(Dart d, const RGB& rgb)
 template <typename VEC3, typename VEC4>
 Dart TopoDrawer::pick(const VEC3& xA, const VEC3& xB, const VEC4& plane, VEC3* xdp1, VEC3* xdp2)
 {
-	using LVEC = geometry::Vec_T<Vec3f>;
+//	using LVEC = geometry::Vec_T<Vec3f>;
 
 	VEC3 xAB = xB-xA;
-	LVEC A(xA[0],xA[1],xA[2]);
-	LVEC AB(xAB[0],xAB[1],xAB[2]);
+	Vec3f A(xA[0],xA[1],xA[2]);
+	Vec3f AB(xAB[0],xAB[1],xAB[2]);
 
 	float32 dmax = std::numeric_limits<float32>::max();
 	float32 AB2 = AB.dot(AB);
@@ -485,9 +485,7 @@ Dart TopoDrawer::pick(const VEC3& xA, const VEC3& xB, const VEC4& plane, VEC3* x
 
 		if ((prod1<=0.0f)||(prod2<=0.0f))
 		{
-			const LVEC& P = reinterpret_cast<const LVEC&>(PP);
-			const LVEC& Q = reinterpret_cast<const LVEC&>(QQ);
-			float32 d2 = geometry::squared_distance_line_seg(A, AB, AB2, P, Q);
+			float32 d2 = geometry::squared_distance_line_seg(A, AB, AB2, PP, QQ);
 			if (d2 < dmax)
 			{
 				dmax = d2;
@@ -516,11 +514,11 @@ Dart TopoDrawer::pick(const VEC3& xA, const VEC3& xB, const VEC4& plane, VEC3* x
 template <typename VEC3, typename VEC4>
 Dart TopoDrawer::pick(const VEC3& xA, const VEC3& xB, const VEC4& plane1, const VEC4& plane2, VEC3* xdp1, VEC3* xdp2)
 {
-	using LVEC = geometry::Vec_T<Vec3f>;
+//	using LVEC = geometry::Vec_T<Vec3f>;
 
 	VEC3 xAB = xB-xA;
-	LVEC A(xA[0],xA[1],xA[2]);
-	LVEC AB(xAB[0],xAB[1],xAB[2]);
+	Vec3f A(xA[0],xA[1],xA[2]);
+	Vec3f AB(xAB[0],xAB[1],xAB[2]);
 
 	float32 dmax = std::numeric_limits<float32>::max();
 	float32 AB2 = AB.dot(AB);
@@ -554,9 +552,7 @@ Dart TopoDrawer::pick(const VEC3& xA, const VEC3& xB, const VEC4& plane1, const 
 
 		if (((prod1<=0.0f)||(prod2<=0.0f)) && ((prod3<=0.0f)||(prod4<=0.0f)))
 		{
-			const LVEC& P = reinterpret_cast<const LVEC&>(PP);
-			const LVEC& Q = reinterpret_cast<const LVEC&>(QQ);
-			float32 d2 = geometry::squared_distance_line_seg(A, AB, AB2, P, Q);
+			float32 d2 = geometry::squared_distance_line_seg(A, AB, AB2, PP, QQ);
 			if (d2 < dmax)
 			{
 				dmax = d2;

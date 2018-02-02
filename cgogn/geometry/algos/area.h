@@ -39,13 +39,13 @@ namespace geometry
 {
 
 template <typename VEC3, typename MAP>
-inline typename vector_traits<VEC3>::Scalar convex_area(
+inline ScalarOf<VEC3> convex_area(
 	const MAP& map,
 	const typename MAP::Face f,
 	const typename MAP::template VertexAttribute<VEC3>& position
 )
 {
-	using Scalar = typename vector_traits<VEC3>::Scalar;
+	using Scalar = ScalarOf<VEC3>;
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
 
@@ -64,7 +64,7 @@ inline typename vector_traits<VEC3>::Scalar convex_area(
 }
 
 template <typename VEC3, typename MAP>
-inline typename vector_traits<VEC3>::Scalar area(
+inline ScalarOf<VEC3> area(
 	const MAP& map,
 	const typename MAP::Face f,
 	const typename MAP::template VertexAttribute<VEC3>& position
@@ -78,9 +78,9 @@ inline auto area(
 	const MAP& map,
 	const CellType c,
 	const typename MAP::template VertexAttribute<VEC3>& position
-) -> typename std::enable_if<!std::is_same<CellType, typename MAP::Face>::value, typename vector_traits<VEC3>::Scalar>::type
+) -> typename std::enable_if<!std::is_same<CellType, typename MAP::Face>::value, ScalarOf<VEC3>>::type
 {
-	using Scalar = typename vector_traits<VEC3>::Scalar;
+	using Scalar = ScalarOf<VEC3>;
 	using Face = typename MAP::Face;
 
 	Scalar cell_area(0);
@@ -96,7 +96,7 @@ inline void compute_area(
 	const MAP& map,
 	const MASK& mask,
 	const typename MAP::template VertexAttribute<VEC3>& position,
-	Attribute<typename vector_traits<VEC3>::Scalar, CellType::ORBIT>& cell_area
+	Attribute<ScalarOf<VEC3>, CellType::ORBIT>& cell_area
 )
 {
 	map.parallel_foreach_cell([&] (CellType c)
@@ -110,20 +110,20 @@ template <typename VEC3, typename CellType, typename MAP>
 inline void compute_area(
 	const MAP& map,
 	const typename MAP::template VertexAttribute<VEC3>& position,
-	Attribute<typename vector_traits<VEC3>::Scalar, CellType::ORBIT>& cell_area
+	Attribute<ScalarOf<VEC3>, CellType::ORBIT>& cell_area
 )
 {
 	compute_area<VEC3, CellType>(map, AllCellsFilter(), position, cell_area);
 }
 
 template <typename VEC3, typename CellType, typename MAP>
-inline typename vector_traits<VEC3>::Scalar incident_faces_area(
+inline ScalarOf<VEC3> incident_faces_area(
 	const MAP& map,
 	const CellType c,
 	const typename MAP::template VertexAttribute<VEC3>& position
 )
 {
-	using Scalar = typename vector_traits<VEC3>::Scalar;
+	using Scalar = ScalarOf<VEC3>;
 	using Face = typename MAP::Face;
 
 	Scalar incident_area(0);
@@ -139,7 +139,7 @@ inline void compute_incident_faces_area(
 	const MAP& map,
 	const MASK& mask,
 	const typename MAP::template VertexAttribute<VEC3>& position,
-	Attribute<typename vector_traits<VEC3>::Scalar, CellType::ORBIT>& area
+	Attribute<ScalarOf<VEC3>, CellType::ORBIT>& area
 )
 {
 	map.parallel_foreach_cell([&] (CellType c)
@@ -153,7 +153,7 @@ template <typename VEC3, typename CellType, typename MAP>
 inline void compute_incident_faces_area(
 	const MAP& map,
 	const typename MAP::template VertexAttribute<VEC3>& position,
-	Attribute<typename vector_traits<VEC3>::Scalar, CellType::ORBIT>& area
+	Attribute<ScalarOf<VEC3>, CellType::ORBIT>& area
 )
 {
 	compute_incident_faces_area<VEC3, CellType>(map, AllCellsFilter(), position, area);

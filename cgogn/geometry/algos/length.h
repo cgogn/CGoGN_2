@@ -49,7 +49,7 @@ inline VEC3 vector_from(
 }
 
 template <typename VEC3, typename MAP>
-inline typename vector_traits<VEC3>::Scalar length(
+inline ScalarOf<VEC3> length(
 	const MAP& map,
 	const typename MAP::Edge e,
 	const typename MAP::template VertexAttribute<VEC3>& position
@@ -84,13 +84,13 @@ inline void compute_length(
 }
 
 template <typename VEC3, typename MAP, typename MASK>
-inline typename vector_traits<VEC3>::Scalar mean_edge_length(
+inline ScalarOf<VEC3> mean_edge_length(
 	const MAP& map,
 	const MASK& mask,
 	const typename MAP::template VertexAttribute<VEC3>& position
 )
 {
-	using Scalar = typename vector_traits<VEC3>::Scalar;
+	using Scalar = ScalarOf<VEC3>;
 	using Edge = typename MAP::Edge;
 
 	std::vector<Scalar> edge_length_per_thread(thread_pool()->nb_workers(), 0);
@@ -113,7 +113,7 @@ inline typename vector_traits<VEC3>::Scalar mean_edge_length(
 }
 
 template <typename VEC3, typename MAP>
-inline typename vector_traits<VEC3>::Scalar mean_edge_length(
+inline ScalarOf<VEC3> mean_edge_length(
 	const MAP& map,
 	const typename MAP::template VertexAttribute<VEC3>& position
 )

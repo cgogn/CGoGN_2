@@ -89,16 +89,16 @@ public:
 
 	template <typename VEC3>
 	auto operator()(const VEC3& v)
-		-> typename std::enable_if<vector_traits<VEC3>::SIZE == 3 && std::is_same<typename vector_traits<VEC3>::Scalar, double>::value, double>::type
+		-> typename std::enable_if<vector_traits<VEC3>::SIZE == 3 && std::is_same<ScalarOf<VEC3>, double>::value, double>::type
 	{
 		return (*this)(Vec4d(v[0], v[1], v[2], 1.));
 	}
 
 	template <typename VEC3>
 	auto operator()(const VEC3& v)
-		-> typename std::enable_if<vector_traits<VEC3>::SIZE == 3 && !std::is_same<typename vector_traits<VEC3>::Scalar, double>::value, typename vector_traits<VEC3>::Scalar>::type
+		-> typename std::enable_if<vector_traits<VEC3>::SIZE == 3 && !std::is_same<ScalarOf<VEC3>, double>::value, ScalarOf<VEC3>>::type
 	{
-		using Scalar = typename vector_traits<VEC3>::Scalar;
+		using Scalar = ScalarOf<VEC3>;
 
 		return Scalar((*this)(Vec4d(double(v[0]), double(v[1]), double(v[2]), 1.)));
 	}
@@ -127,7 +127,7 @@ public:
 	auto optimized(VEC3& v)
 		-> typename std::enable_if<vector_traits<VEC3>::SIZE == 3, bool>::type
 	{
-		using Scalar = typename vector_traits<VEC3>::Scalar;
+		using Scalar = ScalarOf<VEC3>;
 
 		Vec4d hv;
 		bool b = optimized(hv);

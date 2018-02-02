@@ -41,7 +41,7 @@ void filter_average(
 	typename MAP::template VertexAttribute<T>& attribute_out
 )
 {
-	using Scalar = typename vector_traits<T>::Scalar;
+	using Scalar = ScalarOf<T>;
 	using Vertex = typename MAP::Vertex;
 
 	map.parallel_foreach_cell([&] (Vertex v)
@@ -78,7 +78,7 @@ void filter_bilateral(
 	const typename MAP::template VertexAttribute<VEC3>& normal
 )
 {
-	using Scalar = typename vector_traits<VEC3>::Scalar;
+	using Scalar = ScalarOf<VEC3>;
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
 
@@ -137,7 +137,7 @@ void filter_taubin(
 	typename MAP::template VertexAttribute<VEC3>& position,
 	typename MAP::template VertexAttribute<VEC3>& position_tmp)
 {
-	using Scalar = typename vector_traits<VEC3>::Scalar;
+	using Scalar = ScalarOf<VEC3>;
 	using Vertex = typename MAP::Vertex;
 
 	const Scalar lambda = 0.6307;

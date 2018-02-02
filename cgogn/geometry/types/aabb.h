@@ -47,7 +47,7 @@ class AABB
 public:
 
 	using Vec = VEC_T;
-	using Scalar = typename vector_traits<Vec>::Scalar;
+	using Scalar = ScalarOf<Vec>;
 	using Self = AABB<Vec>;
 	static const uint32 dim_ = vector_traits<Vec>::SIZE;
 	// https://eigen.tuxfamily.org/dox-devel/group__TopicStructHavingEigenMembers.html

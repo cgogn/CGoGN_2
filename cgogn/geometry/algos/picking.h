@@ -49,10 +49,10 @@ inline void picking_internal_face(
 	const typename MAP::template VertexAttribute<VEC3>& position,
 	const VEC3& A,
 	const VEC3& B,
-	typename std::vector<std::tuple<typename MAP::Face, VEC3, typename vector_traits<VEC3>::Scalar>>& selected
+	typename std::vector<std::tuple<typename MAP::Face, VEC3, ScalarOf<VEC3>>>& selected
 )
 {
-	using Scalar = typename vector_traits<VEC3>::Scalar;
+	using Scalar = ScalarOf<VEC3>;
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
 	using Triplet = typename std::tuple<Face, VEC3, Scalar>;
@@ -123,7 +123,7 @@ bool picking(
 	typename std::vector<typename MAP::Face>& selected
 )
 {
-	using Scalar = typename vector_traits<VEC3>::Scalar;
+	using Scalar = ScalarOf<VEC3>;
 	using Face = typename MAP::Face;
 	using Triplet = typename std::tuple<Face, VEC3, Scalar>;
 
@@ -146,7 +146,7 @@ bool picking(
 	typename std::vector<typename MAP::Vertex>& selected
 )
 {
-	using Scalar = typename vector_traits<VEC3>::Scalar;
+	using Scalar = ScalarOf<VEC3>;
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
 	using Triplet = typename std::tuple<Face, VEC3, Scalar>;
@@ -193,7 +193,7 @@ bool picking(
 	typename std::vector<typename MAP::Edge>& selected
 )
 {
-	using Scalar = typename vector_traits<VEC3>::Scalar;
+	using Scalar = ScalarOf<VEC3>;
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
 	using Face = typename MAP::Face;
@@ -243,7 +243,7 @@ bool picking(
 	typename std::vector<typename MAP::Volume>& selected
 )
 {
-	using Scalar = typename vector_traits<VEC3>::Scalar;
+	using Scalar = ScalarOf<VEC3>;
 	using Face = typename MAP::Face;
 	using Volume = typename MAP::Volume;
 	using Triplet = typename std::tuple<Face, VEC3, Scalar>;
