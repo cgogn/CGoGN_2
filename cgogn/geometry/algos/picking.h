@@ -75,7 +75,7 @@ inline void picking_internal_face(
 			const VEC3& p1 = position[Vertex(f.dart)];
 			const VEC3& p2 = position[Vertex(m.phi1(f.dart))];
 			const VEC3& p3 = position[Vertex(m.phi1(m.phi1(f.dart)))];
-			if (intersection_ray_triangle<VEC3>(A, AB, p1, p2, p3, &inter))
+			if (intersection_ray_triangle(A, AB, p1, p2, p3, &inter))
 				selected_th[th].push_back(std::make_tuple(f, inter, (inter-A).squaredNorm()));
 		}
 		else
@@ -88,7 +88,7 @@ inline void picking_internal_face(
 				const VEC3& p1 = position[ear_indices[i]];
 				const VEC3& p2 = position[ear_indices[i+1]];
 				const VEC3& p3 = position[ear_indices[i+2]];
-				if (intersection_ray_triangle<VEC3>(A, AB, p1, p2, p3, &inter))
+				if (intersection_ray_triangle(A, AB, p1, p2, p3, &inter))
 				{
 					selected_th[th].push_back(std::make_tuple(f, inter, (inter-A).squaredNorm()));
 					i = ear_indices.size();
