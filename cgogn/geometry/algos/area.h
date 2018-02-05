@@ -38,15 +38,16 @@ namespace cgogn
 namespace geometry
 {
 
-template <typename MAP, typename VA>
-inline ScalarOf<typename VA::value_type> convex_area(
+template <typename MAP, typename VERTEX_ATTR>
+inline ScalarOf<typename VERTEX_ATTR::value_type> convex_area(
 		const MAP& map,
 		const typename MAP::Face f,
-	   const VA& position)
+		const VERTEX_ATTR& position)
 {
-	static_assert(is_attribute<VA,MAP::Vertex>::value,"position must be a vertex attribute");
+//	static_assert(is_attribute<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
+	static_assert(is_attribute<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
 
-	using VEC3 = typename VA::value_type;
+	using VEC3 = typename VERTEX_ATTR::value_type;
 	using Scalar = ScalarOf<VEC3>;
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
@@ -66,30 +67,38 @@ inline ScalarOf<typename VA::value_type> convex_area(
 }
 
 
-template <typename MAP, typename VA>
-inline ScalarOf<typename VA::value_type> area(
+
+/**
+ * @brief compute the area of a face
+ * @param map the map
+ * @param f the face
+ * @param position the position vertex attribute
+ * @return the area
+ */
+template <typename MAP, typename VERTEX_ATTR>
+inline auto area(
 	const MAP& map,
 	const typename MAP::Face f,
-	const VA& position)
+	const VERTEX_ATTR& position)
+//-> typename std::enable_if<is_attribute<VERTEX_ATTR>(MAP::Vertex::ORBIT),ScalarOf<typename VERTEX_ATTR::value_type>>::type
+-> RETURN_TYPE_IF(is_attribute<VERTEX_ATTR>(MAP::Vertex::ORBIT), ScalarOf<typename VERTEX_ATTR::value_type>)
 {
-	static_assert(is_attribute<VA,MAP::Vertex>::value,"position must be a vertex attribute");
-
 	return convex_area(map, f, position);
 }
 
 
 
 
-template <typename MAP, typename CellType, typename VA>
+template <typename MAP, typename CellType, typename VERTEX_ATTR>
 inline auto area(
 	const MAP& map,
 	const CellType c,
-	const VA& position
-) -> typename std::enable_if<!std::is_same<CellType, typename MAP::Face>::value, ScalarOf<typename VA::value_type>>::type
+	const VERTEX_ATTR& position
+) -> typename std::enable_if<!std::is_same<CellType, typename MAP::Face>::value, ScalarOf<typename VERTEX_ATTR::value_type>>::type
 {
-	static_assert(is_attribute<VA,MAP::Vertex>::value,"position must be a vertex attribute");
+	static_assert(is_attribute<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
 
-	using VEC3 = typename VA::value_type;
+	using VEC3 = typename VERTEX_ATTR::value_type;
 	using Scalar = ScalarOf<VEC3>;
 	using Face = typename MAP::Face;
 
@@ -101,15 +110,15 @@ inline auto area(
 	return cell_area;
 }
 
-template <typename CellType, typename MAP, typename MASK, typename VA>
+template <typename CellType, typename MAP, typename MASK, typename VERTEX_ATTR>
 inline void compute_area(
 	const MAP& map,
 	const MASK& mask,
-	const VA& position,
-	Attribute<ScalarOf<typename VA::value_type>, CellType::ORBIT>& cell_area
+	const VERTEX_ATTR& position,
+	Attribute<ScalarOf<typename VERTEX_ATTR::value_type>, CellType::ORBIT>& cell_area
 )
 {
-	static_assert(is_attribute<VA,MAP::Vertex>::value,"position must be a vertex attribute");
+	static_assert(is_attribute<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
 
 	map.parallel_foreach_cell([&] (CellType c)
 	{
@@ -118,28 +127,28 @@ inline void compute_area(
 	mask);
 }
 
-template <typename CellType, typename MAP, typename VA>
+template <typename CellType, typename MAP, typename VERTEX_ATTR>
 inline void compute_area(
 	const MAP& map,
-	const VA& position,
-	Attribute<ScalarOf<typename VA::value_type>, CellType::ORBIT>& cell_area
+	const VERTEX_ATTR& position,
+	Attribute<ScalarOf<typename VERTEX_ATTR::value_type>, CellType::ORBIT>& cell_area
 )
 {
-	static_assert(is_attribute<VA,MAP::Vertex>::value,"position must be a vertex attribute");
+	static_assert(is_attribute<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
 
 	compute_area<CellType>(map, AllCellsFilter(), position, cell_area);
 }
 
-template <typename CellType, typename MAP, typename VA>
-inline ScalarOf<typename VA::value_type> incident_faces_area(
+template <typename CellType, typename MAP, typename VERTEX_ATTR>
+inline ScalarOf<typename VERTEX_ATTR::value_type> incident_faces_area(
 	const MAP& map,
 	const CellType c,
-	const VA& position
+	const VERTEX_ATTR& position
 )
 {
-	static_assert(is_attribute<VA,MAP::Vertex>::value,"position must be a vertex attribute");
+	static_assert(is_attribute<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
 
-	using VEC3 = typename VA::value_type;
+	using VEC3 = typename VERTEX_ATTR::value_type;
 	using Scalar = ScalarOf<VEC3>;
 	using Face = typename MAP::Face;
 
@@ -151,15 +160,15 @@ inline ScalarOf<typename VA::value_type> incident_faces_area(
 	return incident_area;
 }
 
-template <typename CellType, typename MAP, typename MASK, typename VA>
+template <typename CellType, typename MAP, typename MASK, typename VERTEX_ATTR>
 inline void compute_incident_faces_area(
 	const MAP& map,
 	const MASK& mask,
-	const VA& position,
-	Attribute<ScalarOf<typename VA::value_type>, CellType::ORBIT>& area
+	const VERTEX_ATTR& position,
+	Attribute<ScalarOf<typename VERTEX_ATTR::value_type>, CellType::ORBIT>& area
 )
 {
-	static_assert(is_attribute<VA,MAP::Vertex>::value,"position must be a vertex attribute");
+	static_assert(is_attribute<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
 
 	map.parallel_foreach_cell([&] (CellType c)
 	{
@@ -168,14 +177,14 @@ inline void compute_incident_faces_area(
 	mask);
 }
 
-template <typename CellType, typename MAP, typename VA>
+template <typename CellType, typename MAP, typename VERTEX_ATTR>
 inline void compute_incident_faces_area(
 	const MAP& map,
-	const VA& position,
-	Attribute<ScalarOf<typename VA::value_type>, CellType::ORBIT>& area
+	const VERTEX_ATTR& position,
+	Attribute<ScalarOf<typename VERTEX_ATTR::value_type>, CellType::ORBIT>& area
 )
 {
-	static_assert(is_attribute<VA,MAP::Vertex>::value,"position must be a vertex attribute");
+	static_assert(is_attribute<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
 
 	compute_incident_faces_area<CellType>(map, AllCellsFilter(), position, area);
 }

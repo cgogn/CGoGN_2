@@ -39,15 +39,15 @@ namespace cgogn
 namespace geometry
 {
 
-template <typename MAP, typename VA>
-inline ScalarOf<typename VA::value_type> angle(
+template <typename MAP, typename VERTEX_ATTR>
+inline ScalarOf<typename VERTEX_ATTR::value_type> angle(
 		const MAP& map,
 		const Cell<Orbit::DART> v,
-		const VA& position)
+		const VERTEX_ATTR& position)
 {
-	static_assert(is_attribute<VA,MAP::Vertex>::value,"position must be a vertex attribute");
+	static_assert(is_attribute<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
 
-	using VEC3 = typename VA::value_type;
+	using VEC3 = typename VERTEX_ATTR::value_type;
 	using Vertex = typename MAP::Vertex;
 
 	const VEC3& p = position[Vertex(v.dart)];
@@ -60,16 +60,16 @@ inline ScalarOf<typename VA::value_type> angle(
 /**
  * compute and return the angle formed by the normals of the two faces incident to the given edge
  */
-template <typename MAP, typename VA>
-inline ScalarOf<typename VA::value_type> angle_between_face_normals(
+template <typename MAP, typename VERTEX_ATTR>
+inline ScalarOf<typename VERTEX_ATTR::value_type> angle_between_face_normals(
 	const MAP& map,
 	const Cell<Orbit::PHI2> e,
-	const VA& position
+	const VERTEX_ATTR& position
 )
 {
-	static_assert(is_attribute<VA,MAP::Vertex>::value,"position must be a vertex attribute");
+	static_assert(is_attribute<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
 
-	using VEC3 = typename VA::value_type;
+	using VEC3 = typename VERTEX_ATTR::value_type;
 	using Scalar = ScalarOf<VEC3>;
 	using Vertex2 = Cell<Orbit::PHI21>;
 	using Face2 = Cell<Orbit::PHI1>;
@@ -103,15 +103,15 @@ inline ScalarOf<typename VA::value_type> angle_between_face_normals(
 	return a;
 }
 
-template <typename MAP, typename MASK, typename VA>
+template <typename MAP, typename MASK, typename VERTEX_ATTR>
 inline void compute_angle_between_face_normals(
 	const MAP& map,
 	const MASK& mask,
-	const VA& position,
-	Attribute<ScalarOf<typename VA::value_type>, Orbit::PHI2>& edge_angle
+	const VERTEX_ATTR& position,
+	Attribute<ScalarOf<typename VERTEX_ATTR::value_type>, Orbit::PHI2>& edge_angle
 )
 {
-	static_assert(is_attribute<VA,MAP::Vertex>::value,"position must be a vertex attribute");
+	static_assert(is_attribute<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
 
 	map.parallel_foreach_cell([&] (Cell<Orbit::PHI2> e)
 	{
@@ -120,14 +120,14 @@ inline void compute_angle_between_face_normals(
 	mask);
 }
 
-template <typename MAP, typename VA>
+template <typename MAP, typename VERTEX_ATTR>
 inline void compute_angle_between_face_normals(
 	const MAP& map,
-	const VA& position,
-	Attribute<ScalarOf<typename VA::value_type>, Orbit::PHI2>& edge_angle
+	const VERTEX_ATTR& position,
+	Attribute<ScalarOf<typename VERTEX_ATTR::value_type>, Orbit::PHI2>& edge_angle
 )
 {
-	static_assert(is_attribute<VA,MAP::Vertex>::value,"position must be a vertex attribute");
+	static_assert(is_attribute<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
 
 	compute_angle_between_face_normals(map, AllCellsFilter(), position, edge_angle);
 }

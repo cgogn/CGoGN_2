@@ -55,6 +55,7 @@ using Vertex = CMap2::Vertex;
 using Edge = CMap2::Edge;
 using Face = CMap2::Face;
 
+
 template <typename Vec_T>
 class Algos_TEST : public testing::Test
 {

@@ -60,16 +60,16 @@ void compute_OBB(const ATTR& attr, OBB<array_data_type<ATTR>>& bb)
 }
 
 
-template <typename MAP, typename VA>
-void compute_OBB(const MAP& map, const VA& attr, OBB<typename VA::value_type>& bb)
+template <typename MAP, typename VERTEX_ATTR>
+void compute_OBB(const MAP& map, const VERTEX_ATTR& attr, OBB<typename VERTEX_ATTR::value_type>& bb)
 {
 	bb.reset();
 	bb.build_from_vertices(map, attr);
 }
 
 
-template <typename MAP, typename VA>
-void compute_OBB(const MAP& map, const VA& attr, typename MAP::ConnectedComponent cc, OBB<typename VA::value_type>& bb)
+template <typename MAP, typename VERTEX_ATTR>
+void compute_OBB(const MAP& map, const VERTEX_ATTR& attr, typename MAP::ConnectedComponent cc, OBB<typename VERTEX_ATTR::value_type>& bb)
 {
 	bb.reset();
 	bb.build_from_triangles(map, attr, cc);

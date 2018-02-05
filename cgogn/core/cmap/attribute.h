@@ -450,32 +450,31 @@ public:
 };
 
 
-template <typename VA, typename ORB , typename Enable = void>
-struct is_attribute
-{
-	static const bool value = false;
-};
+//template <typename VERTEX_ATTR, typename ORB , typename Enable = void>
+//struct is_attribute
+//{
+//	static const bool value = false;
+//};
 
 
-template <typename VA, typename ORB>
-struct is_attribute<VA, ORB, typename std::enable_if<std::is_base_of<AttributeGen,VA>::value>::type >
-{
-	static const bool value = VA::orb_ == ORB::ORBIT;
-};
+//template <typename VERTEX_ATTR, typename ORB>
+//struct is_attribute<VERTEX_ATTR, ORB, typename std::enable_if<std::is_base_of<AttributeGen,VERTEX_ATTR>::value>::type >
+//{
+//	static const bool value = VERTEX_ATTR::orb_ == ORB::ORBIT;
+//};
 
-
-template<typename VA>
-constexpr auto is_orb_attribute(uint32 orb)
--> typename std::enable_if<!std::is_base_of<AttributeGen,VA>::value, bool>::type
+template<typename VERTEX_ATTR>
+constexpr auto is_attribute(uint32 orb)
+-> typename std::enable_if<!std::is_base_of<AttributeGen,VERTEX_ATTR>::value, bool>::type
 {
 	return  false;
 }
 
-template<typename VA>
-constexpr auto is_orb_attribute(uint32 orb)
--> typename std::enable_if<std::is_base_of<AttributeGen,VA>::value, bool>::type
+template<typename VERTEX_ATTR>
+constexpr auto is_attribute(uint32 orb)
+-> typename std::enable_if<std::is_base_of<AttributeGen,VERTEX_ATTR>::value, bool>::type
 {
-	return  VA::orb_ == orb;
+	return  VERTEX_ATTR::orb_ == orb;
 }
 
 

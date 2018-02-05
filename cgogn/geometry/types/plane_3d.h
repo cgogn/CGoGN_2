@@ -47,28 +47,16 @@ enum Orientation3D
 	UNDER
 };
 
+
+// TODO specialize template function for Eigen::Vector3d
+
 class Plane3D
 {
 	template <typename VEC3>
 	inline Eigen::Vector3d to_eigen(const VEC3& v) const
 	{
-//		static_assert(vector_traits<VEC3>::SIZE == 3ul, "The size of the vector must be equal to 3.");
 		return Eigen::Vector3d(v[0],v[1],v[2]);
 	}
-
-//	template <typename VEC3>
-//	inline auto to_eigen(const VEC3& v) -> typename std::enable_if<!std::is_same<VEC3,Eigen::Vector3d>::value,Eigen::Vector3d>::value
-//	{
-//		static_assert(vector_traits<VEC3>::SIZE == 3ul, "The size of the vector must be equal to 3.");
-//		return Eigen::Vector3d(v[0],v[1],v[2]);
-//	}
-
-//	template <typename VEC3>
-//	inline auto to_eigen(const VEC3& v) -> typename std::enable_if<std::is_same<VEC3,Eigen::Vector3d>::value,Eigen::Vector3d>::value
-//	{
-//		static_assert(vector_traits<VEC3>::SIZE == 3ul, "The size of the vector must be equal to 3.");
-//		return v;
-//	}
 
 public:
 
@@ -99,6 +87,7 @@ public:
 	inline Plane3D(const VEC3& normal, const VEC3& p) :
 		normal_(normal[0],normal[1],normal[2])
 	{
+//		static_assert(vector_traits<VEC3>::SIZE == 3, "normal must be of dim 3");
 		normal_.normalize();
 		d_ = -(to_eigen(p).dot(normal_));
 	}
@@ -107,6 +96,7 @@ public:
 	template <typename VEC3>
 	inline Plane3D(const VEC3& p1, const VEC3& p2, const VEC3& p3)
 	{
+//		static_assert(vector_traits<VEC3>::SIZE == 3, "normal must be of dim 3");
 		Vec q1 = to_eigen(p1);
 		Vec u = to_eigen(p2)-q1;
 		Vec v = to_eigen(p3)-q1;
@@ -156,22 +146,6 @@ public:
 		q = VEC3(p[0],p[1],p[2]);
 	}
 
-
-//	template <typename VEC3>
-//	inline auto project(VEC3& q) const
-//	{
-//		Vec p = to_eigen(q);
-//		Scalar d = -distance(p);
-
-//		if (!cgogn::almost_equal_relative(d,Scalar(0)))
-//		{
-//			p += normal_*d;
-//		}
-//		q = VEC3(p[0],p[1],p[2]);
-//	}
-
-
-
 	// return on/over/under according to the side of the plane where point p is
 	template <typename VEC3>
 	inline Orientation3D orient(const VEC3& q) const
@@ -188,23 +162,13 @@ public:
 		return Orientation3D::OVER;
 	}
 
-	static std::string cgogn_name_of_type()
-	{
-		return std::string("cgogn::geometry::Plane3D");
-	}
+	static std::string cgogn_name_of_type();
 
 private:
 
 	Eigen::Vector3d normal_;
 	double d_;
 };
-
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_TYPES_PLANE_3D_CPP_))
-extern template class CGOGN_GEOMETRY_API Plane3D<Eigen::Vector3d>;
-extern template class CGOGN_GEOMETRY_API Plane3D<Eigen::Vector3f>;
-extern template class CGOGN_GEOMETRY_API Plane3D<Vec_T<std::array<float32,3>>>;
-extern template class CGOGN_GEOMETRY_API Plane3D<Vec_T<std::array<float64,3>>>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_TYPES_PLANE_3D_CPP_))
 
 } // namespace geometry
 
