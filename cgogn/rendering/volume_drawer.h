@@ -155,7 +155,7 @@ void VolumeDrawerGen::update_edge(const MAP& m, const typename MAP::template Ver
 
 	m.foreach_cell([&] (Volume v)
 	{
-		VEC3 CV = geometry::centroid<VEC3>(m, v, position);
+		VEC3 CV = geometry::centroid(m, v, position);
 		m.foreach_incident_edge(v, [&] (Edge e)
 		{
 			const VEC3& P1 = position[Vertex(e.dart)];
@@ -203,7 +203,7 @@ public:
 
 		m.foreach_cell([&] (Volume v)
 		{
-			VEC3 CV = geometry::centroid<VEC3>(m, v, position);
+			VEC3 CV = geometry::centroid(m, v, position);
 			m.foreach_incident_face(v, [&] (Face f)
 			{
 				if (m.has_codegree(f, 3))
@@ -270,7 +270,7 @@ public:
 
 		m.foreach_cell([&] (Volume v)
 		{
-			VEC3 CV = geometry::centroid<VEC3>(m, v, position);
+			VEC3 CV = geometry::centroid(m, v, position);
 			m.foreach_incident_face(v, [&] (Face f)
 			{
 				if (m.has_codegree(f, 3))

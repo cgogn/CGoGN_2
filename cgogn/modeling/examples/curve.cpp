@@ -330,7 +330,7 @@ void Viewer::init()
 			drawer_->vertex3fv(vertex_position_[v]);
 		});
 		drawer_->end();
-		drawer_->line_width_aa(0.8);
+		drawer_->line_width_aa(0.8f);
 		drawer_->begin(GL_LINES);
 		drawer_->color3f(0.0,0.0,0.0);
 		map_.foreach_cell([&](UndirectedGraph::Edge e)

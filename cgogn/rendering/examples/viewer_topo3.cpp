@@ -273,7 +273,7 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 	{
 		drawer_->new_list();
 		std::vector<Map3::Volume> selected;
-		cgogn::geometry::picking<Vec3>(map_, vertex_position_, A, B, selected);
+		cgogn::geometry::picking(map_, vertex_position_, A, B, selected);
 		cgogn_log_info("Viewer") << "Selected volumes: " << selected.size();
 		if (!selected.empty())
 		{

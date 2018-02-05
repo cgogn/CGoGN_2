@@ -191,7 +191,7 @@ public:
 	{
 		Scalar result = 0;
 		for (Dart d : this->cells_[Face::ORBIT])
-			result += geometry::area<VEC3>(this->map_, Face(d), position);
+			result += geometry::area(this->map_, Face(d), position);
 		return result;
 	}
 };
@@ -303,7 +303,7 @@ public:
 		const VEC3& center_position = position[this->center_];
 		for (Dart d : this->cells_[Face::ORBIT])
 		{
-			result += geometry::area<VEC3>(this->map_, Face(d), position);
+			result += geometry::area(this->map_, Face(d), position);
 		}
 		// TODO: the following works only for triangle meshes
 		for (Dart d : this->border_)
@@ -316,14 +316,14 @@ public:
 				Scalar alpha, beta;
 				geometry::intersection_sphere_segment(center_position, radius_, position[Vertex(d)], position[Vertex(f)], alpha);
 				geometry::intersection_sphere_segment(center_position, radius_, position[Vertex(g)], position[Vertex(f)], beta);
-				result += (alpha+beta - alpha*beta) * geometry::area<VEC3>(this->map_, Face(d), position);
+				result += (alpha+beta - alpha*beta) * geometry::area(this->map_, Face(d), position);
 			}
 			else // Vertex(g) is outside
 			{
 				Scalar alpha, beta;
 				geometry::intersection_sphere_segment(center_position, radius_, position[Vertex(d)], position[Vertex(f)], alpha);
 				geometry::intersection_sphere_segment(center_position, radius_, position[Vertex(d)], position[Vertex(g)], beta);
-				result += alpha * beta * geometry::area<VEC3>(this->map_, Face(d), position);
+				result += alpha * beta * geometry::area(this->map_, Face(d), position);
 			}
 		}
 		return result;

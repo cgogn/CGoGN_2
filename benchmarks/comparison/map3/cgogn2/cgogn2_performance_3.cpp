@@ -159,7 +159,7 @@ BENCHMARK_F(Performance3_CGoGN2, barycenter)(benchmark::State& state)
 
 		map->foreach_cell([&](Volume w)
 		{
-			sum += cgogn::geometry::centroid<Vec3>(*map, w, position);
+			sum += cgogn::geometry::centroid(*map, w, position);
 		}, *cache);
 	}
 }

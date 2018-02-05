@@ -244,7 +244,7 @@ public:
 		cgogn::modeling::dual(view.map_, map_,&cm,{"position"},
 		[&] (Map2::Face f )
 		{
-			return cgogn::geometry::centroid<Vec3>(view.map_, f, view.vertex_position_);
+			return cgogn::geometry::centroid(view.map_, f, view.vertex_position_);
 		});
 
 		std::chrono::time_point<std::chrono::system_clock> end = std::chrono::system_clock::now();
@@ -254,7 +254,7 @@ public:
 //		cgogn::modeling::dual(view.map_, map_,nullptr,{"position","face_centroid"},
 //		[&] (Map2::Face f )
 //		{
-//			return cgogn::geometry::centroid<Vec3>(view.map_, f, view.vertex_position_);
+//			return cgogn::geometry::centroid(view.map_, f, view.vertex_position_);
 //		},
 //		[&] (Map2::Vertex f )
 //		{
@@ -268,7 +268,7 @@ public:
 //		},
 //		[&] (Map2::Face f )
 //		{
-//			return cgogn::geometry::centroid<Vec3>(view.map_, f, view.vertex_position_);
+//			return cgogn::geometry::centroid(view.map_, f, view.vertex_position_);
 //		},
 //		[&] (Map2::Edge e )
 //		{

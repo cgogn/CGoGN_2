@@ -64,7 +64,7 @@ protected:
 		std::ifstream fp(filename.c_str(), std::ios::in);
 
 		ChunkArray<VEC3>* position = this->template add_vertex_attribute<VEC3>("position");
-		ChunkArray<VEC3>* normal;
+		ChunkArray<VEC3>* normal = nullptr;
 		std::vector<VEC3> norm_buff;
 
 		std::string line, tag;
@@ -227,8 +227,8 @@ protected:
 		// normalize
 		if (has_normals)
 		{
-			for(auto i: vertices_id)
-				(*normal)[i].normalize();
+			for(auto j: vertices_id)
+				(*normal)[j].normalize();
 		}
 		return true;
 	}

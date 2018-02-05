@@ -328,7 +328,7 @@ typename std::enable_if<MAP::DIMENSION == 3, void>::type TopoDrawer::update(cons
 
 	m.foreach_cell([&] (Volume v)
 	{
-		VEC3 center_vol = geometry::centroid<VEC3>(m, v, position);
+		VEC3 center_vol = geometry::centroid(m, v, position);
 		m.foreach_incident_face(v, [&] (Face f)
 		{
 			local_vertices.clear();

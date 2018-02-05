@@ -136,7 +136,7 @@ void Viewer::import(const std::string& surface_mesh)
 	map_.copy_attribute(vertex_position2_, vertex_position_);
 
 	vertex_normal_ = map_.template add_attribute<Vec3, Vertex>("normal");
-	cgogn::geometry::compute_normal<Vec3>(map_, vertex_position_, vertex_normal_);
+	cgogn::geometry::compute_normal(map_, vertex_position_, vertex_normal_);
 
 	cell_cache_.build<Vertex>();
 	cell_cache_.build<Edge>();
@@ -221,7 +221,7 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 //			cgogn::geometry::filter_average<Vec3>(map_, cell_cache_, vertex_position_, vertex_position2_);
 //			cgogn::geometry::filter_average<Vec3>(map_, vertex_position_, vertex_position2_);
 			map_.swap_attributes(vertex_position_, vertex_position2_);
-			cgogn::geometry::compute_normal<Vec3>(map_, vertex_position_, vertex_normal_);
+			cgogn::geometry::compute_normal(map_, vertex_position_, vertex_normal_);
 			cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
 			cgogn::rendering::update_vbo(vertex_normal_, vbo_norm_.get());
 			cgogn::rendering::update_vbo(vertex_normal_, vbo_color_.get(), [] (const Vec3& n) -> std::array<float,3>
@@ -235,7 +235,7 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 		case Qt::Key_B:
 			cgogn::geometry::filter_bilateral<Vec3>(map_, cell_cache_, vertex_position_, vertex_position2_, vertex_normal_);
 			map_.swap_attributes(vertex_position_, vertex_position2_);
-			cgogn::geometry::compute_normal<Vec3>(map_, vertex_position_, vertex_normal_);
+			cgogn::geometry::compute_normal(map_, vertex_position_, vertex_normal_);
 			cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
 			cgogn::rendering::update_vbo(vertex_normal_, vbo_norm_.get());
 			cgogn::rendering::update_vbo(vertex_normal_, vbo_color_.get(), [] (const Vec3& n) -> std::array<float,3>
@@ -247,7 +247,7 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			break;
 		case Qt::Key_T:
 			cgogn::geometry::filter_taubin<Vec3>(map_, cell_cache_, vertex_position_, vertex_position2_);
-			cgogn::geometry::compute_normal<Vec3>(map_, vertex_position_, vertex_normal_);
+			cgogn::geometry::compute_normal(map_, vertex_position_, vertex_normal_);
 			cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
 			cgogn::rendering::update_vbo(vertex_normal_, vbo_norm_.get());
 			cgogn::rendering::update_vbo(vertex_normal_, vbo_color_.get(), [] (const Vec3& n) -> std::array<float,3>

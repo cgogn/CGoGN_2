@@ -195,7 +195,7 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 				vertex_normal = map_.template add_attribute<Vec3, Map2::Vertex>("normal");
 			do
 			{
-				cgogn::geometry::compute_normal<Vec3>(map_, vertex_position_, vertex_normal);
+				cgogn::geometry::compute_normal(map_, vertex_position_, vertex_normal);
 				for (int i = 0; i < 100; ++i)
 				{
 					map_.foreach_cell([&](Map2::Vertex v)

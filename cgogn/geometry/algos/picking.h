@@ -43,15 +43,17 @@ namespace cgogn
 namespace geometry
 {
 
-template <typename VEC3, typename MAP>
+template <typename MAP, typename VA>
 inline void picking_internal_face(
 	const MAP& m,
-	const typename MAP::template VertexAttribute<VEC3>& position,
-	const VEC3& A,
-	const VEC3& B,
-	typename std::vector<std::tuple<typename MAP::Face, VEC3, ScalarOf<VEC3>>>& selected
+	const VA& position,
+	const typename VA::value_type& A,
+	const typename VA::value_type& B,
+	typename std::vector<std::tuple<typename MAP::Face, typename VA::value_type, ScalarOf<typename VA::value_type>>>& selected
 )
 {
+	static_assert(is_attribute<VA,MAP::Vertex>::value,"position must be a vertex attribute");
+	using VEC3 = typename VA::value_type;
 	using Scalar = ScalarOf<VEC3>;
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
@@ -114,21 +116,23 @@ inline void picking_internal_face(
 	std::sort(selected.begin(), selected.end(), dist_sort);
 }
 
-template <typename VEC3, typename MAP>
+template <typename MAP, typename VA>
 bool picking(
 	const MAP& m,
-	const typename MAP::template VertexAttribute<VEC3>& position,
-	const VEC3& A,
-	const VEC3& B,
+	const VA& position,
+	const typename VA::value_type& A,
+	const typename VA::value_type& B,
 	typename std::vector<typename MAP::Face>& selected
 )
 {
+	static_assert(is_attribute<VA,MAP::Vertex>::value,"position must be a vertex attribute");
+	using VEC3 = typename VA::value_type;
 	using Scalar = ScalarOf<VEC3>;
 	using Face = typename MAP::Face;
 	using Triplet = typename std::tuple<Face, VEC3, Scalar>;
 
 	std::vector<Triplet> sel;
-	picking_internal_face<VEC3>(m, position, A, B, sel);
+	picking_internal_face(m, position, A, B, sel);
 
 	selected.clear();
 	for (const auto& fs : sel)
@@ -137,22 +141,24 @@ bool picking(
 	return !selected.empty();
 }
 
-template <typename VEC3, typename MAP>
+template <typename MAP, typename VA>
 bool picking(
 	const MAP& m,
-	const typename MAP::template VertexAttribute<VEC3>& position,
-	const VEC3& A,
-	const VEC3& B,
+	const VA& position,
+	const typename VA::value_type& A,
+	const typename VA::value_type& B,
 	typename std::vector<typename MAP::Vertex>& selected
 )
 {
+	static_assert(is_attribute<VA,MAP::Vertex>::value,"position must be a vertex attribute");
+	using VEC3 = typename VA::value_type;
 	using Scalar = ScalarOf<VEC3>;
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
 	using Triplet = typename std::tuple<Face, VEC3, Scalar>;
 
 	std::vector<Triplet> sel;
-	picking_internal_face<VEC3>(m, position, A, B, sel);
+	picking_internal_face(m, position, A, B, sel);
 
 	DartMarkerStore<MAP> dm(m);
 	selected.clear();
@@ -184,15 +190,17 @@ bool picking(
 	return !selected.empty();
 }
 
-template <typename VEC3, typename MAP>
+template <typename MAP, typename VA>
 bool picking(
 	const MAP& m,
-	const typename MAP::template VertexAttribute<VEC3>& position,
-	const VEC3& A,
-	const VEC3& B,
+	const VA& position,
+	const typename VA::value_type& A,
+	const typename VA::value_type& B,
 	typename std::vector<typename MAP::Edge>& selected
 )
 {
+	static_assert(is_attribute<VA,MAP::Vertex>::value,"position must be a vertex attribute");
+	using VEC3 = typename VA::value_type;
 	using Scalar = ScalarOf<VEC3>;
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
@@ -200,7 +208,7 @@ bool picking(
 	using Triplet = typename std::tuple<Face, VEC3, Scalar>;
 
 	std::vector<Triplet> sel;
-	picking_internal_face<VEC3>(m, position, A, B, sel);
+	picking_internal_face(m, position, A, B, sel);
 
 	DartMarkerStore<MAP> dm(m);
 	selected.clear();
@@ -234,22 +242,24 @@ bool picking(
 	return !selected.empty();
 }
 
-template <typename VEC3, typename MAP>
+template <typename MAP, typename VA>
 bool picking(
 	const MAP& m,
-	const typename MAP::template VertexAttribute<VEC3>& position,
-	const VEC3& A,
-	const VEC3& B,
+	const VA& position,
+	const typename VA::value_type& A,
+	const typename VA::value_type& B,
 	typename std::vector<typename MAP::Volume>& selected
 )
 {
+	static_assert(is_attribute<VA,MAP::Vertex>::value,"position must be a vertex attribute");
+	using VEC3 = typename VA::value_type;
 	using Scalar = ScalarOf<VEC3>;
 	using Face = typename MAP::Face;
 	using Volume = typename MAP::Volume;
 	using Triplet = typename std::tuple<Face, VEC3, Scalar>;
 
 	std::vector<Triplet> sel;
-	picking_internal_face<VEC3>(m, position, A, B, sel);
+	picking_internal_face(m, position, A, B, sel);
 
 	selected.clear();
 	DartMarker<MAP> dm(m);

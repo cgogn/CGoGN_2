@@ -449,6 +449,37 @@ public:
 	}
 };
 
+
+template <typename VA, typename ORB , typename Enable = void>
+struct is_attribute
+{
+	static const bool value = false;
+};
+
+
+template <typename VA, typename ORB>
+struct is_attribute<VA, ORB, typename std::enable_if<std::is_base_of<AttributeGen,VA>::value>::type >
+{
+	static const bool value = VA::orb_ == ORB::ORBIT;
+};
+
+
+template<typename VA>
+constexpr auto is_orb_attribute(uint32 orb)
+-> typename std::enable_if<!std::is_base_of<AttributeGen,VA>::value, bool>::type
+{
+	return  false;
+}
+
+template<typename VA>
+constexpr auto is_orb_attribute(uint32 orb)
+-> typename std::enable_if<std::is_base_of<AttributeGen,VA>::value, bool>::type
+{
+	return  VA::orb_ == orb;
+}
+
+
+
 } // namespace cgogn
 
 #endif // CGOGN_CORE_MAP_ATTRIBUTE_H_

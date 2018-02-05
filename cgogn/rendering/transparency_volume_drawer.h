@@ -126,7 +126,7 @@ void VolumeTransparencyDrawer::update_face(const MAP& m, const typename MAP::tem
 
 	m.foreach_cell([&] (Volume v)
 	{
-		VEC3 CV = geometry::centroid<VEC3>(m, v, position);
+		VEC3 CV = geometry::centroid(m, v, position);
 		m.foreach_incident_face(v, [&] (Face f)
 		{
 			if (m.has_codegree(f, 3))

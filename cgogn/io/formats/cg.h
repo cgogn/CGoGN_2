@@ -76,17 +76,17 @@ protected:
 
 		// read header
 		std::replace(line.begin(), line.end(), ':', ' ');
-		std::stringstream oss(line);
-		std::string tag;
+		std::stringstream ossl(line);
+		std::string tagl;
 		uint32 value;
-		oss >> tag;
-		oss >> tag;
-		oss >> value; // dimension unused for now
-		oss >> tag;
-		oss >> value;
+		ossl >> tagl;
+		ossl >> tagl;
+		ossl >> value; // dimension unused for now
+		ossl >> tagl;
+		ossl >> value;
 		const uint32 nb_vertices = value;
-		oss >> tag;
-		oss >> value;
+		ossl >> tagl;
+		ossl >> value;
 		const uint32 nb_edges = value;
 
 		this->reserve(nb_vertices);

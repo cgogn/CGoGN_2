@@ -232,7 +232,7 @@ public:
 		}
 
 		// compute normals for orientation
-		normalPoly_ = normal<VEC3>(map_, Cell<Orbit::PHI1>(f.dart), position);
+		normalPoly_ = normal(map_, Cell<Orbit::PHI1>(f.dart), position);
 
 		// first pass create polygon in chained list with angle computation
 		VertexPoly* vpp = nullptr;

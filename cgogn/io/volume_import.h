@@ -575,7 +575,7 @@ protected:
 	template <typename T>
 	inline void reorient_hexa(const ChunkArray<T>& pos, uint32& p0, uint32& p1, uint32& p2, uint32& p3, uint32& p4, uint32& p5, uint32& p6, uint32& p7)
 	{
-		if (geometry::test_orientation_3D<T>(pos[p4], pos[p0], pos[p1], pos[p2]) == geometry::Orientation3D::OVER)
+        if (geometry::test_orientation_3D(pos[p4], pos[p0], pos[p1], pos[p2]) == geometry::Orientation3D::OVER)
 		{
 			std::swap(p0, p3);
 			std::swap(p1, p2);

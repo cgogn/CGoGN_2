@@ -37,10 +37,14 @@ target_link_libraries(subdivision ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} 
 add_executable(dual dual.cpp)
 target_link_libraries(dual ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${cgogn_geometry_LIBRARIES} ${cgogn_modeling_LIBRARIES} ${cgogn_rendering_LIBRARIES} ${QOGLViewer_LIBRARIES})
 
-add_executable(curve curve.cpp)
-target_link_libraries(curve ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${cgogn_geometry_LIBRARIES} ${cgogn_modeling_LIBRARIES} ${cgogn_rendering_LIBRARIES} ${QOGLViewer_LIBRARIES})
+if (Qt5Widgets_VERSION VERSION_GREATER 5.5.99)
+  add_executable(curve curve.cpp)
+  target_link_libraries(curve ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${cgogn_geometry_LIBRARIES} ${cgogn_modeling_LIBRARIES} ${cgogn_rendering_LIBRARIES} ${QOGLViewer_LIBRARIES})
+  set_target_properties(curve PROPERTIES FOLDER examples/modeling)
+endif()
 
-set_target_properties(remeshing decimation subdivision triangular_tiling square_tiling dual curve 
+
+set_target_properties(remeshing decimation subdivision triangular_tiling square_tiling dual
 PROPERTIES FOLDER examples/modeling)
 
 endif()

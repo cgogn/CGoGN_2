@@ -34,13 +34,16 @@ namespace cgogn
 namespace geometry
 {
 
-template <typename VEC, typename CellType, typename MAP>
+template <typename CellType, typename MAP, typename VA>
 inline auto centroid(
 	const MAP& map,
 	const CellType c,
-	const typename MAP::template VertexAttribute<VEC>& attribute
-) -> typename std::enable_if<is_cell_type<CellType>::value, VEC>::type
+	const VA& attribute
+) -> typename std::enable_if<is_cell_type<CellType>::value, typename VA::value_type>::type
 {
+	static_assert(is_attribute<VA,MAP::Vertex>::value,"attribute must be a vertex attribute");
+
+	using VEC = typename VA::value_type;
 	VEC result;
 	set_zero(result);
 	uint32 count = 0;
@@ -53,38 +56,47 @@ inline auto centroid(
 	return result;
 }
 
-template <typename VEC, typename CellType, typename MAP, typename MASK>
+
+
+template <typename CellType, typename MAP, typename MASK,typename VA>
 inline void compute_centroid(
 	const MAP& map,
 	const MASK& mask,
-	const typename MAP::template VertexAttribute<VEC>& attribute,
-	Attribute<VEC, CellType::ORBIT>& cell_centroid
+	const VA& attribute,
+	Attribute<typename VA::value_type, CellType::ORBIT>& cell_centroid
 )
 {
+	static_assert(is_attribute<VA,MAP::Vertex>::value,"attribute must be a vertex attribute");
+
 	map.parallel_foreach_cell([&] (CellType c)
 	{
-		cell_centroid[c] = centroid<VEC>(map, c, attribute);
+		cell_centroid[c] = centroid(map, c, attribute);
 	},
 	mask);
 }
 
-template <typename VEC, typename CellType, typename MAP>
+template <typename CellType, typename MAP, typename VA>
 inline void compute_centroid(
 	const MAP& map,
-	const typename MAP::template VertexAttribute<VEC>& attribute,
-	Attribute<VEC, CellType::ORBIT>& cell_centroid
+	const VA& attribute,
+	Attribute<typename VA::value_type, CellType::ORBIT>& cell_centroid
 )
 {
-	compute_centroid<VEC, CellType>(map, AllCellsFilter(), attribute, cell_centroid);
+	static_assert(is_attribute<VA,MAP::Vertex>::value,"attribute must be a vertex attribute");
+	compute_centroid<CellType>(map, AllCellsFilter(), attribute, cell_centroid);
 }
 
-template <typename VEC, typename MAP, typename MASK>
+
+template <typename MAP, typename MASK, typename VA>
 inline auto centroid(
 	const MAP& map,
 	const MASK& mask,
-	const typename MAP::template VertexAttribute<VEC>& attribute
-) -> typename std::enable_if<!is_cell_type<MASK>::value, VEC>::type
+	const VA& attribute
+) -> typename std::enable_if<!is_cell_type<MASK>::value, typename VA::value_type>::type
 {
+	static_assert(is_attribute<VA,MAP::Vertex>::value,"attribute must be a vertex attribute");
+
+	using VEC = typename VA::value_type;
 	std::vector<VEC> sum_per_thread(thread_pool()->nb_workers());
 	for (VEC& v :sum_per_thread) { set_zero(v); }
 	std::vector<uint32> nb_vertices_per_thread(thread_pool()->nb_workers(), 0);
@@ -107,26 +119,30 @@ inline auto centroid(
 	return result / ScalarOf<VEC>(nbv);
 }
 
-template <typename VEC, typename MAP>
-inline VEC centroid(
+template <typename MAP,typename VA>
+inline typename VA::value_type centroid(
 	const MAP& map,
-	const typename MAP::template VertexAttribute<VEC>& attribute
+	const VA& attribute
 )
 {
-	return centroid<VEC>(map, AllCellsFilter(), attribute);
+	static_assert(is_attribute<VA,MAP::Vertex>::value,"attribute must be a vertex attribute");
+	return centroid(map, AllCellsFilter(), attribute);
 }
 
-template <typename VEC, typename MAP, typename MASK>
+template <typename MAP, typename MASK, typename VA>
 typename MAP::Vertex central_vertex(
 	const MAP& map,
 	const MASK& mask,
-	const typename MAP::template VertexAttribute<VEC>& attribute
+	const VA& attribute
 )
 {
+	static_assert(is_attribute<VA,MAP::Vertex>::value,"attribute must be a vertex attribute");
+
+	using VEC = typename VA::value_type;
 	using Vertex = typename MAP::Vertex;
 	using Scalar = ScalarOf<VEC>;
 
-	VEC center = centroid<VEC, MAP>(map, mask, attribute);
+	VEC center = centroid(map, mask, attribute);
 
 	std::vector<double> min_dist_per_thread(thread_pool()->nb_workers(), std::numeric_limits<Scalar>::max());
 	std::vector<Vertex> min_vertex_per_thread(thread_pool()->nb_workers());
@@ -149,13 +165,15 @@ typename MAP::Vertex central_vertex(
 	return min_vertex_per_thread[min_pos];
 }
 
-template <typename VEC, typename MAP>
+
+template <typename MAP, typename VA>
 typename MAP::Vertex central_vertex(
 	const MAP& map,
-	const typename MAP::template VertexAttribute<VEC>& attribute
+	const VA& attribute
 )
 {
-	return central_vertex<VEC>(map, AllCellsFilter(), attribute);
+	static_assert(is_attribute<VA,MAP::Vertex>::value,"attribute must be a vertex attribute");
+	return central_vertex(map, AllCellsFilter(), attribute);
 }
 
 } // namespace geometry

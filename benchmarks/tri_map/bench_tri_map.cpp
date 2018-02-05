@@ -89,7 +89,7 @@ static void BENCH_faces_normals_poly(benchmark::State& state)
 
 		bench_map.foreach_cell<cgogn::TraversalStrategy::FORCE_DART_MARKING>([&] (Face f)
 		{
-			face_normal[f] = cgogn::geometry::normal<Vec3>(bench_map, f, vertex_position);
+			face_normal[f] = cgogn::geometry::normal(bench_map, f, vertex_position);
 		});
 	}
 }
@@ -107,7 +107,7 @@ static void BENCH_vertices_normals_poly(benchmark::State& state)
 
 		bench_map.foreach_cell<cgogn::TraversalStrategy::FORCE_DART_MARKING>([&] (Vertex v)
 		{
-			vertices_normal[v] = cgogn::geometry::normal<Vec3>(bench_map, v, vertex_position);
+			vertices_normal[v] = cgogn::geometry::normal(bench_map, v, vertex_position);
 		});
 	}
 }
@@ -125,7 +125,7 @@ static void BENCH_faces_normals_tri(benchmark::State& state)
 
 		bench_tri_map.foreach_cell<cgogn::TraversalStrategy::FORCE_DART_MARKING>([&] (TFace f)
 		{
-			face_normal[f] = cgogn::geometry::normal<Vec3>(bench_tri_map, f, vertex_position);
+			face_normal[f] = cgogn::geometry::normal(bench_tri_map, f, vertex_position);
 		});
 	}
 }
@@ -143,7 +143,7 @@ static void BENCH_vertices_normals_tri(benchmark::State& state)
 
 		bench_tri_map.foreach_cell<cgogn::TraversalStrategy::FORCE_DART_MARKING>([&] (TVertex v)
 		{
-			vertices_normal[v] = cgogn::geometry::normal<Vec3>(bench_tri_map, v, vertex_position);
+			vertices_normal[v] = cgogn::geometry::normal(bench_tri_map, v, vertex_position);
 		});
 	}
 }

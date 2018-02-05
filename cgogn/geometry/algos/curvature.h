@@ -37,22 +37,39 @@ namespace cgogn
 namespace geometry
 {
 
-template <typename VEC3, typename MAP>
+//template <typename VEC3, typename MAP>
+//void curvature(
+//	const MAP& map,
+//	const Cell<Orbit::PHI21> v,
+//	ScalarOf<VEC3> radius,
+//	const Attribute<VEC3, Orbit::PHI21>& position,
+//	const Attribute<VEC3, Orbit::PHI21>& normal,
+//	const Attribute<ScalarOf<VEC3>, Orbit::PHI2>& edge_angle,
+//	const Attribute<ScalarOf<VEC3>, Orbit::PHI2>& edge_area,
+//	Attribute<ScalarOf<VEC3>, Orbit::PHI21>& kmax,
+//	Attribute<ScalarOf<VEC3>, Orbit::PHI21>& kmin,
+//	Attribute<VEC3, Orbit::PHI21>& Kmax,
+//	Attribute<VEC3, Orbit::PHI21>& Kmin,
+//	Attribute<VEC3, Orbit::PHI21>& Knormal
+//)
+template <typename MAP, typename VA>
 void curvature(
 	const MAP& map,
 	const Cell<Orbit::PHI21> v,
-	ScalarOf<VEC3> radius,
-	const Attribute<VEC3, Orbit::PHI21>& position,
-	const Attribute<VEC3, Orbit::PHI21>& normal,
-	const Attribute<ScalarOf<VEC3>, Orbit::PHI2>& edge_angle,
-	const Attribute<ScalarOf<VEC3>, Orbit::PHI2>& edge_area,
-	Attribute<ScalarOf<VEC3>, Orbit::PHI21>& kmax,
-	Attribute<ScalarOf<VEC3>, Orbit::PHI21>& kmin,
-	Attribute<VEC3, Orbit::PHI21>& Kmax,
-	Attribute<VEC3, Orbit::PHI21>& Kmin,
-	Attribute<VEC3, Orbit::PHI21>& Knormal
+	ScalarOf<typename VA::value_type> radius,
+	const VA& position,
+	const Attribute<typename VA::value_type, Orbit::PHI21>& normal,
+	const Attribute<ScalarOf<typename VA::value_type>, Orbit::PHI2>& edge_angle,
+	const Attribute<ScalarOf<typename VA::value_type>, Orbit::PHI2>& edge_area,
+	Attribute<ScalarOf<typename VA::value_type>, Orbit::PHI21>& kmax,
+	Attribute<ScalarOf<typename VA::value_type>, Orbit::PHI21>& kmin,
+	VA& Kmax,
+	VA& Kmin,
+	VA& Knormal
 )
 {
+	static_assert(is_orb_attribute<VA>(Orbit::PHI21),"position must be a vertex attribute");
+	using VEC3 = typename VA::value_type;
 	using Scalar = ScalarOf<VEC3>;
 	using Vertex2 = Cell<Orbit::PHI21>;
 	using Edge2 = Cell<Orbit::PHI2>;
@@ -139,45 +156,63 @@ void curvature(
 	Kmax_v[2] = evec(2, imin);
 }
 
-template <typename VEC3, typename MAP, typename MASK>
+
+//template <typename VEC3, typename MAP, typename MASK>
+//void compute_curvature(
+//	const MAP& map,
+//	const MASK& mask,
+//	ScalarOf<VEC3> radius,
+//	const Attribute<VEC3, Orbit::PHI21>& position,
+//	const Attribute<VEC3, Orbit::PHI21>& normal,
+//	const Attribute<ScalarOf<VEC3>, Orbit::PHI2>& edge_angle,
+//	const Attribute<ScalarOf<VEC3>, Orbit::PHI2>& edge_area,
+//	Attribute<ScalarOf<VEC3>, Orbit::PHI21>& kmax,
+//	Attribute<ScalarOf<VEC3>, Orbit::PHI21>& kmin,
+//	Attribute<VEC3, Orbit::PHI21>& Kmax,
+//	Attribute<VEC3, Orbit::PHI21>& Kmin,
+//	Attribute<VEC3, Orbit::PHI21>& Knormal
+//)
+template <typename MAP, typename MASK, typename VA>
 void compute_curvature(
 	const MAP& map,
 	const MASK& mask,
-	ScalarOf<VEC3> radius,
-	const Attribute<VEC3, Orbit::PHI21>& position,
-	const Attribute<VEC3, Orbit::PHI21>& normal,
-	const Attribute<ScalarOf<VEC3>, Orbit::PHI2>& edge_angle,
-	const Attribute<ScalarOf<VEC3>, Orbit::PHI2>& edge_area,
-	Attribute<ScalarOf<VEC3>, Orbit::PHI21>& kmax,
-	Attribute<ScalarOf<VEC3>, Orbit::PHI21>& kmin,
-	Attribute<VEC3, Orbit::PHI21>& Kmax,
-	Attribute<VEC3, Orbit::PHI21>& Kmin,
-	Attribute<VEC3, Orbit::PHI21>& Knormal
+	ScalarOf<typename VA::value_type> radius,
+	const VA& position,
+	const VA& normal,
+	const Attribute<ScalarOf<typename VA::value_type>, Orbit::PHI2>& edge_angle,
+	const Attribute<ScalarOf<typename VA::value_type>, Orbit::PHI2>& edge_area,
+	Attribute<ScalarOf<typename VA::value_type>, Orbit::PHI21>& kmax,
+	Attribute<ScalarOf<typename VA::value_type>, Orbit::PHI21>& kmin,
+	VA& Kmax,
+	VA& Kmin,
+	VA& Knormal
 )
 {
+	static_assert(is_orb_attribute<VA>(Orbit::PHI21),"position must be a vertex attribute");
 	map.parallel_foreach_cell([&] (Cell<Orbit::PHI21> v)
 	{
-		curvature<VEC3>(map, v, radius, position, normal, edge_angle, edge_area, kmax, kmin, Kmax, Kmin, Knormal);
+		curvature(map, v, radius, position, normal, edge_angle, edge_area, kmax, kmin, Kmax, Kmin, Knormal);
 	},
 	mask);
 }
 
-template <typename VEC3, typename MAP>
+template <typename MAP, typename VA>
 void compute_curvature(
 	const MAP& map,
-	ScalarOf<VEC3> radius,
-	const Attribute<VEC3, Orbit::PHI21>& position,
-	const Attribute<VEC3, Orbit::PHI21>& normal,
-	const Attribute<ScalarOf<VEC3>, Orbit::PHI2>& edge_angle,
-	const Attribute<ScalarOf<VEC3>, Orbit::PHI2>& edge_area,
-	Attribute<ScalarOf<VEC3>, Orbit::PHI21>& kmax,
-	Attribute<ScalarOf<VEC3>, Orbit::PHI21>& kmin,
-	Attribute<VEC3, Orbit::PHI21>& Kmax,
-	Attribute<VEC3, Orbit::PHI21>& Kmin,
-	Attribute<VEC3, Orbit::PHI21>& Knormal
+	ScalarOf<typename VA::value_type> radius,
+	const VA& position,
+	const VA& normal,
+	const Attribute<ScalarOf<typename VA::value_type>, Orbit::PHI2>& edge_angle,
+	const Attribute<ScalarOf<typename VA::value_type>, Orbit::PHI2>& edge_area,
+	Attribute<ScalarOf<typename VA::value_type>, Orbit::PHI21>& kmax,
+	Attribute<ScalarOf<typename VA::value_type>, Orbit::PHI21>& kmin,
+	VA& Kmax,
+	VA& Kmin,
+	VA& Knormal
 )
 {
-	compute_curvature<VEC3>(map, AllCellsFilter(), radius, position, normal, edge_angle, edge_area, kmax, kmin, Kmax, Kmin, Knormal);
+	static_assert(is_orb_attribute<VA>(Orbit::PHI21),"position must be a vertex attribute");
+	compute_curvature(map, AllCellsFilter(), radius, position, normal, edge_angle, edge_area, kmax, kmin, Kmax, Kmin, Knormal);
 }
 
 } // namespace geometry

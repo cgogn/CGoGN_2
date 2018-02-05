@@ -135,12 +135,12 @@ void doo_sabin(MAP& map,
 			e = map.phi1(e);
 		}while (e != f.dart);
 
-		int N = buffer.size();
-		for (int i = 0; i < N; ++i)
+		std::size_t N = buffer.size();
+		for (std::size_t i = 0; i < N; ++i)
 		{
 			VEC3 P;
 			P.setZero();
-			for (int j = 0; j < N; ++j)
+			for (std::size_t j = 0; j < N; ++j)
 			{
 				if (j==i)
 				{
@@ -149,7 +149,7 @@ void doo_sabin(MAP& map,
 				}
 				else
 				{
-					Scalar c2 = (3.0+2.0*std::cos(2.0*M_PI*(Scalar(i-j))/Scalar(N))) /(4.0*N);
+					Scalar c2 = Scalar( (3.0+2.0*std::cos(2.0*M_PI*(Scalar(i-j))/Scalar(N))) /(4.0*N) );
 					P += c2*buffer[j];
 				}
 			}

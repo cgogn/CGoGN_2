@@ -117,7 +117,7 @@ void ViewerTransparency::import(const std::string& surface_mesh)
 	if (!vertex_normal_.is_valid())
 	{
 		vertex_normal_ = map_.template add_attribute<Vec3, Map2::Vertex>("normal");
-		cgogn::geometry::compute_normal<Vec3>(map_, vertex_position_, vertex_normal_);
+		cgogn::geometry::compute_normal(map_, vertex_position_, vertex_normal_);
 	}
 
 

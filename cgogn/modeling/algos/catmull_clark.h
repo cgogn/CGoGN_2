@@ -96,7 +96,7 @@ void catmull_clark(MAP& map, typename MAP::template VertexAttribute<VEC3>& posit
 
 		initial_edge_marker.unmark_orbit(ff);
 
-		VEC3 center = geometry::centroid<VEC3>(map, ff, position);
+		VEC3 center = geometry::centroid(map, ff, position);
 		Vertex vc = quadrangule_face(map, ff);
 		position[vc] = center;
 	}

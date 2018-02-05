@@ -56,7 +56,7 @@ int main()
 		std::chrono::time_point<std::chrono::system_clock> start = std::chrono::system_clock::now();
 		cmap.foreach_cell([&] (Face f)
 		{
-			b += cgogn::geometry::area<StdArrayd>(cmap, f, vertex_position2);
+            b += cgogn::geometry::area(cmap, f, vertex_position2);
 		});
 		std::chrono::time_point<std::chrono::system_clock> end = std::chrono::system_clock::now();
 		std::chrono::duration<float> elapsed_seconds = end - start;
@@ -65,7 +65,7 @@ int main()
 		start = std::chrono::system_clock::now();
 		cmap.foreach_cell([&] (Face f)
 		{
-			a += cgogn::geometry::area<EigenVec3d>(cmap, f, vertex_position1);
+            a += cgogn::geometry::area(cmap, f, vertex_position1);
 		});
 		end = std::chrono::system_clock::now();
 		elapsed_seconds = end - start;
