@@ -40,7 +40,7 @@ template <typename VEC3a, typename VEC3b>
 bool in_sphere(const Eigen::MatrixBase<VEC3a>& point, const Eigen::MatrixBase<VEC3b>& center, ScalarOf<VEC3a> radius)
 {
 	static_assert(is_same_vectors<VEC3a,VEC3b>::value, "parameters must have same type");
-	static_assert(IsSizeOf<VEC3a>(3ul), "The size of the vector must be equal to 3.");
+	static_assert(is_dim_of<VEC3a>(3ul), "The size of the vector must be equal to 3.");
 
 	return (point - center).norm() < radius;
 }
@@ -59,7 +59,7 @@ template <typename VEC3a, typename VEC3b, typename VEC3c>
 ScalarOf<VEC3a> triple_product(const Eigen::MatrixBase<VEC3a>& U, const Eigen::MatrixBase<VEC3b>& V, const Eigen::MatrixBase<VEC3c>& W)
 {
 	static_assert(is_same_vectors<VEC3a,VEC3b,VEC3c>::value, "parameters must have same type");
-	static_assert(IsSizeOf<VEC3a>(3ul), "The size of the vector must be equal to 3.");
+	static_assert(is_dim_of<VEC3a>(3ul), "The size of the vector must be equal to 3.");
 
 	return U.dot(V.cross(W));
 }
@@ -70,7 +70,7 @@ bool in_triangle(const Eigen::MatrixBase<VEC3a>& P, const Eigen::MatrixBase<VEC3
 				 const Eigen::MatrixBase<VEC3c>& Ta,  const Eigen::MatrixBase<VEC3d>& Tb, const VEC3e& Tc)
 {
 	static_assert(is_same_vectors<VEC3a,VEC3b,VEC3c,VEC3d,VEC3e>::value, "parameters must have same type");
-	static_assert(IsSizeOf<VEC3a>(3ul), "The size of the vector must be equal to 3.");
+	static_assert(is_dim_of<VEC3a>(3ul), "The size of the vector must be equal to 3.");
 
 	if (triple_product(P-Ta, Tb-Ta, normal) >= 0 ||
 		triple_product(P-Tb, Tc-Tb, normal) >= 0  ||
@@ -94,7 +94,7 @@ template <typename VEC3a, typename VEC3b, typename VEC3c, typename VEC3d>
 bool in_triangle(const Eigen::MatrixBase<VEC3a>& P, const Eigen::MatrixBase<VEC3b>& Ta,  const Eigen::MatrixBase<VEC3c>& Tb, const Eigen::MatrixBase<VEC3d>& Tc)
 {
 	static_assert(is_same_vectors<VEC3a,VEC3b,VEC3c,VEC3d>::value, "parameters must have same type");
-	static_assert(IsSizeOf<VEC3a>(3ul), "The size of the vector must be equal to 3.");
+	static_assert(is_dim_of<VEC3a>(3ul), "The size of the vector must be equal to 3.");
 
 	return in_triangle(P, normal(Ta, Tb, Tc), Ta, Tb,Tc );
 }

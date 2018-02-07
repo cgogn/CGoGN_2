@@ -94,6 +94,11 @@ TYPED_TEST(Algos_TEST, TriangleArea)
 
 	auto vp = this->map2_.template add_attribute<int, CMap2::Edge>("po");
 //	const Scalar ar = cgogn::geometry::area(this->map2_, Face(t), vp);
+
+//	StdArrayf x,xx;
+//	auto y = cgogn::geometry::copy_to_eigen(x);
+//	auto yy = cgogn::geometry::copy_to_eigen(x+xx);
+
 }
 
 TYPED_TEST(Algos_TEST, QuadArea)

@@ -50,7 +50,7 @@ enum Orientation3D
 
 // TODO specialize template function for Eigen::Vector3d
 
-class Plane3D
+class CGOGN_GEOMETRY_API Plane3D
 {
 	template <typename VEC3>
 	inline Eigen::Vector3d to_eigen(const VEC3& v) const

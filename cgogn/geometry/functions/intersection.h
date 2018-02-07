@@ -51,7 +51,7 @@ bool intersection_ray_triangle(const Eigen::MatrixBase<VEC3a>& P, const Eigen::M
 							   typename vector_traits<VEC3a>::Type* inter = nullptr)
 {
 	static_assert(is_same_vectors<VEC3a,VEC3b,VEC3c,VEC3d,VEC3e>::value, "parameters must have same type");
-	static_assert(SizeOf<VEC3a>() == 3, "parameters must be of dim 3");
+	static_assert(is_dim_of<VEC3a>(3), "parameters must be of dim 3");
 
 	using Scalar = ScalarOf<VEC3a>;
 	using NVEC3 = typename vector_traits<VEC3a>::Type;
@@ -133,7 +133,7 @@ bool intersection_sphere_segment(
 		ScalarOf<VEC3a>& alpha)
 {
 	static_assert(is_same_vectors<VEC3a,VEC3b,VEC3c>::value, "parameters must have same type");
-	static_assert(SizeOf<VEC3a>() == 3, "parameters must be of dim 3");
+	static_assert(is_dim_of<VEC3a>(3), "parameters must be of dim 3");
 
 	using Scalar = ScalarOf<VEC3a>;
 	using NVEC3 = typename vector_traits<VEC3a>::Type;
@@ -172,7 +172,7 @@ Intersection intersection_segment_segment(
 		Eigen::MatrixBase<VEC3e>& Inter)
 {
 	static_assert(is_same_vectors<VEC3a,VEC3b,VEC3c,VEC3d,VEC3e>::value, "parameters must have same type");
-	static_assert(SizeOf<VEC3a>() == 3, "parameters must be of dim 3");
+	static_assert(is_dim_of<VEC3a>(3), "parameters must be of dim 3");
 
 	using Scalar = ScalarOf<VEC3a>;
 	using NVEC3 = typename vector_traits<VEC3a>::Type;
@@ -232,7 +232,7 @@ bool intersection_line_plane(const Eigen::MatrixBase<VEC3a>& point_line, const E
 							 typename vector_traits<VEC3a>::Type* inter = nullptr)
 {
 	static_assert(is_same_vectors<VEC3a,VEC3b,VEC3c,VEC3d>::value, "parameters must have same type");
-	static_assert(SizeOf<VEC3a>() == 3, "parameters must be of dim 3");
+	static_assert(is_dim_of<VEC3a>(3), "parameters must be of dim 3");
 
 	using Scalar = ScalarOf<VEC3a>;
 	const Scalar PRECISION = std::numeric_limits<Scalar>::epsilon();

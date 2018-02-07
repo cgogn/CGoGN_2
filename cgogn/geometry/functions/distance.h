@@ -44,7 +44,7 @@ template <typename VEC3a, typename VEC3b, typename VEC3c >
 inline ScalarOf<VEC3a> squared_distance_normalized_line_point(const Eigen::MatrixBase<VEC3a>& A, const Eigen::MatrixBase<VEC3b>& AB_norm, const Eigen::MatrixBase<VEC3c>& P)
 {
 	static_assert(is_same_vectors<VEC3a,VEC3b,VEC3c>::value, "parameters must have same type");
-	static_assert(IsSizeOf<VEC3a>(3ul), "The size of the vector must be equal to 3.");
+	static_assert(is_dim_of<VEC3a>(3ul), "The size of the vector must be equal to 3.");
 
 	return ((A - P).cross(AB_norm)).squaredNorm() ;
 }
@@ -68,7 +68,7 @@ template <typename VEC3a, typename VEC3b, typename VEC3c >
 inline ScalarOf<VEC3a> squared_distance_line_point(const Eigen::MatrixBase<VEC3a>& A, const Eigen::MatrixBase<VEC3b>& B, const Eigen::MatrixBase<VEC3c>& P)
 {
 	static_assert(is_same_vectors<VEC3a,VEC3b,VEC3c>::value, "parameters must have same type");
-	static_assert(IsSizeOf<VEC3a>(3ul), "The size of the vector must be equal to 3.");
+	static_assert(is_dim_of<VEC3a>(3ul), "The size of the vector must be equal to 3.");
 
 	typename vector_traits<VEC3a>::Type AB = B - A ;
 	cgogn_message_assert(AB.squaredNorm() > 0.0, "line must be defined by 2 different points");
@@ -99,7 +99,7 @@ template <typename VEC3a, typename VEC3b, typename VEC3c, typename VEC3d>
 ScalarOf<VEC3a> squared_distance_line_seg(const Eigen::MatrixBase<VEC3a>& A, const Eigen::MatrixBase<VEC3b>& AB, ScalarOf<VEC3a> AB2, const Eigen::MatrixBase<VEC3c>& P, const Eigen::MatrixBase<VEC3d>& Q)
 {
 	static_assert(is_same_vectors<VEC3a,VEC3b,VEC3c,VEC3d>::value, "parameters must have same type");
-	static_assert(IsSizeOf<VEC3a>(3ul), "The size of the vector must be equal to 3.");
+	static_assert(is_dim_of<VEC3a>(3ul), "The size of the vector must be equal to 3.");
 
 	using Scalar = ScalarOf<VEC3a>;
 	using NVEC3 = typename vector_traits<VEC3a>::Type;
@@ -163,7 +163,7 @@ template <typename VEC3a, typename VEC3b, typename VEC3c, typename VEC3d>
 inline ScalarOf<VEC3a> squared_distance_line_seg(const Eigen::MatrixBase<VEC3a>& A, const Eigen::MatrixBase<VEC3b>& B, const Eigen::MatrixBase<VEC3c>& P, const Eigen::MatrixBase<VEC3d>& Q)
 {
 	static_assert(is_same_vectors<VEC3a,VEC3b,VEC3c,VEC3d>::value, "parameters must have same type");
-	static_assert(IsSizeOf<VEC3a>(3ul), "The size of the vector must be equal to 3.");
+	static_assert(is_dim_of<VEC3a>(3ul), "The size of the vector must be equal to 3.");
 
 	typename vector_traits<VEC3a>::Type AB = B-A;
 	return squared_distance_line_seg(A,AB, AB.dot(AB),P,Q);
@@ -190,7 +190,7 @@ template <typename VEC3a, typename VEC3b, typename VEC3c>
 ScalarOf<VEC3a> squared_distance_seg_point(const Eigen::MatrixBase<VEC3a>& A, const Eigen::MatrixBase<VEC3b>& AB, const Eigen::MatrixBase<VEC3c>& P)
 {
 	static_assert(is_same_vectors<VEC3a,VEC3b,VEC3c>::value, "parameters must have same type");
-	static_assert(IsSizeOf<VEC3a>(3ul), "The size of the vector must be equal to 3.");
+	static_assert(is_dim_of<VEC3a>(3ul), "The size of the vector must be equal to 3.");
 
 	using Scalar = ScalarOf<VEC3a>;
 	using NVEC3 = typename vector_traits<VEC3a>::Type;

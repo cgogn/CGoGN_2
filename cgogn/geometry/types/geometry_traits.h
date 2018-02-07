@@ -70,20 +70,46 @@ struct vector_traits<T, typename std::enable_if<std::is_integral<T>::value || st
 template <typename T>
 std::true_type cgogn_check_eigen_type(const Eigen::MatrixBase<T>*);
 std::false_type cgogn_check_eigen_type(...);
-
 // the class bool is_xxxx that inherit the return type of preceeding functions
 template <typename T>
 struct is_eigen : public decltype(cgogn_check_eigen_type(std::declval<T*>()))
 {};
 
+
+template <typename T>
+std::true_type cgogn_check_eigen_virt_type(Eigen::MatrixBase<T>);
+std::false_type cgogn_check_eigen_virt_type(...);
+// the class bool is_xxxx that inherit the return type of preceeding functions
+template <typename T>
+struct is_virtual_eigen : public decltype(cgogn_check_eigen_virt_type(std::declval<T>()))
+{};
+
+template <typename T>
+struct is_eigen2
+{
+	static const bool value = is_eigen<T>::value && ! is_virtual_eigen<T>::value;
+};
+
+
 template <typename V>
-struct vector_traits<V, typename std::enable_if < is_eigen<V>::value >::type>
+struct vector_traits<V, typename std::enable_if < is_eigen<V>::value>::type>
 {
 	static const bool OK = true;
 	static const std::size_t SIZE = Eigen::internal::traits<V>::RowsAtCompileTime;
 	using Scalar = typename Eigen::internal::traits<V>::Scalar;
 	using Type = Eigen::Matrix<Scalar, SIZE, 1, 0, SIZE, 1 >;
 };
+
+
+template <template<typename> typename B, typename V>
+struct vector_traits<B<V>, typename std::enable_if < is_eigen<V>::value>::type>
+{
+	static const bool OK = true;
+	static const std::size_t SIZE = Eigen::internal::traits<V>::RowsAtCompileTime;
+	using Scalar = typename Eigen::internal::traits<V>::Scalar;
+	using Type = Eigen::Matrix<Scalar, SIZE, 1, 0, SIZE, 1 >;
+};
+
 
 
 // convenient struct for easy SFINAE
@@ -165,30 +191,73 @@ auto set_zero(T& t) -> typename std::enable_if<(vector_traits<T>::SIZE == 1)>::t
 template<typename V>
 using ScalarOf = typename vector_traits<V>::Scalar;
 
+//template<typename ATTR>
+//using ScalarOfVecAttr = typename vector_traits<typename ATTR::value_type>::Scalar;
+
+
+
 template<typename V>
-constexpr std::size_t SizeOf()
+constexpr std::size_t dim_of()
 {
 	return vector_traits<V>::SIZE;
 }
 
 template<typename V>
-constexpr bool IsSizeOf(std::size_t s)
+constexpr bool is_dim_of(std::size_t s)
 {
 	return vector_traits<V>::SIZE==s;
 }
 
+template<typename V>
+constexpr bool is_vector()
+{
+	return vector_traits<V>::OK;
+}
+
 
 template <typename VEC>
-using ConstTypeEigenize = Eigen::Map<const Eigen::Matrix< ScalarOf<VEC>,SizeOf<VEC>(),1>>;
+using ConstTypeEigenize = Eigen::Map<const Eigen::Matrix< ScalarOf<VEC>,dim_of<VEC>(),1>>;
 
 template <typename VEC>
-using TypeEigenize = Eigen::Map<Eigen::Matrix< ScalarOf<VEC>,SizeOf<VEC>(),1>>;
+using TypeEigenize = Eigen::Map<Eigen::Matrix< ScalarOf<VEC>,dim_of<VEC>(),1>>;
 
 template <typename VEC>
 inline TypeEigenize<VEC> eigenize(VEC& v) { return TypeEigenize<VEC>(&(v[0])); }
 
 template <typename VEC>
 inline ConstTypeEigenize<VEC> eigenize(const VEC& v) { return ConstTypeEigenize<VEC>(&(v[0])); }
+
+template <typename VEC>
+inline auto copy_to_eigen(const VEC& v)
+-> typename std::enable_if< is_dim_of<VEC>(2), Eigen::Matrix<ScalarOf<VEC>,2,1>>::type
+{ return Eigen::Matrix< ScalarOf<VEC>,2,1>(v[0],v[1]); }
+
+template <typename VEC>
+inline auto copy_to_eigen(const VEC& v)
+-> typename std::enable_if< is_dim_of<VEC>(3), Eigen::Matrix<ScalarOf<VEC>,3,1>>::type
+{ return Eigen::Matrix< ScalarOf<VEC>,3,1>(v[0],v[1],v[2]); }
+
+template <typename VEC>
+inline auto copy_to_eigen(const VEC& v)
+-> typename std::enable_if< is_dim_of<VEC>(4), Eigen::Matrix<ScalarOf<VEC>,4,1>>::type
+{ return Eigen::Matrix< ScalarOf<VEC>,4,1>(v[0],v[1],v[2],v[3]); }
+
+
+template <typename V, typename E>
+inline auto copy_to_vec(const E& v)
+-> typename std::enable_if< is_dim_of<E>(2) && is_dim_of<V>(2), V>::type
+{ return V(v[0],v[1]); }
+
+template <typename V, typename E>
+inline auto copy_to_vec(const E& v)
+-> typename std::enable_if< is_dim_of<E>(3) && is_dim_of<V>(3), V>::type
+{ return V(v[0],v[1],v[2]); }
+
+template <typename V, typename E>
+inline auto copy_to_vec(const E& v)
+-> typename std::enable_if< is_dim_of<E>(4) && is_dim_of<V>(4), V>::type
+{ return V(v[0],v[1],v[2],v[3]); }
+
 
 
 } // namespace geometry

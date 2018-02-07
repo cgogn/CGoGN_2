@@ -40,10 +40,8 @@ namespace geometry
 {
 
 template <typename MAP, typename VERTEX_ATTR>
-inline ScalarOf<typename VERTEX_ATTR::value_type> angle(
-		const MAP& map,
-		const Cell<Orbit::DART> v,
-		const VERTEX_ATTR& position)
+inline auto angle(const MAP& map, const Cell<Orbit::DART> v, const VERTEX_ATTR& position)
+-> typename std::enable_if<is_attribute<VERTEX_ATTR>(MAP::Vertex::ORBIT), ScalarOf<typename VERTEX_ATTR::value_type>>::type
 {
 	static_assert(is_attribute<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
 

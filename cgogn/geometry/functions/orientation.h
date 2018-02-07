@@ -86,7 +86,7 @@ template <typename VEC3a, typename VEC3b, typename VEC3c, typename VEC3d>
 Orientation3D test_orientation_3D(const Eigen::MatrixBase<VEC3a>& P, const Eigen::MatrixBase<VEC3b>& A, const Eigen::MatrixBase<VEC3c>& B, const Eigen::MatrixBase<VEC3d>& C)
 {
 	static_assert(is_same_vectors<VEC3a,VEC3b,VEC3c,VEC3d>::value, "parameters must have same type");
-	static_assert(IsSizeOf<VEC3a>(3ul), "The size of the vector must be equal to 3.");
+	static_assert(is_dim_of<VEC3a>(3ul), "The size of the vector must be equal to 3.");
 	return Plane3D(A, B, C).orient(P);
 }
 
@@ -110,7 +110,7 @@ template <typename VEC3a, typename VEC3b, typename VEC3c>
 Orientation3D test_orientation_3D(const Eigen::MatrixBase<VEC3a>& P, const Eigen::MatrixBase<VEC3b>& N, const Eigen::MatrixBase<VEC3c>& PP)
 {
 	static_assert(is_same_vectors<VEC3a,VEC3b,VEC3c>::value, "parameters must have same type");
-	static_assert(IsSizeOf<VEC3a>(3ul), "The size of the vector must be equal to 3.");
+	static_assert(is_dim_of<VEC3a>(3ul), "The size of the vector must be equal to 3.");
 	return Plane3D(N, PP).orient(P);
 }
 
