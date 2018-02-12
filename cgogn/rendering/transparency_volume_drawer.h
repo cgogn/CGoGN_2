@@ -142,7 +142,7 @@ void VolumeTransparencyDrawer::update_face(const MAP& m, const typename MAP::tem
 			else
 			{
 				ear_indices.clear();
-				cgogn::geometry::append_ear_triangulation<VEC3>(m, f, position, ear_indices);
+				cgogn::geometry::append_ear_triangulation(m, f, position, ear_indices);
 				for(std::size_t i = 0; i < ear_indices.size(); i += 3)
 				{
 					const VEC3& P1 = position[ear_indices[i]];

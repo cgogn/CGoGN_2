@@ -252,7 +252,7 @@ static void BENCH_vertices_filter_poly(benchmark::State& state)
 
 		state.ResumeTiming();
 
-		cgogn::geometry::filter_average<Vec3>(bench_map, vertex_position, vertex_position2);
+		cgogn::geometry::filter_average(bench_map, vertex_position, vertex_position2);
 	}
 }
 
@@ -268,7 +268,7 @@ static void BENCH_vertices_filter_tetra(benchmark::State& state)
 
 		state.ResumeTiming();
 
-		cgogn::geometry::filter_average<Vec3>(bench_tetra_map, vertex_position, vertex_position2);
+		cgogn::geometry::filter_average(bench_tetra_map, vertex_position, vertex_position2);
 	}
 }
 

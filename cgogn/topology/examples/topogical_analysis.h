@@ -824,7 +824,7 @@ public:
 		cgogn::geometry::compute_angle_between_face_normals(map_, vertex_position_, edgeangle);
 		cgogn::geometry::compute_incident_faces_area<Edge>(map_, vertex_position_, edgeaera);
 
-		Scalar meanEdgeLength = cgogn::geometry::mean_edge_length<Vec3>(map_, vertex_position_);
+		Scalar meanEdgeLength = cgogn::geometry::mean_edge_length(map_, vertex_position_);
 
 		Scalar radius = Scalar(2.0) * meanEdgeLength;
 

@@ -37,25 +37,25 @@ namespace geometry
 {
 
 template <typename MAP, typename VERTEX_ATTR>
-inline typename VERTEX_ATTR::value_type vector_from(
+inline InsideTypeOf<VERTEX_ATTR> vector_from(
 	const MAP& map,
 	const Dart d,
 	const VERTEX_ATTR& position
 )
 {
-	static_assert(is_attribute<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
 	using Vertex = typename MAP::Vertex;
 	return position[Vertex(map.phi1(d))] - position[Vertex(d)];
 }
 
 template <typename MAP, typename VERTEX_ATTR>
-inline ScalarOf<typename VERTEX_ATTR::value_type> length(
+inline ScalarOf<InsideTypeOf<VERTEX_ATTR>> length(
 	const MAP& map,
 	const typename MAP::Edge e,
 	const VERTEX_ATTR& position
 )
 {
-	static_assert(is_attribute<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
 	return vector_from(map, e.dart, position).norm();
 }
 
@@ -64,10 +64,10 @@ inline void compute_length(
 	const MAP& map,
 	const MASK& mask,
 	const VERTEX_ATTR& position,
-	typename MAP::template EdgeAttribute<typename VERTEX_ATTR::value_type>& edge_length
+	typename MAP::template EdgeAttribute<ScalarOf<InsideTypeOf<VERTEX_ATTR>>>& edge_length
 )
 {
-	static_assert(is_attribute<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
 
 	map.parallel_foreach_cell([&] (typename MAP::Edge e)
 	{
@@ -81,22 +81,22 @@ template <typename MAP, typename VERTEX_ATTR>
 inline void compute_length(
 	const MAP& map,
 	const VERTEX_ATTR& position,
-	typename MAP::template EdgeAttribute<typename VERTEX_ATTR::value_type>& edge_length
+	typename MAP::template EdgeAttribute<ScalarOf<InsideTypeOf<VERTEX_ATTR>>>& edge_length
 )
 {
-	static_assert(is_attribute<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
 
 	compute_length(map, AllCellsFilter(), position, edge_length);
 }
 
 template <typename MAP, typename MASK, typename VERTEX_ATTR>
-inline ScalarOf<typename VERTEX_ATTR::value_type> mean_edge_length(
+inline ScalarOf<InsideTypeOf<VERTEX_ATTR>> mean_edge_length(
 	const MAP& map,
 	const MASK& mask,
 	const VERTEX_ATTR& position
 )
 {
-	static_assert(is_attribute<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
 
 	using VEC3 = typename VERTEX_ATTR::value_type;
 	using Scalar = ScalarOf<VEC3>;
@@ -122,13 +122,13 @@ inline ScalarOf<typename VERTEX_ATTR::value_type> mean_edge_length(
 }
 
 
-template <typename VEC3, typename MAP, typename VERTEX_ATTR>
-inline ScalarOf<VEC3> mean_edge_length(
+template <typename MAP, typename VERTEX_ATTR>
+inline ScalarOf<InsideTypeOf<VERTEX_ATTR>> mean_edge_length(
 	const MAP& map,
 	const VERTEX_ATTR& position
 )
 {
-	static_assert(is_attribute<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
 
 	return mean_edge_length(map, AllCellsFilter(), position);
 }

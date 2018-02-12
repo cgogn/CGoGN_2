@@ -246,8 +246,8 @@ void ViewerTransparency::init()
 
 
 	render_ = cgogn::make_unique<cgogn::rendering::MapRender>();
-	render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
-	render_->init_primitives<Vec3>(map_, cgogn::rendering::POINTS, &vertex_position_);
+	render_->init_primitives(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
+	render_->init_primitives(map_, cgogn::rendering::POINTS, &vertex_position_);
 
 	param_point_sprite_ = cgogn::rendering::ShaderPointSprite::generate_param();
 	param_point_sprite_->set_position_vbo(vbo_pos_.get());

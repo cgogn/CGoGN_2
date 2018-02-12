@@ -151,7 +151,7 @@ void Viewer::init()
 	cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
 
 	render_ = cgogn::make_unique<cgogn::rendering::MapRender>();
-	render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
+	render_->init_primitives(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
 
 	param_flat_ = cgogn::rendering::ShaderFlat::generate_param();
 

@@ -160,7 +160,7 @@ static void BENCH_vertices_filter_poly(benchmark::State& state)
 
 		state.ResumeTiming();
 
-		cgogn::geometry::filter_taubin<Vec3>(bench_map, vertex_position, vertex_position2);
+		cgogn::geometry::filter_taubin(bench_map, vertex_position, vertex_position2);
 	}
 }
 
@@ -176,7 +176,7 @@ static void BENCH_vertices_filter_tri(benchmark::State& state)
 
 		state.ResumeTiming();
 
-		cgogn::geometry::filter_taubin<Vec3>(bench_tri_map, vertex_position, vertex_position2);
+		cgogn::geometry::filter_taubin(bench_tri_map, vertex_position, vertex_position2);
 	}
 }
 

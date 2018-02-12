@@ -97,7 +97,7 @@ public:
 		render_ = cgogn::make_unique<cgogn::rendering::MapRender>();
 		render_->init_primitives(map_, cgogn::rendering::POINTS);
 		render_->init_primitives(map_, cgogn::rendering::LINES);
-		render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
+		render_->init_primitives(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
 
 		param_flat_ = cgogn::rendering::ShaderFlat::generate_param();
 		param_flat_->set_position_vbo(vbo_pos_.get());

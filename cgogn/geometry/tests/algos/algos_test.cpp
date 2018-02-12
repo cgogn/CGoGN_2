@@ -98,6 +98,7 @@ TYPED_TEST(Algos_TEST, TriangleArea)
 //	StdArrayf x,xx;
 //	auto y = cgogn::geometry::copy_to_eigen(x);
 //	auto yy = cgogn::geometry::copy_to_eigen(x+xx);
+//	angle(3,t);
 
 }
 
@@ -191,7 +192,7 @@ TYPED_TEST(Algos_TEST, EarTriangulation)
 	vertex_position[Vertex(d)] = TypeParam(Scalar(0), Scalar(10), Scalar(0));
 
 	std::vector<uint32> indices;
-	cgogn::geometry::append_ear_triangulation<TypeParam>(this->map2_, f, vertex_position, indices);
+	cgogn::geometry::append_ear_triangulation(this->map2_, f, vertex_position, indices);
 	EXPECT_TRUE(indices.size() == 9);
 
 	Scalar area = 0;
@@ -204,7 +205,7 @@ TYPED_TEST(Algos_TEST, EarTriangulation)
 	}
 	EXPECT_DOUBLE_EQ(area, 75.0);
 
-	cgogn::geometry::apply_ear_triangulation<TypeParam>(this->map2_, f, vertex_position);
+	cgogn::geometry::apply_ear_triangulation(this->map2_, f, vertex_position);
 	EXPECT_TRUE(this->map2_.template nb_cells<Face::ORBIT>() == 3);
 //	EXPECT_TRUE(this->map2_.nb_boundary_cells() == 1);
 	EXPECT_TRUE(this->map2_.template nb_cells<Edge::ORBIT>() == 7);

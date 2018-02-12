@@ -38,16 +38,18 @@ namespace geometry
 template <typename VEC3a, typename VEC3b, typename VEC3c>
 inline typename vector_traits<VEC3a>::Type normal(const Eigen::MatrixBase<VEC3a>& p1, const Eigen::MatrixBase<VEC3b>& p2, const Eigen::MatrixBase<VEC3c>& p3)
 {
-	static_assert(is_same_vectors<VEC3a,VEC3b,VEC3c>::value, "parameters must have same type");
+	static_assert(is_same_vector<VEC3a,VEC3b,VEC3c>(), "parameters must have same type");
 	static_assert(is_dim_of<VEC3a>(3), "The size of the vector must be equal to 3.");
 	return (p2-p1).cross(p3-p1);
 }
 
+
+
+
 template <typename VEC3>
 inline auto normal(const VEC3& p1, const VEC3& p2, const VEC3& p3)
- -> typename std::enable_if <!is_eigen<VEC3>::value, VEC3>::type
+ -> typename std::enable_if <is_vec_non_eigen<VEC3>(), VEC3>::type
 {
-	static_assert(is_vector<VEC3>(), "parameters must be vectors");
 	static_assert(is_dim_of<VEC3>(3), "The size of the vector must be equal to 3.");
 	return copy_to_vec<VEC3>(normal(eigenize(p1),eigenize(p2),eigenize(p3)));
 }

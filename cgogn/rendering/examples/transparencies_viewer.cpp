@@ -224,8 +224,8 @@ void ViewerTransparency::init()
 	cgogn::rendering::update_vbo(vertex_normal_, vbo_norm_.get());
 
 	render_ = cgogn::make_unique<cgogn::rendering::MapRender>();
-	render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
-	render_->init_primitives<Vec3>(map_, cgogn::rendering::POINTS, &vertex_position_);
+	render_->init_primitives(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
+	render_->init_primitives(map_, cgogn::rendering::POINTS, &vertex_position_);
 
 
 	param_flat_ = cgogn::rendering::ShaderFlat::generate_param();

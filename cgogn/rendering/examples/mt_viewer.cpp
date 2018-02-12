@@ -92,7 +92,7 @@ private:
 	std::unique_ptr<cgogn::rendering::VBO> vbo_pos_;
 	std::unique_ptr<cgogn::rendering::ShaderFlat::Param> param_flat_;
 
-	bool flat_rendering_;
+//	bool flat_rendering_;
 
 	std::mutex mut_update_;
 	std::condition_variable cv_update_;
@@ -157,7 +157,6 @@ Viewer::Viewer() :
 	bb_(),
 	render_(nullptr),
 	vbo_pos_(nullptr),
-	flat_rendering_(true),
 	need_update_(false)
 {
 
@@ -282,7 +281,7 @@ void Viewer::init()
 	// create and fill VBO for normals
 // map rendering object (primitive creation & sending to GPU)
 	render_ = cgogn::make_unique<cgogn::rendering::MapRender>();
-	render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
+	render_->init_primitives(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
 
 
 	param_flat_ = cgogn::rendering::ShaderFlat::generate_param();
