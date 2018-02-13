@@ -375,7 +375,7 @@ private:
 };
 
 CGOGN_IO_API std::istream& getline_safe(std::istream& is, std::string& str);
-
+CGOGN_IO_API std::istream& getline_safe(std::istream& is, std::string& str, char delim);
 
 } // namespace io
 
