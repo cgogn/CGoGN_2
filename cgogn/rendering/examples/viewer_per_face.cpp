@@ -195,7 +195,7 @@ void Viewer::init()
 	std::vector<uint32> ind_f;
 
 	// create indices ( need to be done only after topo modifications
-	cgogn::rendering::create_indices_vertices_faces<Vec3>(map_,vertex_position_,ind_v,ind_f);
+	cgogn::rendering::create_indices_vertices_faces(map_,vertex_position_,ind_v,ind_f);
 
 	// generate VBO: positions
 	cgogn::rendering::generate_vbo(vertex_position_, ind_v, vbo_pos_.get(), [] (const Vec3& v) -> std::array<float32,3>

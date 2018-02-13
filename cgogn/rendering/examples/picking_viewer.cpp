@@ -235,11 +235,11 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 					drawer_->begin(GL_LINES);
 					// closest face in red
 					drawer_->color3f(1.0, 0.0, 0.0);
-					cgogn::rendering::add_to_drawer<Vec3>(map_, selected[0], vertex_position_, drawer_.get());
+					cgogn::rendering::add_to_drawer(map_, selected[0], vertex_position_, drawer_.get());
 					// others in yellow
 					drawer_->color3f(1.0, 1.0, 0.0);
 					for(uint32 i = 1u; i < selected.size(); ++i)
-						cgogn::rendering::add_to_drawer<Vec3>(map_, selected[i], vertex_position_, drawer_.get());
+						cgogn::rendering::add_to_drawer(map_, selected[i], vertex_position_, drawer_.get());
 					drawer_->end();
 				}
 			}
@@ -255,11 +255,11 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 					drawer_->begin(GL_LINES);
 					// closest face in red
 					drawer_->color3f(1.0, 0.0, 0.0);
-					cgogn::rendering::add_to_drawer<Vec3>(map_, selected[0], vertex_position_, drawer_.get());
+					cgogn::rendering::add_to_drawer(map_, selected[0], vertex_position_, drawer_.get());
 					// others in yellow
 					drawer_->color3f(1.0, 1.0, 0.0);
 					for(uint32 i = 1u; i < selected.size(); ++i)
-						cgogn::rendering::add_to_drawer<Vec3>(map_, selected[i], vertex_position_, drawer_.get());
+						cgogn::rendering::add_to_drawer(map_, selected[i], vertex_position_, drawer_.get());
 					drawer_->end();
 				}
 			}
@@ -275,11 +275,11 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 					drawer_->begin(GL_LINES);
 					// closest face in red
 					drawer_->color3f(1.0, 0.0, 0.0);
-					cgogn::rendering::add_to_drawer<Vec3>(map_, selected[0], vertex_position_, drawer_.get());
+					cgogn::rendering::add_to_drawer(map_, selected[0], vertex_position_, drawer_.get());
 					// others in yellow
 					drawer_->color3f(1.0, 1.0, 0.0);
 					for(uint32 i = 1u; i < selected.size(); ++i)
-						cgogn::rendering::add_to_drawer<Vec3>(map_, selected[i], vertex_position_, drawer_.get());
+						cgogn::rendering::add_to_drawer(map_, selected[i], vertex_position_, drawer_.get());
 					drawer_->end();
 				}
 			}

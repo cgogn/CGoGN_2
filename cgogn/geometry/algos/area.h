@@ -39,7 +39,7 @@ namespace geometry
 {
 
 template <typename MAP, typename VERTEX_ATTR>
-inline ScalarOf<typename VERTEX_ATTR::value_type> convex_area(
+inline ScalarOf<InsideTypeOf<VERTEX_ATTR>> convex_area(
 		const MAP& map,
 		const typename MAP::Face f,
 		const VERTEX_ATTR& position)
@@ -96,7 +96,7 @@ inline auto area(
 {
 	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
 
-	using VEC3 = typename VERTEX_ATTR::value_type;
+	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 	using Scalar = ScalarOf<VEC3>;
 	using Face = typename MAP::Face;
 
@@ -113,7 +113,7 @@ inline void compute_area(
 	const MAP& map,
 	const MASK& mask,
 	const VERTEX_ATTR& position,
-	Attribute<ScalarOf<typename VERTEX_ATTR::value_type>, CellType::ORBIT>& cell_area)
+	Attribute<ScalarOf<InsideTypeOf<VERTEX_ATTR>>, CellType::ORBIT>& cell_area)
 {
 	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
 
@@ -129,7 +129,7 @@ template <typename CellType, typename MAP, typename VERTEX_ATTR>
 inline auto compute_area(
 	const MAP& map,
 	const VERTEX_ATTR& position,
-	Attribute<ScalarOf<typename VERTEX_ATTR::value_type>, CellType::ORBIT>& cell_area
+	Attribute<ScalarOf<InsideTypeOf<VERTEX_ATTR>>, CellType::ORBIT>& cell_area
 ) -> typename std::enable_if<is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),void>::type
 {
 	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
@@ -164,7 +164,7 @@ inline void compute_incident_faces_area(
 	const MAP& map,
 	const MASK& mask,
 	const VERTEX_ATTR& position,
-	Attribute<ScalarOf<typename VERTEX_ATTR::value_type>, CellType::ORBIT>& area)
+	Attribute<ScalarOf<InsideTypeOf<VERTEX_ATTR>>, CellType::ORBIT>& area)
 {
 	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
 
@@ -179,7 +179,7 @@ template <typename CellType, typename MAP, typename VERTEX_ATTR>
 inline void compute_incident_faces_area(
 	const MAP& map,
 	const VERTEX_ATTR& position,
-	Attribute<ScalarOf<typename VERTEX_ATTR::value_type>, CellType::ORBIT>& area)
+	Attribute<ScalarOf<InsideTypeOf<VERTEX_ATTR>>, CellType::ORBIT>& area)
 {
 	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
 

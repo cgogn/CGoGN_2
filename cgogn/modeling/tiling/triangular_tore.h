@@ -151,11 +151,14 @@ public:
 		 *  @param[in] big_radius
 		 *  @param[in] small_radius
 		 */
-	template <typename T>
-	void embed_into_tore(typename MAP::template VertexAttribute<T>& attribute,
+	template <typename VERTEX_ATTR>
+	void embed_into_tore(VERTEX_ATTR& attribute,
 						 float32 big_radius,
 						 float32 small_radius)
 	{
+		static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
+
+		using T = InsideTypeOf<VERTEX_ATTR>;
 		const float32 alpha = 2.0f * float32(M_PI) / float32(this->nx_);
 		const float32 beta = 2.0f * float32(M_PI) / float32(this->ny_);
 

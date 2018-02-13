@@ -196,6 +196,14 @@ template<typename V>
 using ScalarOf = typename vector_traits<V>::Scalar;
 
 
+
+template<typename V>
+constexpr std::size_t dim_of()
+{
+	return vector_traits<V>::SIZE;
+}
+
+
 template<typename V>
 constexpr bool is_dim_of(std::size_t s)
 {

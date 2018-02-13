@@ -151,7 +151,7 @@ public:
 				vertices_rendering_ = !vertices_rendering_;
 				break;
 			case Qt::Key_R:
-				cgogn::modeling::pliant_remeshing<Vec3>(map_, vertex_position_);
+				cgogn::modeling::pliant_remeshing(map_, vertex_position_);
 				cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
 				render_->init_primitives(map_, cgogn::rendering::POINTS);
 				render_->init_primitives(map_, cgogn::rendering::LINES);

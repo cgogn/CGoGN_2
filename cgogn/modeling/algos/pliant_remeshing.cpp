@@ -32,8 +32,8 @@ namespace cgogn
 namespace modeling
 {
 
-template CGOGN_MODELING_API void pliant_remeshing<Eigen::Vector3f>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&);
-template CGOGN_MODELING_API void pliant_remeshing<Eigen::Vector3d>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&);
+template CGOGN_MODELING_API void pliant_remeshing(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&);
+template CGOGN_MODELING_API void pliant_remeshing(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&);
 
 } // namespace modeling
 

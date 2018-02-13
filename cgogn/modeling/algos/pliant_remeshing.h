@@ -39,13 +39,17 @@ namespace cgogn
 namespace modeling
 {
 
-template <typename VEC3>
+template <typename VERTEX_ATTR>
 void pliant_remeshing(
 	CMap2& map,
-	typename CMap2::template VertexAttribute<VEC3>& position
+	VERTEX_ATTR& position
 )
 {
-	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
+	static_assert(is_orbit_of<VERTEX_ATTR>(CMap2::Vertex::ORBIT),"position must be a vertex attribute");
+
+	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
+	using Scalar = geometry::ScalarOf<VEC3>;
+
 	using Vertex = typename CMap2::Vertex;
 	using Edge = typename CMap2::Edge;
 
@@ -135,8 +139,8 @@ void pliant_remeshing(
 }
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_PLIANT_REMESHING_CPP_))
-extern template CGOGN_MODELING_API void pliant_remeshing<Eigen::Vector3f>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&);
-extern template CGOGN_MODELING_API void pliant_remeshing<Eigen::Vector3d>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&);
+extern template CGOGN_MODELING_API void pliant_remeshing(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&);
+extern template CGOGN_MODELING_API void pliant_remeshing(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&);
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_PLIANT_REMESHING_CPP_))
 
 } // namespace modeling

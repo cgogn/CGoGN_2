@@ -55,7 +55,7 @@ template <typename V, typename S, uint32 N>
 void tmpl_test_vector_traits()
 {
 	using Scalar = typename cgogn::geometry::vector_traits<V>::Scalar;
-	auto  sz = cgogn::geometry::vector_traits<V>::SIZE;
+	auto  sz = cgogn::geometry::dim_of<V>();
 	bool b = std::is_same<Scalar, S>::value;
 	EXPECT_TRUE(b);
 	EXPECT_EQ(sz, N);

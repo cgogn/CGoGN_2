@@ -56,7 +56,7 @@ public:
 	/**
 	 * \brief Dimension of the dataset
 	 */
-	static const uint32 dim_ = vector_traits<Vec>::SIZE;
+	static const uint32 dim_ = dim_of<Vec>();
 	using Matrix = Eigen::Matrix<Scalar, dim_, dim_>;
 
 	// https://eigen.tuxfamily.org/dox-devel/group__TopicStructHavingEigenMembers.html

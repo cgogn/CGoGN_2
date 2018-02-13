@@ -103,17 +103,20 @@ public:
 		return std::unique_ptr<Renderer>(new Renderer(this));
 	}
 
-	template <typename VEC3, typename MAP>
-	void update_face(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position);
+	template <typename MAP, typename VERTEX_ATTR>
+	void update_face(const MAP& m, const VERTEX_ATTR& position);
 };
 
 
 
 
 
-template <typename VEC3, typename MAP>
-void VolumeTransparencyDrawer::update_face(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position)
+template <typename MAP, typename VERTEX_ATTR>
+void VolumeTransparencyDrawer::update_face(const MAP& m, const VERTEX_ATTR& position)
 {
+	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
+
+	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
 	using Volume = typename MAP::Volume;

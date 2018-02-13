@@ -89,14 +89,14 @@ public:
 
 	template <typename VEC3>
 	auto operator()(const VEC3& v)
-		-> typename std::enable_if<vector_traits<VEC3>::SIZE == 3 && std::is_same<ScalarOf<VEC3>, double>::value, double>::type
+		-> typename std::enable_if<dim_of<VEC3>() == 3 && std::is_same<ScalarOf<VEC3>, double>::value, double>::type
 	{
 		return (*this)(Vec4d(v[0], v[1], v[2], 1.));
 	}
 
 	template <typename VEC3>
 	auto operator()(const VEC3& v)
-		-> typename std::enable_if<vector_traits<VEC3>::SIZE == 3 && !std::is_same<ScalarOf<VEC3>, double>::value, ScalarOf<VEC3>>::type
+		-> typename std::enable_if<dim_of<VEC3>() == 3 && !std::is_same<ScalarOf<VEC3>, double>::value, ScalarOf<VEC3>>::type
 	{
 		using Scalar = ScalarOf<VEC3>;
 
@@ -110,7 +110,7 @@ public:
 
 	template <typename VEC4>
 	auto operator()(const VEC4& v)
-		-> typename std::enable_if<vector_traits<VEC4>::SIZE == 4 && !std::is_same<VEC4, Vec4d>::value, typename vector_traits<VEC4>::Scalar>::type
+		-> typename std::enable_if<is_dim_of<VEC4>(4) && !std::is_same<VEC4, Vec4d>::value, typename vector_traits<VEC4>::Scalar>::type
 	{
 		using Scalar = typename vector_traits<VEC4>::Scalar;
 
@@ -125,7 +125,7 @@ public:
 
 	template <typename VEC3>
 	auto optimized(VEC3& v)
-		-> typename std::enable_if<vector_traits<VEC3>::SIZE == 3, bool>::type
+		-> typename std::enable_if<dim_of<VEC3>() == 3, bool>::type
 	{
 		using Scalar = ScalarOf<VEC3>;
 
@@ -142,7 +142,7 @@ public:
 
 	template <typename VEC4>
 	auto optimized(VEC4& v)
-		-> typename std::enable_if<vector_traits<VEC4>::SIZE == 4 && std::is_same<VEC4, Vec4d>::value, bool>::type
+		-> typename std::enable_if<is_dim_of<VEC4>(4) && std::is_same<VEC4, Vec4d>::value, bool>::type
 	{
 		Matrix4d m(matrix_);
 		for (uint32 i = 0; i < 3; ++i) m(3,i) = 0.;
@@ -158,7 +158,7 @@ public:
 
 	template <typename VEC4>
 	auto optimized(VEC4& v)
-		-> typename std::enable_if<vector_traits<VEC4>::SIZE == 4 && !std::is_same<VEC4, Vec4d>::value, bool>::type
+		-> typename std::enable_if<is_dim_of<VEC4>(4) && !std::is_same<VEC4, Vec4d>::value, bool>::type
 	{
 		using Scalar = typename vector_traits<VEC4>::Scalar;
 

@@ -228,7 +228,7 @@ auto intersection_ray_triangle(const VEC3& P, const VEC3& Dir, const VEC3& Ta, c
 	if (inter == nullptr)
 		return intersection_ray_triangle(eigenize(P),eigenize(Dir),eigenize(Ta),eigenize(Tb),eigenize(Tc), nullptr);
 
-	Eigen::Matrix< ScalarOf<VEC3>,vector_traits<VEC3>::SIZE,1> I;
+	Eigen::Matrix< ScalarOf<VEC3>,dim_of<VEC3>(),1> I;
 	(*inter)[0] = I[0];
 	(*inter)[1] = I[1];
 	(*inter)[2] = I[2];

@@ -39,7 +39,7 @@ inline auto centroid(
 	const MAP& map,
 	const CellType c,
 	const VERTEX_ATTR& attribute
-) -> typename std::enable_if<is_cell_type<CellType>::value, typename VERTEX_ATTR::value_type>::type
+) -> typename std::enable_if<is_cell_type<CellType>::value, InsideTypeOf<VERTEX_ATTR>>::type
 {
 	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"attribute must be a vertex attribute");
 
@@ -79,7 +79,7 @@ template <typename CellType, typename MAP, typename VERTEX_ATTR>
 inline void compute_centroid(
 	const MAP& map,
 	const VERTEX_ATTR& attribute,
-	Attribute<typename VERTEX_ATTR::value_type, CellType::ORBIT>& cell_centroid
+	Attribute<InsideTypeOf<VERTEX_ATTR>, CellType::ORBIT>& cell_centroid
 )
 {
 	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"attribute must be a vertex attribute");
@@ -93,11 +93,11 @@ inline auto centroid(
 	const MAP& map,
 	const MASK& mask,
 	const VERTEX_ATTR& attribute
-) -> typename std::enable_if<!is_cell_type<MASK>::value, typename VERTEX_ATTR::value_type>::type
+) -> typename std::enable_if<!is_cell_type<MASK>::value, InsideTypeOf<VERTEX_ATTR>>::type
 {
 	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"attribute must be a vertex attribute");
 
-	using VEC = typename VERTEX_ATTR::value_type;
+	using VEC = InsideTypeOf<VERTEX_ATTR>;
 	std::vector<VEC> sum_per_thread(thread_pool()->nb_workers());
 	for (VEC& v :sum_per_thread) { set_zero(v); }
 	std::vector<uint32> nb_vertices_per_thread(thread_pool()->nb_workers(), 0);
@@ -121,7 +121,7 @@ inline auto centroid(
 }
 
 template <typename MAP,typename VERTEX_ATTR>
-inline typename VERTEX_ATTR::value_type centroid(
+inline InsideTypeOf<VERTEX_ATTR> centroid(
 	const MAP& map,
 	const VERTEX_ATTR& attribute
 )
@@ -140,7 +140,7 @@ typename MAP::Vertex central_vertex(
 {
 	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"attribute must be a vertex attribute");
 
-	using VEC = typename VERTEX_ATTR::value_type;
+	using VEC = InsideTypeOf<VERTEX_ATTR>;
 	using Vertex = typename MAP::Vertex;
 	using Scalar = ScalarOf<VEC>;
 
