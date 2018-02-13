@@ -21,6 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES)
+
 #define CGOGN_CORE_MAP_MAP0_CPP_
 
 #include <cgogn/core/cmap/cmap0.h>
@@ -38,3 +40,5 @@ template class CGOGN_CORE_API CellMarkerStore<CMap0, CMap0::Vertex::ORBIT>;
 template class CGOGN_CORE_API QuickTraversor<CMap0>;
 
 } // namespace cgogn
+
+#endif

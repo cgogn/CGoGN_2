@@ -47,13 +47,14 @@ template <typename MAP, typename VERTEX_ATTR>
 inline void picking_internal_face(
 	const MAP& m,
 	const VERTEX_ATTR& position,
-	const typename VERTEX_ATTR::value_type& A,
-	const typename VERTEX_ATTR::value_type& B,
-	typename std::vector<std::tuple<typename MAP::Face, typename VERTEX_ATTR::value_type, ScalarOf<typename VERTEX_ATTR::value_type>>>& selected
+	const InsideTypeOf<VERTEX_ATTR>& A,
+	const InsideTypeOf<VERTEX_ATTR>& B,
+	typename std::vector<std::tuple<typename MAP::Face, InsideTypeOf<VERTEX_ATTR>, ScalarOf<InsideTypeOf<VERTEX_ATTR>>>>& selected
 )
 {
 	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
-	using VEC3 = typename VERTEX_ATTR::value_type;
+
+	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 	using Scalar = ScalarOf<VEC3>;
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
@@ -120,13 +121,13 @@ template <typename MAP, typename VERTEX_ATTR>
 bool picking(
 	const MAP& m,
 	const VERTEX_ATTR& position,
-	const typename VERTEX_ATTR::value_type& A,
-	const typename VERTEX_ATTR::value_type& B,
+	const InsideTypeOf<VERTEX_ATTR>& A,
+	const InsideTypeOf<VERTEX_ATTR>& B,
 	typename std::vector<typename MAP::Face>& selected
 )
 {
 	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
-	using VEC3 = typename VERTEX_ATTR::value_type;
+	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 	using Scalar = ScalarOf<VEC3>;
 	using Face = typename MAP::Face;
 	using Triplet = typename std::tuple<Face, VEC3, Scalar>;
@@ -145,13 +146,14 @@ template <typename MAP, typename VERTEX_ATTR>
 bool picking(
 	const MAP& m,
 	const VERTEX_ATTR& position,
-	const typename VERTEX_ATTR::value_type& A,
-	const typename VERTEX_ATTR::value_type& B,
+	const InsideTypeOf<VERTEX_ATTR>& A,
+	const InsideTypeOf<VERTEX_ATTR>& B,
 	typename std::vector<typename MAP::Vertex>& selected
 )
 {
 	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
-	using VEC3 = typename VERTEX_ATTR::value_type;
+
+	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 	using Scalar = ScalarOf<VEC3>;
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
@@ -194,13 +196,13 @@ template <typename MAP, typename VERTEX_ATTR>
 bool picking(
 	const MAP& m,
 	const VERTEX_ATTR& position,
-	const typename VERTEX_ATTR::value_type& A,
-	const typename VERTEX_ATTR::value_type& B,
+	const InsideTypeOf<VERTEX_ATTR>& A,
+	const InsideTypeOf<VERTEX_ATTR>& B,
 	typename std::vector<typename MAP::Edge>& selected
 )
 {
 	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
-	using VEC3 = typename VERTEX_ATTR::value_type;
+	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 	using Scalar = ScalarOf<VEC3>;
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
@@ -246,13 +248,13 @@ template <typename MAP, typename VERTEX_ATTR>
 bool picking(
 	const MAP& m,
 	const VERTEX_ATTR& position,
-	const typename VERTEX_ATTR::value_type& A,
-	const typename VERTEX_ATTR::value_type& B,
+	const InsideTypeOf<VERTEX_ATTR>& A,
+	const InsideTypeOf<VERTEX_ATTR>& B,
 	typename std::vector<typename MAP::Volume>& selected
 )
 {
 	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
-	using VEC3 = typename VERTEX_ATTR::value_type;
+	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 	using Scalar = ScalarOf<VEC3>;
 	using Face = typename MAP::Face;
 	using Volume = typename MAP::Volume;

@@ -152,7 +152,7 @@ public:
 				break;
 			case Qt::Key_D: {
 				cgogn::uint32 nbv = map_.nb_cells<Vertex::ORBIT>();
-				cgogn::modeling::decimate<Vec3>(map_, vertex_position_, cgogn::modeling::EdgeTraversor_QEM_T, cgogn::modeling::EdgeApproximator_QEM_T, 0.1 * nbv);
+				cgogn::modeling::decimate(map_, vertex_position_, cgogn::modeling::EdgeTraversor_QEM_T, cgogn::modeling::EdgeApproximator_QEM_T, 0.1 * nbv);
 
 				Scalar mel = cgogn::geometry::mean_edge_length(map_, vertex_position_);
 				param_point_sprite_->size_ = mel / 6.0;

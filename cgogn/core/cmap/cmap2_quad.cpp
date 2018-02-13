@@ -21,6 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES)
+
 #define CGOGN_CORE_CMAP_CMAP2_QUAD_CPP_
 
 #include <cgogn/core/cmap/cmap2_quad.h>
@@ -46,3 +48,5 @@ template class CGOGN_CORE_API CellMarkerStore<CMap2Quad, CMap2Quad::Face::ORBIT>
 template class CGOGN_CORE_API CellMarkerStore<CMap2Quad, CMap2Quad::Volume::ORBIT>;
 
 } // namespace cgogn
+
+#endif

@@ -21,6 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES)
+
 #define CGOGN_CORE_CONTAINER_CHUNK_STACK_CPP_
 
 #include <cgogn/core/container/chunk_stack.h>
@@ -31,3 +33,5 @@ namespace cgogn
 template class CGOGN_CORE_API ChunkStack<CGOGN_CHUNK_SIZE, uint32>;
 
 } // namespace cgogn
+
+#endif

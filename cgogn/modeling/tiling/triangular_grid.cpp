@@ -21,6 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES)
+
 #define CGOGN_MODELING_TILING_TRIANGULAR_GRID_CPP_
 
 #include <cgogn/modeling/tiling/triangular_grid.h>
@@ -36,3 +38,5 @@ template class CGOGN_MODELING_API TriangularGrid<CMap2>;
 } // namespace modeling
 
 } // namespace cgogn
+
+#endif

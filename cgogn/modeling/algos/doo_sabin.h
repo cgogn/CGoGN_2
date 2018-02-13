@@ -42,11 +42,13 @@ namespace modeling
 /// \param[in, out] map the surface to be subdivded
 /// \param[in, out] position the geometric position of the surface
 /// \todo handle objects with open boundaries
-template <typename VEC3, typename MAP>
-void doo_sabin(MAP& map,
-			   typename MAP::template VertexAttribute<VEC3>& position)
+template <typename MAP, typename VERTEX_ATTR>
+void doo_sabin(MAP& map, VERTEX_ATTR& position)
 {
-	using Scalar = typename VEC3::Scalar;
+	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
+
+	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
+	using Scalar = geometry::ScalarOf<VEC3>;
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
 	using Face = typename MAP::Face;
@@ -163,8 +165,8 @@ void doo_sabin(MAP& map,
 }
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_DOO_SABIN_CPP_))
-extern template CGOGN_MODELING_API void doo_sabin<Eigen::Vector3f, CMap2>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&);
-extern template CGOGN_MODELING_API void doo_sabin<Eigen::Vector3d, CMap2>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&);
+extern template CGOGN_MODELING_API void doo_sabin(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&);
+extern template CGOGN_MODELING_API void doo_sabin(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&);
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_DOO_SABIN_CPP_))
 
 } // namespace modeling

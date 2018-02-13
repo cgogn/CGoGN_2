@@ -21,6 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES)
+
 #define CGOGN_IO_MAP_IMPORT_CPP_
 
 #include <cgogn/io/map_import.h>
@@ -39,3 +41,5 @@ template CGOGN_IO_API void import_volume<Eigen::Vector3d>(CMap3&, const std::str
 } // namespace io
 
 } // namespace cgogn
+
+#endif

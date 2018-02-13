@@ -20,6 +20,8 @@
 * Contact information: cgogn@unistra.fr                                        *
 *                                                                              *
 *******************************************************************************/
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES)
+
 #define CGOGN_IO_SURFACE_IMPORT_CPP_
 
 #include <cgogn/io/surface_import.h>
@@ -36,3 +38,5 @@ template class CGOGN_IO_API SurfaceFileImport<CMap2>;
 } // namespace io
 
 } // namespace cgogn
+
+#endif

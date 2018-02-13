@@ -127,14 +127,14 @@ private:
 };
 
 template <uint32 CHUNK_SIZE>
-ChunkArrayFactory<CHUNK_SIZE>& chunk_array_factory()
+inline ChunkArrayFactory<CHUNK_SIZE>& chunk_array_factory()
 {
 	static ChunkArrayFactory<CHUNK_SIZE> factory;
 	return factory;
 }
 
-//#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_ARRAY_FACTORY_CPP_))
-#if !defined(CGOGN_CORE_CONTAINER_CHUNK_ARRAY_FACTORY_CPP_)
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_ARRAY_FACTORY_CPP_))
+//#if !defined(CGOGN_CORE_CONTAINER_CHUNK_ARRAY_FACTORY_CPP_)
 extern template class CGOGN_CORE_API ChunkArrayFactory<CGOGN_CHUNK_SIZE>;
 extern template CGOGN_CORE_API ChunkArrayFactory<CGOGN_CHUNK_SIZE>& chunk_array_factory<CGOGN_CHUNK_SIZE>();
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CONTAINER_CHUNK_ARRAY_FACTORY_CPP_))

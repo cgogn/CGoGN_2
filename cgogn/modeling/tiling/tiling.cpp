@@ -21,6 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES)
+
 #define CGOGN_MODELING_TILING_TILING_CPP_
 
 #include <cgogn/modeling/tiling/tiling.h>
@@ -37,3 +39,5 @@ template class CGOGN_MODELING_API Tiling<CMap3>;
 } // namespace modeling
 
 } // namespace cgogn
+
+#endif

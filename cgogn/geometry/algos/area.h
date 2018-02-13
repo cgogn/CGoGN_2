@@ -146,7 +146,7 @@ inline ScalarOf<InsideTypeOf<VERTEX_ATTR>> incident_faces_area(
 {
 	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
 
-	using VEC3 = typename VERTEX_ATTR::value_type;
+	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 	using Scalar = ScalarOf<VEC3>;
 	using Face = typename MAP::Face;
 

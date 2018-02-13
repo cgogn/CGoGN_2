@@ -21,6 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES)
+
 #define CGOGN_IO_MAP_EXPORT_CPP_
 
 #include <cgogn/io/map_export.h>
@@ -38,3 +40,5 @@ template CGOGN_IO_API void export_volume(CMap3& , const ExportOptions&);
 } // namespace io
 
 } // namespace cgogn
+
+#endif

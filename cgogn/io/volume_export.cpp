@@ -20,6 +20,9 @@
 * Contact information: cgogn@unistra.fr                                        *
 *                                                                              *
 *******************************************************************************/
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES)
+
 #define CGOGN_IO_VOLUME_EXPORT_CPP_
 
 #include <cgogn/io/volume_export.h>
@@ -35,3 +38,5 @@ template class CGOGN_IO_API VolumeExport<CMap3>;
 } // namespace io
 
 } // namespace cgogn
+
+#endif

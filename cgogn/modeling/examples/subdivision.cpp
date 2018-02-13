@@ -155,7 +155,7 @@ public:
 				vertices_rendering_ = !vertices_rendering_;
 				break;
 			case Qt::Key_L: {
-				cgogn::modeling::loop<Vec3>(map_, vertex_position_);
+				cgogn::modeling::loop(map_, vertex_position_);
 
 				Scalar mel = cgogn::geometry::mean_edge_length(map_, vertex_position_);
 				param_point_sprite_->size_ = mel / 6.0;
@@ -169,7 +169,7 @@ public:
 				break;
 			}
 			case Qt::Key_C: {
-				cgogn::modeling::catmull_clark<Vec3>(map_, vertex_position_);
+				cgogn::modeling::catmull_clark(map_, vertex_position_);
 
 				Scalar mel = cgogn::geometry::mean_edge_length(map_, vertex_position_);
 				param_point_sprite_->size_ = mel / 6.0;
@@ -183,7 +183,7 @@ public:
 				break;
 			}
 			case Qt::Key_D: {
-				cgogn::modeling::doo_sabin<Vec3>(map_, vertex_position_);
+				cgogn::modeling::doo_sabin(map_, vertex_position_);
 
 				Scalar mel = cgogn::geometry::mean_edge_length(map_, vertex_position_);
 				param_point_sprite_->size_ = mel / 6.0;

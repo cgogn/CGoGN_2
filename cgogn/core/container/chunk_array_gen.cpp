@@ -21,6 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES)
+
 #define CGOGN_CORE_CONTAINER_CHUNK_ARRAY_GEN_CPP_
 
 #include <cgogn/core/container/chunk_array_gen.h>
@@ -31,3 +33,5 @@ namespace cgogn
 template class CGOGN_CORE_API ChunkArrayGen<CGOGN_CHUNK_SIZE>;
 
 } // namespace cgogn
+
+#endif

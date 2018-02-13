@@ -21,6 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES)
+
 #define CGOGN_TOPOLOGY_FEATURES_CPP_
 
 #include <cgogn/topology/algos/features.h>
@@ -39,3 +41,5 @@ template class CGOGN_TOPOLOGY_API FeaturesFinder<float64, CMap3>;
 } // namespace topology
 
 } // namespace cgogn
+
+#endif

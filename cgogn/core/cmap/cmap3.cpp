@@ -21,6 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES)
+
 #define CGOGN_CORE_CMAP_CMAP3_CPP_
 
 #include <cgogn/core/cmap/cmap3.h>
@@ -50,3 +52,5 @@ template class CGOGN_CORE_API BoundaryCache<CMap3>;
 template class CGOGN_CORE_API QuickTraversor<CMap3>;
 
 } // namespace cgogn
+
+#endif

@@ -20,6 +20,8 @@
 * Contact information: cgogn@unistra.fr                                        *
 *                                                                              *
 *******************************************************************************/
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES)
+
 #define CGOGN_IO_GRAPH_EXPORT_CPP_
 
 #include <cgogn/io/graph_export.h>
@@ -35,3 +37,5 @@ template class CGOGN_IO_API GraphExport<UndirectedGraph>;
 } // namespace io
 
 } // namespace cgogn
+
+#endif

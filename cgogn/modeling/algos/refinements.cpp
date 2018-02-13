@@ -21,6 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES)
+
 #define CGOGN_MODELING_ALGOS_REFINEMENTS_CPP_
 
 #include <cgogn/modeling/algos/refinements.h>
@@ -39,3 +41,5 @@ template CGOGN_MODELING_API void triangule<CMap2, Eigen::Vector3d>(CMap2&, CMap2
 } // namespace modeling
 
 } // namespace cgogn
+
+#endif

@@ -21,6 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES)
+
 #define CGOGN_CORE_CONTAINER_CHUNK_ARRAY_CPP_
 
 #include <cgogn/core/dll.h>
@@ -37,3 +39,5 @@ template class CGOGN_CORE_API ChunkArray<CGOGN_CHUNK_SIZE, std::array<float64, 3
 template class CGOGN_CORE_API ChunkArrayBool<CGOGN_CHUNK_SIZE>;
 
 } // namespace cgogn
+
+#endif

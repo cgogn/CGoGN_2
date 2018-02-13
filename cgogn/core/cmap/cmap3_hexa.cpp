@@ -21,6 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES)
+
 #define CGOGN_CORE_CMAP_CMAP3_HEXA_CPP_
 
 #include <cgogn/core/cmap/cmap3_hexa.h>
@@ -46,3 +48,5 @@ template class CGOGN_CORE_API CellMarkerStore<CMap3Hexa, CMap3Hexa::Face::ORBIT>
 template class CGOGN_CORE_API CellMarkerStore<CMap3Hexa, CMap3Hexa::Volume::ORBIT>;
 
 } // namespace cgogn
+
+#endif

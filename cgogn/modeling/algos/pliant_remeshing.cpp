@@ -20,6 +20,7 @@
 * Contact information: cgogn@unistra.fr                                        *
 *                                                                              *
 *******************************************************************************/
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES)
 
 #define CGOGN_MODELING_ALGOS_PLIANT_REMESHING_CPP_
 
@@ -37,3 +38,5 @@ template CGOGN_MODELING_API void pliant_remeshing<Eigen::Vector3d>(CMap2&, CMap2
 } // namespace modeling
 
 } // namespace cgogn
+
+#endif

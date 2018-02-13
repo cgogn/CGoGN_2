@@ -20,6 +20,7 @@
 * Contact information: cgogn@unistra.fr                                        *
 *                                                                              *
 *******************************************************************************/
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES)
 
 #define CGOGN_GEOMETRY_ALGOS_ANGLE_CPP_
 
@@ -39,3 +40,5 @@ template CGOGN_GEOMETRY_API void compute_angle_between_face_normals(const CMap2&
 } // namespace geometry
 
 } // namespace cgogn
+
+#endif

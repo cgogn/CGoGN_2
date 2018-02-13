@@ -20,6 +20,7 @@
 * Contact information: cgogn@unistra.fr                                        *
 *                                                                              *
 *******************************************************************************/
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES)
 
 #define CGOGN_CORE_CMAP_CMAP3_TETRA_CPP_
 
@@ -46,3 +47,5 @@ template class CGOGN_CORE_API CellMarkerStore<CMap3Tetra, CMap3Tetra::Face::ORBI
 template class CGOGN_CORE_API CellMarkerStore<CMap3Tetra, CMap3Tetra::Volume::ORBIT>;
 
 } // namespace cgogn
+
+#endif

@@ -21,6 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES)
+
 #define CGOGN_MODELING_TILING_SQUARE_GRID_CPP_
 
 #include <cgogn/modeling/tiling/square_grid.h>
@@ -36,3 +38,5 @@ template class CGOGN_MODELING_API SquareGrid<CMap2>;
 } // namespace modeling
 
 } // namespace cgogn
+
+#endif

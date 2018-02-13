@@ -21,6 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES)
+
 #define CGOGN_TOPOLOGY_SCALAR_FIELD_CPP_
 
 #include <cgogn/topology/algos/scalar_field.h>
@@ -39,3 +41,5 @@ template class CGOGN_TOPOLOGY_API ScalarField<float64, CMap3>;
 } // namespace topology
 
 } // namespace cgogn
+
+#endif

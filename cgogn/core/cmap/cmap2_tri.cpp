@@ -21,6 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES)
+
 #define CGOGN_CORE_CMAP_CMAP2_TRI_CPP_
 
 #include <cgogn/core/cmap/cmap2_tri.h>
@@ -46,3 +48,5 @@ template class CGOGN_CORE_API CellMarkerStore<CMap2Tri, CMap2Tri::Face::ORBIT>;
 template class CGOGN_CORE_API CellMarkerStore<CMap2Tri, CMap2Tri::Volume::ORBIT>;
 
 } // namespace cgogn
+
+#endif

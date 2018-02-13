@@ -21,6 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES)
+
 #define CGOGN_CORE_GRAPH_UNDIRECTED_GRAPH_CPP_
 
 #include <cgogn/core/graph/undirected_graph.h>
@@ -44,3 +46,5 @@ template class CGOGN_CORE_API BoundaryCache<UndirectedGraph>;
 template class CGOGN_CORE_API QuickTraversor<UndirectedGraph>;
 
 } // namespace cgogn
+
+#endif

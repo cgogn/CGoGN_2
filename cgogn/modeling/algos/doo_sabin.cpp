@@ -21,6 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES)
+
 #define CGOGN_MODELING_ALGOS_DOO_SABIN_CPP_
 
 #include <cgogn/modeling/algos/doo_sabin.h>
@@ -31,9 +33,11 @@ namespace cgogn
 namespace modeling
 {
 
-template CGOGN_MODELING_API void doo_sabin<Eigen::Vector3f, CMap2>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&);
-template CGOGN_MODELING_API void doo_sabin<Eigen::Vector3d, CMap2>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&);
+template CGOGN_MODELING_API void doo_sabin(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&);
+template CGOGN_MODELING_API void doo_sabin(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&);
 
 } // namespace modeling
 
 } // namespace cgogn
+
+#endif

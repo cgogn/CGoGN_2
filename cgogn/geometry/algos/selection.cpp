@@ -21,6 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES)
+
 #define CGOGN_GEOMETRY_ALGOS_SELECTION_CPP_
 
 #include <cgogn/geometry/algos/selection.h>
@@ -42,3 +44,5 @@ template CGOGN_GEOMETRY_API class Collector_WithinSphere<Eigen::Vector3d, CMap3>
 
 } // namespace geometry
 } // namespace cgogn
+
+#endif
