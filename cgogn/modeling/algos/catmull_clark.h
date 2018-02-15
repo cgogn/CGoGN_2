@@ -158,12 +158,12 @@ void catmull_clark(MAP& map, VERTEX_ATTR& position)
 	, initial_cache);
 }
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_CATMULL_CLARK_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_EXTERNAL_TEMPLATES_CPP_))
 extern template CGOGN_MODELING_API CMap2::Vertex quadrangule_face<CMap2>(CMap2&, CMap2::Face);
 extern template CGOGN_MODELING_API CMap3::Vertex quadrangule_face<CMap3>(CMap3&, CMap3::Face);
 extern template CGOGN_MODELING_API void catmull_clark(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&);
 extern template CGOGN_MODELING_API void catmull_clark(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&);
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_CATMULL_CLARK_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace modeling
 

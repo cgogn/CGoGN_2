@@ -89,10 +89,10 @@ private:
 	VertexAttribute<VertexArray> adjacency_;
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_TOPOLOGY_TYPES_ADJACENCY_CACHE_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_TOPOLOGY_EXTERNAL_TEMPLATES_CPP_))
 extern template class CGOGN_TOPOLOGY_API AdjacencyCache<CMap2>;
 extern template class CGOGN_TOPOLOGY_API AdjacencyCache<CMap3>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_TOPOLOGY_TYPES_ADJACENCY_CACHE_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_TOPOLOGY_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace topology
 

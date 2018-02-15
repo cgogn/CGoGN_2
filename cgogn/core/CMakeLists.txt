@@ -68,26 +68,8 @@ set(HEADER_FILES dll.h ${HEADER_BASIC} ${HEADER_CMAP} ${HEADER_CONTAINER} ${HEAD
 
 set(SOURCE_CMAP
 	cmap/map_base_data.cpp
-	cmap/cmap0.cpp
-	cmap/cmap1.cpp
-	cmap/cmap2.cpp
-	cmap/cmap3.cpp
-	cmap/cmap2_tri.cpp
-	cmap/cmap2_quad.cpp
-	cmap/cmap3_tetra.cpp
-	cmap/cmap3_hexa.cpp
 )
-set(SOURCE_CONTAINER
-	container/chunk_array_container.cpp
-	container/chunk_array_gen.cpp
-	container/chunk_array.cpp
-	container/chunk_stack.cpp
-	container/chunk_array_container.cpp
-	container/chunk_array_factory.cpp
-)
-set(SOURCE_GRAPH
-	graph/undirected_graph.cpp
-)
+
 set(SOURCE_UTILS
 	utils/assert.cpp
 	utils/name_types.cpp
@@ -103,7 +85,11 @@ set(SOURCE_UTILS
 	utils/timer.cpp
 )
 
-set(SOURCE_FILES ${SOURCE_CMAP} ${SOURCE_CONTAINER} ${SOURCE_GRAPH} ${SOURCE_UTILS})
+if(${CGOGN_EXTERNAL_TEMPLATES})
+    set(SOURCE_FILES ${SOURCE_CMAP} ${SOURCE_UTILS} external_templates.cpp)
+else()
+    set(SOURCE_FILES ${SOURCE_CMAP} ${SOURCE_UTILS})
+endif()
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 

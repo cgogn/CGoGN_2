@@ -74,12 +74,12 @@ auto triangule(MAP& map, VERTEX_ATTR& position)
 	}, cache);
 }
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_REFINEMENTS_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_EXTERNAL_TEMPLATES_CPP_))
 extern template CGOGN_MODELING_API CMap2::Vertex triangule(CMap2&, CMap2::Face);
 extern template CGOGN_MODELING_API CMap3::Vertex triangule(CMap3&, CMap3::Face);
 extern template CGOGN_MODELING_API void triangule(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&);
 extern template CGOGN_MODELING_API void triangule(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&);
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_REFINEMENTS_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace modeling
 

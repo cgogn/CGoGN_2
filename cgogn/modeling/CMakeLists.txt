@@ -33,27 +33,15 @@ set(HEADER_DECIMATION
 
 set(HEADER_FILES dll.h ${HEADER_ALGOS} ${HEADER_TILING} ${HEADER_DECIMATION})
 
-set(SOURCE_ALGOS
-	algos/catmull_clark.cpp
-        algos/doo_sabin.cpp
-	algos/loop.cpp
-	algos/refinements.cpp
-	algos/pliant_remeshing.cpp
-	algos/decimation.cpp
-	algos/tetrahedralization.cpp
-)
-set(SOURCE_TILING
-	tiling/tiling.cpp
-	tiling/triangular_grid.cpp
-	tiling/triangular_cylinder.cpp
-	tiling/triangular_tore.cpp
-#	tiling/triangular_cube.cpp
-	tiling/square_grid.cpp
-	tiling/square_cylinder.cpp
-	tiling/square_tore.cpp
-#	tiling/square_cube.h
-)
-set(SOURCE_FILES ${SOURCE_ALGOS} ${SOURCE_TILING})
+set(SOURCE_ALGOS algos/tetrahedralization.cpp)
+
+
+if(${CGOGN_EXTERNAL_TEMPLATES})
+    set(SOURCE_FILES ${SOURCE_ALGOS} external_templates.cpp)
+else()
+    set(SOURCE_FILES ${SOURCE_ALGOS})
+endif()
+
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 

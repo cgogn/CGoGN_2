@@ -155,12 +155,12 @@ inline void compute_angle_between_face_normals(
 
 
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_ALGOS_ANGLE_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_EXTERNAL_TEMPLATES_CPP_))
 extern template CGOGN_GEOMETRY_API float32 angle_between_face_normals(const CMap2&, const Cell<Orbit::PHI2>, const CMap2::VertexAttribute<Eigen::Vector3f>&);
 extern template CGOGN_GEOMETRY_API float64 angle_between_face_normals(const CMap2&, const Cell<Orbit::PHI2>, const CMap2::VertexAttribute<Eigen::Vector3d>&);
 extern template CGOGN_GEOMETRY_API void compute_angle_between_face_normals(const CMap2&, const CMap2::VertexAttribute<Eigen::Vector3f>&, Attribute<float32, Orbit::PHI2>&);
 extern template CGOGN_GEOMETRY_API void compute_angle_between_face_normals(const CMap2&, const CMap2::VertexAttribute<Eigen::Vector3d>&, Attribute<float64, Orbit::PHI2>&);
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_ALGOS_ANGLE_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace geometry
 

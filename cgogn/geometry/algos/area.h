@@ -103,7 +103,7 @@ inline auto area(
 	Scalar cell_area(0);
 	map.foreach_incident_face(c, [&] (Face f)
 	{
-		cell_area += area<VEC3>(map, f, position) / map.codegree(f);
+		cell_area += area(map, f, position) / map.codegree(f);
 	});
 	return cell_area;
 }
@@ -134,7 +134,7 @@ inline auto compute_area(
 {
 	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
 
-	compute_area(map, AllCellsFilter(), position, cell_area);
+	compute_area<CellType>(map, AllCellsFilter(), position, cell_area);
 }
 
 

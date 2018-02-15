@@ -130,12 +130,12 @@ void loop(MAP& map, VERTEX_ATTR& position)
 	map.remove_attribute(position2);
 }
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_LOOP_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_EXTERNAL_TEMPLATES_CPP_))
 extern template CGOGN_MODELING_API void loop(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&);
 extern template CGOGN_MODELING_API void loop(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&);
 extern template CGOGN_MODELING_API void loop(CMap3&, CMap3::VertexAttribute<Eigen::Vector3f>&);
 extern template CGOGN_MODELING_API void loop(CMap3&, CMap3::VertexAttribute<Eigen::Vector3d>&);
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_LOOP_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace modeling
 

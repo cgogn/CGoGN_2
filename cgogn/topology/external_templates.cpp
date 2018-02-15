@@ -20,39 +20,20 @@
 * Contact information: cgogn@unistra.fr                                        *
 *                                                                              *
 *******************************************************************************/
+#define CGOGN_TOPOLOGY_EXTERNAL_TEMPLATES_CPP_
 
-#define CGOGN_IO_FORMATS_PLY_CPP_
-
-#include <cgogn/io/formats/ply.h>
+#include <cgogn/rendering/volume_drawer.h>
 
 namespace cgogn
 {
 
-namespace io
+namespace topology
 {
 
+template class CGOGN_RENDERING_API VolumeDrawerTpl<false>;
+template class CGOGN_RENDERING_API VolumeDrawerTpl<true>;
 
-CGOGN_IO_API std::string cgogn_name_of_type_to_ply_data_type(const std::string& cgogn_type)
-{
-	static const std::map<std::string, std::string> type_map{
-		{name_of_type(int8()), "int8"},
-		{name_of_type(uint8()), "uint8"},
-		{name_of_type(int16()), "int16"},
-		{name_of_type(uint16()), "uint16"},
-		{name_of_type(int32()), "int"},
-		{name_of_type(uint32()), "uint"},
-		{name_of_type(float32()), "float32"},
-		{name_of_type(float64()), "float64"}
-	};
-
-	const auto it = type_map.find(cgogn_type);
-	if ( it != type_map.end())
-		return it->second;
-
-	cgogn_log_error("cgogn_name_of_type_to_ply_data_type") << "Unknown cgogn type \"" << cgogn_type << "\".";
-	return std::string();
-}
-
-} // namespace io
+} // namespace topology
 
 } // namespace cgogn
+

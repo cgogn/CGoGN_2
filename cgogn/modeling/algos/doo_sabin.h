@@ -164,10 +164,10 @@ void doo_sabin(MAP& map, VERTEX_ATTR& position)
 	initial_cache);
 }
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_DOO_SABIN_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_EXTERNAL_TEMPLATES_CPP_))
 extern template CGOGN_MODELING_API void doo_sabin(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&);
 extern template CGOGN_MODELING_API void doo_sabin(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&);
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_DOO_SABIN_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace modeling
 
