@@ -48,6 +48,9 @@ template CGOGN_IO_API void import_surface<Eigen::Vector3d>(CMap2&, const std::st
 template CGOGN_IO_API void import_volume<Eigen::Vector3f>(CMap3&, const std::string&);
 template CGOGN_IO_API void import_volume<Eigen::Vector3d>(CMap3&, const std::string&);
 
+
+
+
 template class CGOGN_IO_API SurfaceExport<CMap2>;
 
 template class CGOGN_IO_API SurfaceImport<CMap2>;
@@ -59,6 +62,23 @@ template class CGOGN_IO_API VolumeImport<CMap3>;
 template class CGOGN_IO_API VolumeFileImport<CMap3>;
 
 /// FORMAT
+
+template class CGOGN_IO_API MshIO<Eigen::Vector3d>;
+template class CGOGN_IO_API MshIO<Eigen::Vector3f>;
+template class CGOGN_IO_API MshIO<geometry::Vec_T<std::array<float64,3>>>;
+template class CGOGN_IO_API MshIO<geometry::Vec_T<std::array<float32,3>>>;
+
+template class CGOGN_IO_API MshSurfaceImport<CMap2, Eigen::Vector3d>;
+template class CGOGN_IO_API MshSurfaceImport<CMap2, Eigen::Vector3f>;
+
+template class CGOGN_IO_API MshVolumeImport<CMap3, Eigen::Vector3d>;
+template class CGOGN_IO_API MshVolumeImport<CMap3, Eigen::Vector3f>;
+template class CGOGN_IO_API MshVolumeImport<CMap3, geometry::Vec_T<std::array<float64,3>>>;
+template class CGOGN_IO_API MshVolumeImport<CMap3, geometry::Vec_T<std::array<float32,3>>>;
+
+template class CGOGN_IO_API MshSurfaceExport<CMap2>;
+template class CGOGN_IO_API MshVolumeExport<CMap3>;
+
 template class CGOGN_IO_API SMS2DMSurfaceImport<CMap2, Eigen::Vector3d>;
 template class CGOGN_IO_API SMS2DMSurfaceImport<CMap2, Eigen::Vector3f>;
 template class CGOGN_IO_API SMS2DMSurfaceImport<CMap2, geometry::Vec_T<std::array<float64,3>>>;
@@ -80,13 +100,6 @@ template class CGOGN_IO_API DotGraphImport<Eigen::Vector3d>;
 template class CGOGN_IO_API DotGraphImport<Eigen::Vector3f>;
 template class CGOGN_IO_API DotGraphImport<geometry::Vec_T<std::array<float64,3>>>;
 template class CGOGN_IO_API DotGraphImport<geometry::Vec_T<std::array<float32,3>>>;
-
-template class CGOGN_IO_API MeshbVolumeImport<CMap3, Eigen::Vector3d>;
-template class CGOGN_IO_API MeshbVolumeImport<CMap3, Eigen::Vector3f>;
-template class CGOGN_IO_API MeshbVolumeImport<CMap3, geometry::Vec_T<std::array<float64,3>>>;
-template class CGOGN_IO_API MeshbVolumeImport<CMap3, geometry::Vec_T<std::array<float32,3>>>;
-template class CGOGN_IO_API MeshbSurfaceImport<CMap2, Eigen::Vector3d>;
-template class CGOGN_IO_API MeshbSurfaceImport<CMap2, Eigen::Vector3f>;
 
 template class CGOGN_IO_API MeshbVolumeImport<CMap3, Eigen::Vector3d>;
 template class CGOGN_IO_API MeshbVolumeImport<CMap3, Eigen::Vector3f>;

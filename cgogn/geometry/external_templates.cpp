@@ -59,8 +59,8 @@ template class CGOGN_GEOMETRY_API AABB<Vec_T<std::array<float64,3>>>;
 /// OBB
 template class CGOGN_GEOMETRY_API OBB<Eigen::Vector3d>;
 template class CGOGN_GEOMETRY_API OBB<Eigen::Vector3f>;
-template class CGOGN_GEOMETRY_API OBB<Vec_T<std::array<float32,3>>>;
-template class CGOGN_GEOMETRY_API OBB<Vec_T<std::array<float64,3>>>;
+//template class CGOGN_GEOMETRY_API OBB<Vec_T<std::array<float32,3>>>;
+//template class CGOGN_GEOMETRY_API OBB<Vec_T<std::array<float64,3>>>;
 
 /// VEC
 template class CGOGN_GEOMETRY_API Vec_T<std::array<float32,3>>;

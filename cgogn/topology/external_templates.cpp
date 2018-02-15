@@ -22,7 +22,9 @@
 *******************************************************************************/
 #define CGOGN_TOPOLOGY_EXTERNAL_TEMPLATES_CPP_
 
-#include <cgogn/rendering/volume_drawer.h>
+#include <cgogn/topology/algos/distance_field.h>
+#include <cgogn/topology/algos/features.h>
+#include <cgogn/topology/algos/scalar_field.h>
 
 namespace cgogn
 {
@@ -30,8 +32,24 @@ namespace cgogn
 namespace topology
 {
 
-template class CGOGN_RENDERING_API VolumeDrawerTpl<false>;
-template class CGOGN_RENDERING_API VolumeDrawerTpl<true>;
+template class CGOGN_TOPOLOGY_API DistanceField<float32, CMap2>;
+template class CGOGN_TOPOLOGY_API DistanceField<float64, CMap2>;
+template class CGOGN_TOPOLOGY_API DistanceField<float32, CMap3>;
+template class CGOGN_TOPOLOGY_API DistanceField<float64, CMap3>;
+
+template class CGOGN_TOPOLOGY_API FeaturesFinder<float32, CMap2>;
+template class CGOGN_TOPOLOGY_API FeaturesFinder<float64, CMap2>;
+template class CGOGN_TOPOLOGY_API FeaturesFinder<float32, CMap3>;
+template class CGOGN_TOPOLOGY_API FeaturesFinder<float64, CMap3>;
+
+template class CGOGN_TOPOLOGY_API ScalarField<float32, CMap2>;
+template class CGOGN_TOPOLOGY_API ScalarField<float64, CMap2>;
+template class CGOGN_TOPOLOGY_API ScalarField<float32, CMap3>;
+template class CGOGN_TOPOLOGY_API ScalarField<float64, CMap3>;
+
+template class CGOGN_TOPOLOGY_API AdjacencyCache<CMap2>;
+template class CGOGN_TOPOLOGY_API AdjacencyCache<CMap3>;
+
 
 } // namespace topology
 
