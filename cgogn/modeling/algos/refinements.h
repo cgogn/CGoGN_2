@@ -28,6 +28,7 @@
 #include <cgogn/core/cmap/cmap3.h>
 #include <cgogn/core/utils/masks.h>
 #include <cgogn/geometry/algos/centroid.h>
+#include <cgogn/geometry/types/geometry_traits.h>
 
 namespace cgogn
 {
@@ -59,17 +60,17 @@ typename MAP::Vertex triangule(MAP& map, typename MAP::Face f)
 }
 
 template<typename MAP, typename VERTEX_ATTR>
-auto triangule(MAP& map, VERTEX_ATTR& position)
--> typename std::enable_if<is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),void>::type
+void triangule(MAP& map, VERTEX_ATTR& position)
 {
+	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
 	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 	using Face = typename MAP::Face;
 	typename MAP::CellCache cache(map);
 	cache.template build<Face>();
-	map.parallel_foreach_cell([&map, &position](Face f)
+	map.parallel_foreach_cell([&map, &position](Face fa)
 	{
-		const VEC3& center = geometry::centroid(map, f, position);
-		const auto central_vertex = triangule(map, f);
+		const VEC3& center = geometry::centroid(map, fa, position);
+		const auto central_vertex = triangule(map, fa);
 		position[central_vertex] = center;
 	}, cache);
 }

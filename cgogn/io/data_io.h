@@ -213,7 +213,7 @@ public:
 					line = cgogn::trim_left(rest + line);
 				rest.clear();
 
-				uint32 count_spaces = std::count(line.begin(), line.end(), ' ');
+				uint32 count_spaces = uint32(std::count(line.begin(), line.end(), ' '));
 				std::istringstream line_stream(line);
 
 				// we need to avoid the specialization of istringstream operator>> for chars
@@ -336,7 +336,7 @@ public:
 
 	virtual uint32 nb_components() const override
 	{
-		return geometry::dim_of<T>();
+		return uint32(geometry::dim_of<T>());
 	}
 
 	virtual std::size_t size() const override

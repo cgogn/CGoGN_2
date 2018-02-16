@@ -23,6 +23,7 @@
 #define CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_
 
 #include <cgogn/core/container/chunk_array_container.h>
+#include <cgogn/core/container/chunk_array_factory.h>
 
 #include <cgogn/core/cmap/cmap2_quad.h>
 #include <cgogn/core/cmap/cmap2_tri.h>
@@ -47,7 +48,7 @@ template class CGOGN_CORE_API ChunkArrayContainer<CGOGN_CHUNK_SIZE, uint32>;
 template class CGOGN_CORE_API ChunkArrayContainer<CGOGN_CHUNK_SIZE, uint8>;
 
 template class CGOGN_CORE_API ChunkArrayFactory<CGOGN_CHUNK_SIZE>;
-template class CGOGN_CORE_API ChunkArrayFactory<CGOGN_CHUNK_SIZE>& chunk_array_factory<CGOGN_CHUNK_SIZE>();
+//template class CGOGN_CORE_API ChunkArrayFactory<CGOGN_CHUNK_SIZE>& chunk_array_factory<CGOGN_CHUNK_SIZE>();
 
 template class CGOGN_CORE_API ChunkStack<CGOGN_CHUNK_SIZE, uint32>;
 

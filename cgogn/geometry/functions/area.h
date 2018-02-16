@@ -37,7 +37,7 @@ namespace geometry
  */
 template <typename VEC3a, typename VEC3b, typename VEC3c>
 inline auto area(const Eigen::MatrixBase<VEC3a>& p1, const Eigen::MatrixBase<VEC3b>& p2, const Eigen::MatrixBase<VEC3c>& p3)
--> typename std::enable_if <is_dim_of<VEC3a>(3), ScalarOf<VEC3a>>::type
+-> typename std::enable_if <vector_traits<VEC3a>::SIZE == 3, ScalarOf<VEC3a>>::type
 {
 	static_assert(is_same_vector<VEC3a,VEC3b,VEC3c>(), "parameters must have same type");
 	using Scalar = ScalarOf<VEC3a>;
@@ -50,7 +50,7 @@ inline auto area(const Eigen::MatrixBase<VEC3a>& p1, const Eigen::MatrixBase<VEC
  */
 template <typename VEC2a, typename VEC2b, typename VEC2c>
 inline auto area(const Eigen::MatrixBase<VEC2a>& p1, const Eigen::MatrixBase<VEC2b>& p2, const Eigen::MatrixBase<VEC2c>& p3)
--> typename std::enable_if <is_dim_of<VEC2a>(2), ScalarOf<VEC2a>>::type
+-> typename std::enable_if <vector_traits<VEC2a>::SIZE == 2, ScalarOf<VEC2a>>::type
 {
 	static_assert(is_same_vector<VEC2a,VEC2b,VEC2c>(), "parameters must have same type");
 	using Scalar = ScalarOf<VEC2a>;

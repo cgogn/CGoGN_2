@@ -198,9 +198,9 @@ using ScalarOf = typename vector_traits<V>::Scalar;
 
 
 template<typename V>
-constexpr std::size_t dim_of()
+constexpr uint32_t dim_of()
 {
-	return vector_traits<V>::SIZE;
+	return uint32_t(vector_traits<V>::SIZE);
 }
 
 
@@ -234,16 +234,17 @@ inline TypeEigenize<VEC> eigenize(VEC& v) { return TypeEigenize<VEC>(&(v[0])); }
 template <typename VEC>
 inline ConstTypeEigenize<VEC> eigenize(const VEC& v) { return ConstTypeEigenize<VEC>(&(v[0])); }
 
+
 //template <typename VEC>
 //inline auto copy_to_eigen(const VEC& v)
 //-> typename std::enable_if< is_dim_of<VEC>(2), Eigen::Matrix<ScalarOf<VEC>,2,1>>::type
 //{ return Eigen::Matrix< ScalarOf<VEC>,2,1>(v[0],v[1]); }
-
+//
 //template <typename VEC>
 //inline auto copy_to_eigen(const VEC& v)
 //-> typename std::enable_if< is_dim_of<VEC>(3), Eigen::Matrix<ScalarOf<VEC>,3,1>>::type
 //{ return Eigen::Matrix< ScalarOf<VEC>,3,1>(v[0],v[1],v[2]); }
-
+//
 //template <typename VEC>
 //inline auto copy_to_eigen(const VEC& v)
 //-> typename std::enable_if< is_dim_of<VEC>(4), Eigen::Matrix<ScalarOf<VEC>,4,1>>::type
@@ -252,17 +253,17 @@ inline ConstTypeEigenize<VEC> eigenize(const VEC& v) { return ConstTypeEigenize<
 
 template <typename V, typename E>
 inline auto copy_to_vec(const E& v)
--> typename std::enable_if< is_dim_of<E>(2) && is_dim_of<V>(2), V>::type
+-> typename std::enable_if< (vector_traits<E>::SIZE==2) && (vector_traits<V>::SIZE == 2), V>::type
 { return V(v[0],v[1]); }
 
 template <typename V, typename E>
 inline auto copy_to_vec(const E& v)
--> typename std::enable_if< is_dim_of<E>(3) && is_dim_of<V>(3), V>::type
+-> typename std::enable_if< (vector_traits<E>::SIZE==3) && (vector_traits<V>::SIZE == 3), V>::type
 { return V(v[0],v[1],v[2]); }
 
 template <typename V, typename E>
 inline auto copy_to_vec(const E& v)
--> typename std::enable_if< is_dim_of<E>(4) && is_dim_of<V>(4), V>::type
+-> typename std::enable_if< (vector_traits<E>::SIZE==4) && (vector_traits<V>::SIZE == 4), V>::type
 { return V(v[0],v[1],v[2],v[3]); }
 
 

@@ -30,6 +30,7 @@ extern "C" {
 
 #include <cgogn/io/volume_import.h>
 #include <cgogn/io/surface_import.h>
+#include <cgogn/geometry/types/geometry_traits.h>
 
 namespace cgogn
 {
@@ -92,9 +93,9 @@ protected:
 				uint32 idx = this->insert_line_vertex_container();
 				std::array<float32, 3> v;
 				(void) GmfGetLin(mesh_index, GmfVertices, &v[0],&v[1], &v[2], &ref);
-				position->operator[](idx)[0] = v[0];
-				position->operator[](idx)[1] = v[1];
-				position->operator[](idx)[2] = v[2];
+				position->operator[](idx)[0] = Scalar(v[0]);
+				position->operator[](idx)[1] = Scalar(v[1]);
+				position->operator[](idx)[2] = Scalar(v[2]);
 			}
 		else
 			for (uint32 i = 0u ; i < number_of_vertices; ++i)
@@ -102,9 +103,9 @@ protected:
 				uint32 idx = this->insert_line_vertex_container();
 				std::array<float64, 3> v;
 				(void) GmfGetLin(mesh_index, GmfVertices, &v[0],&v[1], &v[2], &ref);
-				position->operator[](idx)[0] = v[0];
-				position->operator[](idx)[1] = v[1];
-				position->operator[](idx)[2] = v[2];
+				position->operator[](idx)[0] = Scalar(v[0]);
+				position->operator[](idx)[1] = Scalar(v[1]);
+				position->operator[](idx)[2] = Scalar(v[2]);
 			}
 
 		if (number_of_tetras > 0)
@@ -171,6 +172,7 @@ public:
 
 	using Self = MeshbSurfaceImport<MAP, VEC3>;
 	using Inherit = SurfaceFileImport<MAP>;
+	using Scalar = cgogn::geometry::ScalarOf<VEC3>;
 
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
@@ -216,9 +218,9 @@ protected:
 				uint32 idx = this->insert_line_vertex_container();
 				std::array<float32, 3> v;
 				(void) GmfGetLin(mesh_index, GmfVertices, &v[0],&v[1], &v[2], &ref);
-				position->operator[](idx)[0] = v[0];
-				position->operator[](idx)[1] = v[1];
-				position->operator[](idx)[2] = v[2];
+				position->operator[](idx)[0] = Scalar(v[0]);
+				position->operator[](idx)[1] = Scalar(v[1]);
+				position->operator[](idx)[2] = Scalar(v[2]);
 			}
 		else
 			for (uint32 i = 0u ; i < number_of_vertices; ++i)
@@ -226,9 +228,9 @@ protected:
 				uint32 idx = this->insert_line_vertex_container();
 				std::array<float64, 3> v;
 				(void) GmfGetLin(mesh_index, GmfVertices, &v[0],&v[1], &v[2], &ref);
-				position->operator[](idx)[0] = v[0];
-				position->operator[](idx)[1] = v[1];
-				position->operator[](idx)[2] = v[2];
+				position->operator[](idx)[0] = Scalar(v[0]);
+				position->operator[](idx)[1] = Scalar(v[1]);
+				position->operator[](idx)[2] = Scalar(v[2]);
 			}
 
 		if (number_of_triangles > 0)
