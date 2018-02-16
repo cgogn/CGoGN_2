@@ -77,7 +77,7 @@ public:
 		normal_(normal[0],normal[1],normal[2]),
 		d_(d)
 	{
-		static_assert(dim_of<VEC3>() == 3, "normal must be of dim 3");
+		static_assert(is_dim_of<VEC3, 3>::value, "normal must be of dim 3");
 		static_assert(std::is_arithmetic<SCALAR>::value, "d must be arithmetic");
 		normal_.normalize();
 	}
@@ -87,7 +87,7 @@ public:
 	inline Plane3D(const VEC3& normal, const VEC3& p) :
 		normal_(normal[0],normal[1],normal[2])
 	{
-//		static_assert(dim_of<VEC3>() == 3, "normal must be of dim 3");
+		static_assert(is_dim_of<VEC3, 3>::value, "normal and p must be of dim 3");
 		normal_.normalize();
 		d_ = -(to_eigen(p).dot(normal_));
 	}
@@ -96,7 +96,7 @@ public:
 	template <typename VEC3>
 	inline Plane3D(const VEC3& p1, const VEC3& p2, const VEC3& p3)
 	{
-//		static_assert(dim_of<VEC3>() == 3, "normal must be of dim 3");
+		static_assert(is_dim_of<VEC3, 3>::value, "p1 p2 p3 must be of dim 3");
 		Vec q1 = to_eigen(p1);
 		Vec u = to_eigen(p2)-q1;
 		Vec v = to_eigen(p3)-q1;

@@ -103,11 +103,18 @@ using VecType = typename vector_traits<V>::Type;
 // convenient struct for easy SFINAE
 
 
+//template <typename V>
+//constexpr bool is_vec_non_eigen()
+//{
+//	return vector_traits<V>::OK && !is_eigen<V>::value;
+//}
+
 template <typename V>
-constexpr bool is_vec_non_eigen()
+struct is_vec_non_eigen
 {
-	return vector_traits<V>::OK && !is_eigen<V>::value;
-}
+	static const bool value = vector_traits<V>::OK && !is_eigen<V>::value;
+};
+
 
 /**
  * is_vectors_size<N,V1,V2,..>::value = true if all vectors are of size N
@@ -145,14 +152,12 @@ struct is_vectors_scalar<T,V,Vs...>
  * is_same_vector<V1,V2,..>::value = true if all vectors have same size and scalar type
  */
 
-namespace internal {
-
 template <typename... Vs>
-struct is_same_vect
+struct is_same_vector
 {};
 
 template <typename V1, typename V2>
-struct is_same_vect<V1,V2>
+struct is_same_vector<V1,V2>
 {
 	static const bool value = (vector_traits<V1>::SIZE == vector_traits<V2>::SIZE) &&
 			std::is_same<typename vector_traits<V1>::Scalar,typename vector_traits<V2>::Scalar>::value;
@@ -160,19 +165,18 @@ struct is_same_vect<V1,V2>
 
 
 template <typename V1, typename V2, typename... Vs>
-struct is_same_vect<V1,V2,Vs...>
+struct is_same_vector<V1,V2,Vs...>
 {
 	static const bool value = (vector_traits<V1>::SIZE == vector_traits<V2>::SIZE) &&
 			std::is_same<typename vector_traits<V1>::Scalar,typename vector_traits<V2>::Scalar>::value &&
-			is_same_vect<V2,Vs...>::value;
+			is_same_vector<V2,Vs...>::value;
 };
-}
 
-template<typename V, typename... Vs>
-constexpr bool is_same_vector()
-{
-	return internal::is_same_vect<V,Vs...>::value;
-}
+//template<typename V, typename... Vs>
+//constexpr bool is_same_vector()
+//{
+//	return internal::is_same_vect<V,Vs...>::value;
+//}
 
 
 template <typename T, typename Enable = void>
@@ -196,24 +200,15 @@ template<typename V>
 using ScalarOf = typename vector_traits<V>::Scalar;
 
 
-
-template<typename V>
-constexpr uint32_t dim_of()
+template<typename V, int N>
+struct is_dim_of
 {
-	return uint32_t(vector_traits<V>::SIZE);
-}
-
-
-template<typename V>
-constexpr bool is_dim_of(std::size_t s)
-{
-	return vector_traits<V>::SIZE == s;
-}
+	static const bool value = vector_traits<V>::SIZE == N;
+};
 
 
 template <typename VEC>
 using TypeEigen = Eigen::Matrix< ScalarOf<VEC>,vector_traits<VEC>::SIZE,1>;
-
 
 template <typename VEC>
 using ConstTypeEigenize = Eigen::Map<const TypeEigen<VEC>>;
@@ -221,34 +216,11 @@ using ConstTypeEigenize = Eigen::Map<const TypeEigen<VEC>>;
 template <typename VEC>
 using TypeEigenize = Eigen::Map<TypeEigen<VEC>>;
 
-//template <typename VEC>
-//using ConstTypeEigenize = Eigen::Map<const Eigen::Matrix< ScalarOf<VEC>,vector_traits<VEC>::SIZE,1>>;
-
-//template <typename VEC>
-//using TypeEigenize = Eigen::Map<Eigen::Matrix< ScalarOf<VEC>,vector_traits<VEC>::SIZE,1>>;
-
-
 template <typename VEC>
 inline TypeEigenize<VEC> eigenize(VEC& v) { return TypeEigenize<VEC>(&(v[0])); }
 
 template <typename VEC>
 inline ConstTypeEigenize<VEC> eigenize(const VEC& v) { return ConstTypeEigenize<VEC>(&(v[0])); }
-
-
-//template <typename VEC>
-//inline auto copy_to_eigen(const VEC& v)
-//-> typename std::enable_if< is_dim_of<VEC>(2), Eigen::Matrix<ScalarOf<VEC>,2,1>>::type
-//{ return Eigen::Matrix< ScalarOf<VEC>,2,1>(v[0],v[1]); }
-//
-//template <typename VEC>
-//inline auto copy_to_eigen(const VEC& v)
-//-> typename std::enable_if< is_dim_of<VEC>(3), Eigen::Matrix<ScalarOf<VEC>,3,1>>::type
-//{ return Eigen::Matrix< ScalarOf<VEC>,3,1>(v[0],v[1],v[2]); }
-//
-//template <typename VEC>
-//inline auto copy_to_eigen(const VEC& v)
-//-> typename std::enable_if< is_dim_of<VEC>(4), Eigen::Matrix<ScalarOf<VEC>,4,1>>::type
-//{ return Eigen::Matrix< ScalarOf<VEC>,4,1>(v[0],v[1],v[2],v[3]); }
 
 
 template <typename V, typename E>

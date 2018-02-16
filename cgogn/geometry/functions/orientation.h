@@ -50,7 +50,7 @@ enum Orientation2D
 template <typename VEC2a, typename VEC2b, typename VEC2c>
 Orientation2D side(const Eigen::MatrixBase<VEC2a>& P, const Eigen::MatrixBase<VEC2b>& Pa, const Eigen::MatrixBase<VEC2c>& Pb)
 {
-	static_assert(is_same_vector<VEC2a,VEC2b,VEC2c>(), "parameters must have same type");
+	static_assert(is_same_vector<VEC2a,VEC2b,VEC2c>::value, "parameters must have same type");
 	static_assert(is_dim_of<VEC2a>(2ul), "The size of the vector must be equal to 2.");
 
 	using Scalar = ScalarOf<VEC2a>;
@@ -77,8 +77,8 @@ Orientation2D side(const Eigen::MatrixBase<VEC2a>& P, const Eigen::MatrixBase<VE
 template <typename VEC3a, typename VEC3b, typename VEC3c, typename VEC3d>
 Orientation3D test_orientation_3D(const Eigen::MatrixBase<VEC3a>& P, const Eigen::MatrixBase<VEC3b>& A, const Eigen::MatrixBase<VEC3c>& B, const Eigen::MatrixBase<VEC3d>& C)
 {
-	static_assert(is_same_vector<VEC3a,VEC3b,VEC3c,VEC3d>(), "parameters must have same type");
-	static_assert(is_dim_of<VEC3a>(3ul), "The size of the vector must be equal to 3.");
+	static_assert(is_same_vector<VEC3a,VEC3b,VEC3c,VEC3d>::value, "parameters must have same type");
+	static_assert(is_dim_of<VEC3a, 3>::value, "The size of the vector must be equal to 3.");
 	return Plane3D(A, B, C).orient(P);
 }
 
@@ -94,8 +94,8 @@ Orientation3D test_orientation_3D(const Eigen::MatrixBase<VEC3a>& P, const Eigen
 template <typename VEC3a, typename VEC3b, typename VEC3c>
 Orientation3D test_orientation_3D(const Eigen::MatrixBase<VEC3a>& P, const Eigen::MatrixBase<VEC3b>& N, const Eigen::MatrixBase<VEC3c>& PP)
 {
-	static_assert(is_same_vector<VEC3a,VEC3b,VEC3c>(), "parameters must have same type");
-	static_assert(is_dim_of<VEC3a>(3ul), "The size of the vector must be equal to 3.");
+	static_assert(is_same_vector<VEC3a,VEC3b,VEC3c>::value, "parameters must have same type");
+	static_assert(is_dim_of<VEC3a, 3>::value, "The size of the vector must be equal to 3.");
 
 	return Plane3D(N, PP).orient(P);
 }
@@ -104,14 +104,14 @@ Orientation3D test_orientation_3D(const Eigen::MatrixBase<VEC3a>& P, const Eigen
 
 template <typename VEC3>
 inline auto side(const VEC3& P, const VEC3& Pa, const VEC3& Pb)
--> typename std::enable_if <is_vec_non_eigen<VEC3>(), Orientation2D >::type
+-> typename std::enable_if <is_vec_non_eigen<VEC3>::value, Orientation2D >::type
 {
 	return side(eigenize(P),eigenize(Pa),eigenize(Pb));
 }
 
 template <typename VEC3>
 inline auto test_orientation_3D(const VEC3& P, const VEC3& A, const VEC3& B, const VEC3& C)
--> typename std::enable_if <is_vec_non_eigen<VEC3>(), Orientation3D >::type
+-> typename std::enable_if <is_vec_non_eigen<VEC3>::value, Orientation3D >::type
 {
 	static_assert(vector_traits<VEC3>::OK, "parameters must be vectors");
 	return test_orientation_3D(eigenize(P),eigenize(A),eigenize(B),eigenize(C));
@@ -119,7 +119,7 @@ inline auto test_orientation_3D(const VEC3& P, const VEC3& A, const VEC3& B, con
 
 template <typename VEC3>
 inline auto test_orientation_3D(const VEC3& P, const VEC3& N, const VEC3& PP)
--> typename std::enable_if <is_vec_non_eigen<VEC3>(), Orientation3D >::type
+-> typename std::enable_if <is_vec_non_eigen<VEC3>::value, Orientation3D >::type
 {
 	return test_orientation_3D(eigenize(P),eigenize(N),eigenize(PP));
 }

@@ -62,7 +62,7 @@ typename MAP::Vertex triangule(MAP& map, typename MAP::Face f)
 template<typename MAP, typename VERTEX_ATTR>
 void triangule(MAP& map, VERTEX_ATTR& position)
 {
-	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
 	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 	using Face = typename MAP::Face;
 	typename MAP::CellCache cache(map);

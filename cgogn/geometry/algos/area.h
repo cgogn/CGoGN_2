@@ -44,7 +44,7 @@ inline ScalarOf<InsideTypeOf<VERTEX_ATTR>> convex_area(
 		const typename MAP::Face f,
 		const VERTEX_ATTR& position)
 {
-	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
 
 	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 	using Scalar = ScalarOf<VEC3>;
@@ -80,7 +80,7 @@ inline ScalarOf<InsideTypeOf<VERTEX_ATTR>> area(
 	const typename MAP::Face f,
 	const VERTEX_ATTR& position)
 {
-	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
 	return convex_area(map, f, position);
 }
 
@@ -94,7 +94,7 @@ inline auto area(
 	const VERTEX_ATTR& position
 ) -> typename std::enable_if<!std::is_same<CellType, typename MAP::Face>::value, ScalarOf<InsideTypeOf<VERTEX_ATTR>>>::type
 {
-	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
 
 	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 	using Scalar = ScalarOf<VEC3>;
@@ -115,7 +115,7 @@ inline void compute_area(
 	const VERTEX_ATTR& position,
 	Attribute<ScalarOf<InsideTypeOf<VERTEX_ATTR>>, CellType::ORBIT>& cell_area)
 {
-	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
 
 	map.parallel_foreach_cell([&] (CellType c)
 	{
@@ -130,9 +130,9 @@ inline auto compute_area(
 	const MAP& map,
 	const VERTEX_ATTR& position,
 	Attribute<ScalarOf<InsideTypeOf<VERTEX_ATTR>>, CellType::ORBIT>& cell_area
-) -> typename std::enable_if<is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),void>::type
+) -> typename std::enable_if<is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,void>::type
 {
-	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
 
 	compute_area<CellType>(map, AllCellsFilter(), position, cell_area);
 }
@@ -144,7 +144,7 @@ inline ScalarOf<InsideTypeOf<VERTEX_ATTR>> incident_faces_area(
 	const CellType c,
 	const VERTEX_ATTR& position)
 {
-	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
 
 	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 	using Scalar = ScalarOf<VEC3>;
@@ -166,7 +166,7 @@ inline void compute_incident_faces_area(
 	const VERTEX_ATTR& position,
 	Attribute<ScalarOf<InsideTypeOf<VERTEX_ATTR>>, CellType::ORBIT>& area)
 {
-	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
 
 	map.parallel_foreach_cell([&] (CellType c)
 	{
@@ -181,7 +181,7 @@ inline void compute_incident_faces_area(
 	const VERTEX_ATTR& position,
 	Attribute<ScalarOf<InsideTypeOf<VERTEX_ATTR>>, CellType::ORBIT>& area)
 {
-	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
 
 	compute_incident_faces_area<CellType>(map, AllCellsFilter(), position, area);
 }
@@ -191,3 +191,4 @@ inline void compute_incident_faces_area(
 } // namespace cgogn
 
 #endif // CGOGN_GEOMETRY_ALGOS_AREA_H_
+

@@ -43,7 +43,7 @@ inline InsideTypeOf<VERTEX_ATTR> vector_from(
 	const VERTEX_ATTR& position
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
 	using Vertex = typename MAP::Vertex;
 	return position[Vertex(map.phi1(d))] - position[Vertex(d)];
 }
@@ -55,7 +55,7 @@ inline ScalarOf<InsideTypeOf<VERTEX_ATTR>> length(
 	const VERTEX_ATTR& position
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
 	return vector_from(map, e.dart, position).norm();
 }
 
@@ -67,7 +67,7 @@ inline void compute_length(
 	typename MAP::template EdgeAttribute<ScalarOf<InsideTypeOf<VERTEX_ATTR>>>& edge_length
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
 
 	map.parallel_foreach_cell([&] (typename MAP::Edge e)
 	{
@@ -84,7 +84,7 @@ inline void compute_length(
 	typename MAP::template EdgeAttribute<ScalarOf<InsideTypeOf<VERTEX_ATTR>>>& edge_length
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
 
 	compute_length(map, AllCellsFilter(), position, edge_length);
 }
@@ -96,7 +96,7 @@ inline ScalarOf<InsideTypeOf<VERTEX_ATTR>> mean_edge_length(
 	const VERTEX_ATTR& position
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
 
 	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 	using Scalar = ScalarOf<VEC3>;
@@ -128,7 +128,7 @@ inline ScalarOf<InsideTypeOf<VERTEX_ATTR>> mean_edge_length(
 	const VERTEX_ATTR& position
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
 
 	return mean_edge_length(map, AllCellsFilter(), position);
 }

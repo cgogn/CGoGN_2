@@ -196,7 +196,7 @@ public:
 		float32 top_radius,
 		float32 height)
 	{
-		static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
+		static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
 
 		using T = InsideTypeOf<VERTEX_ATTR>;
 		const float32 alpha = 2.0f * float32(M_PI) / float32(this->nx_);
@@ -232,7 +232,7 @@ public:
 		VERTEX_ATTR& attribute,
 		float32 radius)
 	{
-		static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
+		static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
 
 		using T = InsideTypeOf<VERTEX_ATTR>;
 		const float32 alpha = 2.0f * float32(M_PI) / float32(this->nx_);
@@ -272,7 +272,7 @@ public:
 		float32 radius,
 		float32 height)
 	{
-		static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
+		static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
 
 		using T = InsideTypeOf<VERTEX_ATTR>;
 		if (top_closed_ && top_triangulated_)

@@ -66,7 +66,7 @@ void decimate(
 	uint32 nb
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR>(CMap2::Vertex::ORBIT),"position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, CMap2::Vertex::ORBIT>::value,"position must be a vertex attribute");
 
 	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 
@@ -104,7 +104,7 @@ void decimate(
 	uint32 nb
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR>(CMap2::Vertex::ORBIT),"position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, CMap2::Vertex::ORBIT>::value,"position must be a vertex attribute");
 
 	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 	EdgeApproximator<CMap2, VEC3>* approx=nullptr;

@@ -43,8 +43,8 @@ namespace geometry
 template <typename VEC3a, typename VEC3b, typename VEC3c >
 inline ScalarOf<VEC3a> squared_distance_normalized_line_point(const Eigen::MatrixBase<VEC3a>& A, const Eigen::MatrixBase<VEC3b>& AB_norm, const Eigen::MatrixBase<VEC3c>& P)
 {
-	static_assert(is_same_vector<VEC3a,VEC3b,VEC3c>(), "parameters must have same type");
-	static_assert(is_dim_of<VEC3a>(3ul), "The size of the vector must be equal to 3.");
+	static_assert(is_same_vector<VEC3a,VEC3b,VEC3c>::value, "parameters must have same type");
+	static_assert(is_dim_of<VEC3a, 3>::value, "The size of the vector must be equal to 3.");
 
 	return ((A - P).cross(AB_norm)).squaredNorm() ;
 }
@@ -60,8 +60,8 @@ inline ScalarOf<VEC3a> squared_distance_normalized_line_point(const Eigen::Matri
 template <typename VEC3a, typename VEC3b, typename VEC3c >
 inline ScalarOf<VEC3a> squared_distance_line_point(const Eigen::MatrixBase<VEC3a>& A, const Eigen::MatrixBase<VEC3b>& B, const Eigen::MatrixBase<VEC3c>& P)
 {
-	static_assert(is_same_vector<VEC3a,VEC3b,VEC3c>(), "parameters must have same type");
-	static_assert(is_dim_of<VEC3a>(3ul), "The size of the vector must be equal to 3.");
+	static_assert(is_same_vector<VEC3a,VEC3b,VEC3c>::value, "parameters must have same type");
+	static_assert(is_dim_of<VEC3a, 3>::value, "The size of the vector must be equal to 3.");
 
 	VecType<VEC3a> AB = B - A ;
 	cgogn_message_assert(AB.squaredNorm() > 0.0, "line must be defined by 2 different points");
@@ -82,8 +82,8 @@ inline ScalarOf<VEC3a> squared_distance_line_point(const Eigen::MatrixBase<VEC3a
 template <typename VEC3a, typename VEC3b, typename VEC3c, typename VEC3d>
 ScalarOf<VEC3a> squared_distance_line_seg(const Eigen::MatrixBase<VEC3a>& A, const Eigen::MatrixBase<VEC3b>& AB, ScalarOf<VEC3a> AB2, const Eigen::MatrixBase<VEC3c>& P, const Eigen::MatrixBase<VEC3d>& Q)
 {
-	static_assert(is_same_vector<VEC3a,VEC3b,VEC3c,VEC3d>(), "parameters must have same type");
-	static_assert(is_dim_of<VEC3a>(3ul), "The size of the vector must be equal to 3.");
+	static_assert(is_same_vector<VEC3a,VEC3b,VEC3c,VEC3d>::value, "parameters must have same type");
+	static_assert(is_dim_of<VEC3a, 3>::value, "The size of the vector must be equal to 3.");
 
 	using Scalar = ScalarOf<VEC3a>;
 	using NVEC3 = VecType<VEC3a>;
@@ -136,8 +136,8 @@ ScalarOf<VEC3a> squared_distance_line_seg(const Eigen::MatrixBase<VEC3a>& A, con
 template <typename VEC3a, typename VEC3b, typename VEC3c, typename VEC3d>
 inline ScalarOf<VEC3a> squared_distance_line_seg(const Eigen::MatrixBase<VEC3a>& A, const Eigen::MatrixBase<VEC3b>& B, const Eigen::MatrixBase<VEC3c>& P, const Eigen::MatrixBase<VEC3d>& Q)
 {
-	static_assert(is_same_vector<VEC3a,VEC3b,VEC3c,VEC3d>(), "parameters must have same type");
-	static_assert(is_dim_of<VEC3a>(3ul), "The size of the vector must be equal to 3.");
+	static_assert(is_same_vector<VEC3a,VEC3b,VEC3c,VEC3d>::value, "parameters must have same type");
+	static_assert(is_dim_of<VEC3a, 3>::value, "The size of the vector must be equal to 3.");
 
 	VecType<VEC3a> AB = B-A;
 	return squared_distance_line_seg(A,AB, AB.dot(AB),P,Q);
@@ -154,8 +154,8 @@ inline ScalarOf<VEC3a> squared_distance_line_seg(const Eigen::MatrixBase<VEC3a>&
 template <typename VEC3a, typename VEC3b, typename VEC3c>
 ScalarOf<VEC3a> squared_distance_seg_point(const Eigen::MatrixBase<VEC3a>& A, const Eigen::MatrixBase<VEC3b>& AB, const Eigen::MatrixBase<VEC3c>& P)
 {
-	static_assert(is_same_vector<VEC3a,VEC3b,VEC3c>(), "parameters must have same type");
-	static_assert(is_dim_of<VEC3a>(3ul), "The size of the vector must be equal to 3.");
+	static_assert(is_same_vector<VEC3a,VEC3b,VEC3c>::value, "parameters must have same type");
+	static_assert(is_dim_of<VEC3a, 3>::value, "The size of the vector must be equal to 3.");
 
 	using Scalar = ScalarOf<VEC3a>;
 	using NVEC3 = VecType<VEC3a>;
@@ -189,7 +189,7 @@ ScalarOf<VEC3a> squared_distance_seg_point(const Eigen::MatrixBase<VEC3a>& A, co
 
 template <typename VEC3>
 inline auto squared_distance_normalized_line_point(const VEC3& A, const VEC3& AB_norm, const VEC3& P)
--> typename std::enable_if <is_vec_non_eigen<VEC3>(), ScalarOf<VEC3>>::type
+-> typename std::enable_if <is_vec_non_eigen<VEC3>::value, ScalarOf<VEC3>>::type
 {
 	static_assert(vector_traits<VEC3>::OK, "parameters must be vectors");
 	return squared_distance_normalized_line_point(eigenize(A),eigenize(AB_norm),eigenize(P));
@@ -198,7 +198,7 @@ inline auto squared_distance_normalized_line_point(const VEC3& A, const VEC3& AB
 
 template <typename VEC3>
 inline auto squared_distance_line_point(const VEC3& A, const VEC3& B, const VEC3& P)
--> typename std::enable_if <is_vec_non_eigen<VEC3>(), ScalarOf<VEC3>>::type
+-> typename std::enable_if <is_vec_non_eigen<VEC3>::value, ScalarOf<VEC3>>::type
 {
 	static_assert(vector_traits<VEC3>::OK, "parameters must be vectors");
 	return squared_distance_line_point(eigenize(A),eigenize(B),eigenize(P));
@@ -207,7 +207,7 @@ inline auto squared_distance_line_point(const VEC3& A, const VEC3& B, const VEC3
 
 template <typename VEC3>
 inline auto squared_distance_line_seg(const VEC3& A, const VEC3& AB, ScalarOf<VEC3> AB2, const VEC3& P, const VEC3& Q )
--> typename std::enable_if <is_vec_non_eigen<VEC3>(), ScalarOf<VEC3>>::type
+-> typename std::enable_if <is_vec_non_eigen<VEC3>::value, ScalarOf<VEC3>>::type
 {
 	return squared_distance_line_seg(eigenize(A),eigenize(AB),AB2,eigenize(P),eigenize(Q));
 }
@@ -215,7 +215,7 @@ inline auto squared_distance_line_seg(const VEC3& A, const VEC3& AB, ScalarOf<VE
 
 template <typename VEC3>
 inline auto squared_distance_line_seg(const VEC3& A, const VEC3& B, const VEC3& P, const VEC3& Q )
--> typename std::enable_if <is_vec_non_eigen<VEC3>(), ScalarOf<VEC3>>::type
+-> typename std::enable_if <is_vec_non_eigen<VEC3>::value, ScalarOf<VEC3>>::type
 {
 	static_assert(vector_traits<VEC3>::OK, "parameters must be vectors");
 	return squared_distance_line_seg(eigenize(A),eigenize(B),eigenize(P),eigenize(Q));
@@ -224,7 +224,7 @@ inline auto squared_distance_line_seg(const VEC3& A, const VEC3& B, const VEC3& 
 
 template <typename VEC3>
 inline auto squared_distance_seg_point(const VEC3& A, const VEC3& AB, const VEC3& P)
--> typename std::enable_if <is_vec_non_eigen<VEC3>(), ScalarOf<VEC3> >::type
+-> typename std::enable_if <is_vec_non_eigen<VEC3>::value, ScalarOf<VEC3> >::type
 {
 	return squared_distance_seg_point(eigenize(A),eigenize(AB),eigenize(P));
 }

@@ -68,7 +68,7 @@ void curvature(
 	VERTEX_ATTR& Knormal
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR>(Orbit::PHI21),"position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, Orbit::PHI21>::value,"position must be a vertex attribute");
 
 	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 	using Scalar = ScalarOf<VEC3>;
@@ -174,7 +174,7 @@ void compute_curvature(
 	VERTEX_ATTR& Knormal
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR>(Orbit::PHI21),"position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, Orbit::PHI21>::value,"position must be a vertex attribute");
 
 	map.parallel_foreach_cell([&] (Cell<Orbit::PHI21> v)
 	{
@@ -198,7 +198,7 @@ void compute_curvature(
 	VERTEX_ATTR& Knormal
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR>(Orbit::PHI21),"position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, Orbit::PHI21>::value,"position must be a vertex attribute");
 
 	compute_curvature(map, AllCellsFilter(), radius, position, normal, edge_angle, edge_area, kmax, kmin, Kmax, Kmin, Knormal);
 }

@@ -397,7 +397,7 @@ static void append_ear_triangulation(
 	std::vector<uint32>& table_indices
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"attribute must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"attribute must be a vertex attribute");
 
 
 	EarTriangulation<InsideTypeOf<VERTEX_ATTR>, MAP> tri(map, f, position);
@@ -417,7 +417,7 @@ static void apply_ear_triangulation(
 	const VERTEX_ATTR& position
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"attribute must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"attribute must be a vertex attribute");
 
 	EarTriangulation<InsideTypeOf<VERTEX_ATTR>, MAP> tri(map, f, position);
 	tri.apply();
@@ -435,7 +435,7 @@ static void apply_ear_triangulation(
 	const VERTEX_ATTR& position
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"attribute must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"attribute must be a vertex attribute");
 
 	map.template foreach_cell([&] (typename MAP::Face f)
 	{

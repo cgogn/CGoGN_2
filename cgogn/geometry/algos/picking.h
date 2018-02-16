@@ -52,7 +52,7 @@ inline void picking_internal_face(
 	typename std::vector<std::tuple<typename MAP::Face, InsideTypeOf<VERTEX_ATTR>, ScalarOf<InsideTypeOf<VERTEX_ATTR>>>>& selected
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
 
 	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 	using Scalar = ScalarOf<VEC3>;
@@ -126,7 +126,7 @@ bool picking(
 	typename std::vector<typename MAP::Face>& selected
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
 	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 	using Scalar = ScalarOf<VEC3>;
 	using Face = typename MAP::Face;
@@ -151,7 +151,7 @@ bool picking(
 	typename std::vector<typename MAP::Vertex>& selected
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
 
 	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 	using Scalar = ScalarOf<VEC3>;
@@ -201,7 +201,7 @@ bool picking(
 	typename std::vector<typename MAP::Edge>& selected
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
 	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 	using Scalar = ScalarOf<VEC3>;
 	using Vertex = typename MAP::Vertex;
@@ -253,7 +253,7 @@ bool picking(
 	typename std::vector<typename MAP::Volume>& selected
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
 	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 	using Scalar = ScalarOf<VEC3>;
 	using Face = typename MAP::Face;

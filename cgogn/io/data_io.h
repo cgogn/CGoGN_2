@@ -336,7 +336,7 @@ public:
 
 	virtual uint32 nb_components() const override
 	{
-		return uint32(geometry::dim_of<T>());
+		return uint32(geometry::vector_traits<T>::SIZE);
 	}
 
 	virtual std::size_t size() const override

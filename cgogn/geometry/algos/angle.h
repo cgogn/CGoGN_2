@@ -49,7 +49,7 @@ namespace geometry
 template <typename MAP, typename VERTEX_ATTR>
 inline ScalarOf<InsideTypeOf<VERTEX_ATTR>> angle(const MAP& map, const Cell<Orbit::DART> v, const VERTEX_ATTR& position)
 {
-	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT), "position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, "position must be a vertex attribute");
 
 	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 	using Vertex = typename MAP::Vertex;
@@ -74,7 +74,7 @@ inline ScalarOf<InsideTypeOf<VERTEX_ATTR>> angle_between_face_normals(
 	const Cell<Orbit::PHI2> e,
 	const VERTEX_ATTR& position)
 {
-	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT), "position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, "position must be a vertex attribute");
 
 	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 	using Scalar = ScalarOf<VEC3>;
@@ -126,7 +126,7 @@ inline void compute_angle_between_face_normals(
 	Attribute<ScalarOf<InsideTypeOf<VERTEX_ATTR>>, Orbit::PHI2>& edge_angle
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT), "position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, "position must be a vertex attribute");
 
 	map.parallel_foreach_cell([&] (Cell<Orbit::PHI2> e)
 	{
@@ -148,7 +148,7 @@ inline void compute_angle_between_face_normals(
 	Attribute<ScalarOf<InsideTypeOf<VERTEX_ATTR>>, Orbit::PHI2>& edge_angle
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT), "position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, "position must be a vertex attribute");
 
 	compute_angle_between_face_normals(map, AllCellsFilter(), position, edge_angle);
 }

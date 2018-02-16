@@ -66,7 +66,7 @@ typename MAP::Vertex quadrangule_face(MAP& map, typename MAP::Face f)
 template < typename MAP, typename VERTEX_ATTR>
 void catmull_clark(MAP& map, VERTEX_ATTR& position)
 {
-	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
 
 	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 	using Scalar = geometry::ScalarOf<VEC3>;

@@ -195,7 +195,7 @@ namespace internal
 
 // #1 return default value when U and T don't have the same nb of components.
 template <typename U, typename T>
-inline auto convert(const T&) -> typename std::enable_if<!std::is_same< std::integral_constant<uint32, geometry::dim_of<T>()>, std::integral_constant<uint32, geometry::dim_of<U>()>>::value,U>::type
+inline auto convert(const T&) -> typename std::enable_if<!std::is_same< std::integral_constant<uint32, geometry::vector_traits<T>::SIZE>, std::integral_constant<uint32, geometry::vector_traits<U>::SIZE>>::value,U>::type
 {
 	cgogn_log_warning("convert") << "Cannot convert data of type\"" << name_of_type(T()) << "\" to type \"" << name_of_type(U()) << "\".";
 	return U();
@@ -210,10 +210,10 @@ inline auto convert(const T&x) -> typename std::enable_if<std::is_arithmetic<T>:
 
 // #3 copy component by component if both type have the same number of components (>1)
 template <typename U, typename T>
-inline auto convert(const T& x) -> typename std::enable_if<!std::is_arithmetic<T>::value && std::is_same< std::integral_constant<uint32, geometry::dim_of<T>()>, std::integral_constant<uint32, geometry::dim_of<U>()>>::value, U>::type
+inline auto convert(const T& x) -> typename std::enable_if<!std::is_arithmetic<T>::value && std::is_same< std::integral_constant<uint32, geometry::vector_traits<T>::SIZE>, std::integral_constant<uint32, geometry::vector_traits<U>::SIZE>>::value, U>::type
 {
 	U res;
-	for (uint32 i = 0u; i < geometry::dim_of<T>() ; ++i)
+	for (uint32 i = 0u; i < geometry::vector_traits<T>::SIZE ; ++i)
 		res[i] = typename geometry::vector_traits<U>::Scalar(x[i]);
 	return res;
 }

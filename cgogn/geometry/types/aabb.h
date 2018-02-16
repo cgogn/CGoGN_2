@@ -49,7 +49,7 @@ public:
 	using Vec = VEC_T;
 	using Scalar = ScalarOf<Vec>;
 	using Self = AABB<Vec>;
-	static const uint32 dim_ = dim_of<Vec>();
+	static const uint32 dim_ = vector_traits<Vec>::SIZE;
 	// https://eigen.tuxfamily.org/dox-devel/group__TopicStructHavingEigenMembers.html
 	static const bool eigen_make_aligned = std::is_same<Eigen::AlignedVector3<Scalar>, Vec>::value;
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW_IF(eigen_make_aligned)
@@ -276,7 +276,7 @@ public:
 	/// \tparam VEC3 the domain of the box. Has to be of dimension 3
 	template <bool B = true>
 	auto ray_intersect(const Vec& P, const Vec& V) const
-	  -> typename std::enable_if<B && dim_of<Vec>() == 3, bool>::type
+	  -> typename std::enable_if<B && is_dim_of<Vec, 3>::value, bool>::type
 	{
 		if (!cgogn::almost_equal_relative(V[2], Scalar(0)))
 		{

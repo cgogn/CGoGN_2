@@ -195,7 +195,7 @@ public:
 						 float32 y,
 						 float32 z)
 	{
-		static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
+		static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
 
 		using T = InsideTypeOf<VERTEX_ATTR>;
 		const float32 dx = x / float32(this->nx_);
@@ -226,7 +226,7 @@ public:
 								  float32 radius_max,
 								  float32 turns)
 	{
-		static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
+		static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
 
 		using T = InsideTypeOf<VERTEX_ATTR>;
 		const float32 alpha = 2.0f * float32(M_PI) / this->ny_;
@@ -266,7 +266,7 @@ public:
 							 float32 nbTurn,
 							 int32 orient)
 	{
-		static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
+		static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
 
 		using T = InsideTypeOf<VERTEX_ATTR>;
 		const float32 alpha = float32(2.0 * M_PI / this->nx_) * nbTurn;

@@ -41,7 +41,7 @@ void filter_average(
 	VERTEX_ATTR& attribute_out
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"attribute_in & attribute_out must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"attribute_in & attribute_out must be a vertex attribute");
 
 	using T = InsideTypeOf<VERTEX_ATTR>;
 	using Scalar = ScalarOf<T>;
@@ -69,7 +69,7 @@ void filter_average(
 	VERTEX_ATTR& attribute_out
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"attribute_in & attribute_out must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"attribute_in & attribute_out must be a vertex attribute");
 
 	filter_average(map, AllCellsFilter(), attribute_in, attribute_out);
 }
@@ -83,7 +83,7 @@ void filter_bilateral(
 	const VERTEX_ATTR& normal
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position_in, position_out & normal must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position_in, position_out & normal must be a vertex attribute");
 
 	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 	using Scalar = ScalarOf<VEC3>;
@@ -136,7 +136,7 @@ void filter_bilateral(
 	const VERTEX_ATTR& normal
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position_in, position_out & normal must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position_in, position_out & normal must be a vertex attribute");
 	filter_bilateral(map, AllCellsFilter(), position_in, position_out, normal);
 }
 
@@ -147,7 +147,7 @@ void filter_taubin(
 	VERTEX_ATTR& position,
 	VERTEX_ATTR& position_tmp)
 {
-	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position & position_tmp must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position & position_tmp must be a vertex attribute");
 
 	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 	using Scalar = ScalarOf<VEC3>;
@@ -196,7 +196,7 @@ void filter_taubin(
 	VERTEX_ATTR& position_tmp
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position & position_tmp must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position & position_tmp must be a vertex attribute");
 	filter_taubin(map, AllCellsFilter(), position, position_tmp);
 }
 

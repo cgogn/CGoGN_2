@@ -242,7 +242,7 @@ public:
 		const VERTEX_ATTR* position
 	)
 	{
-		static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"attribute must be a vertex attribute");
+		static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"attribute must be a vertex attribute");
 
 		using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 
@@ -358,7 +358,7 @@ public:
 template <typename MAP, typename VERTEX_ATTR>
 void transform_position(const MAP& map, const VERTEX_ATTR& pos_in, VERTEX_ATTR& pos_out, const QMatrix4x4& view)
 {
-	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
 
 	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 	map.template const_attribute_container<MAP::Vertex::ORBIT>().parallel_foreach_index( [&] (uint32 i)
@@ -383,7 +383,7 @@ void create_indices_vertices_faces(
 	std::vector<uint32>& indices2
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
 
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
@@ -424,7 +424,7 @@ void create_indices_vertices_faces(
 template <typename MAP, typename VERTEX_ATTR>
 void add_to_drawer(const MAP& m, typename MAP::Edge e, const VERTEX_ATTR& position, DisplayListDrawer* dr)
 {
-	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
 
 	using Vertex = typename MAP::Vertex;
 
@@ -435,7 +435,7 @@ void add_to_drawer(const MAP& m, typename MAP::Edge e, const VERTEX_ATTR& positi
 template <typename MAP, typename VERTEX_ATTR>
 void add_to_drawer(const MAP& m, typename MAP::Face f, const VERTEX_ATTR& position, DisplayListDrawer* dr)
 {
-	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
 
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
@@ -450,7 +450,7 @@ void add_to_drawer(const MAP& m, typename MAP::Face f, const VERTEX_ATTR& positi
 template <typename MAP, typename VERTEX_ATTR>
 void add_to_drawer(const MAP& m, typename MAP::Volume vo, const VERTEX_ATTR& position, DisplayListDrawer* dr)
 {
-	static_assert(is_orbit_of<VERTEX_ATTR>(MAP::Vertex::ORBIT),"position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
 
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
