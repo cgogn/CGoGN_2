@@ -51,7 +51,7 @@ template <typename VEC2a, typename VEC2b, typename VEC2c>
 Orientation2D side(const Eigen::MatrixBase<VEC2a>& P, const Eigen::MatrixBase<VEC2b>& Pa, const Eigen::MatrixBase<VEC2c>& Pb)
 {
 	static_assert(is_same_vector<VEC2a,VEC2b,VEC2c>::value, "parameters must have same type");
-	static_assert(is_dim_of<VEC2a>(2ul), "The size of the vector must be equal to 2.");
+	static_assert(is_dim_of<VEC2a,2>::value, "The size of the vector must be equal to 2.");
 
 	using Scalar = ScalarOf<VEC2a>;
 
