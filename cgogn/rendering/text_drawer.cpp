@@ -35,19 +35,24 @@ namespace cgogn
 namespace rendering
 {
 
-TextDrawerEnd TextDrawer::end = TextDrawerEnd();
+TextDrawer::End TextDrawer::end = TextDrawer::End();
+
+QOpenGLTexture* TextDrawer::texture_ = nullptr;
+
 
 TextDrawer::TextDrawer() :
 	vbo_pos_(nullptr),
 	vbo_char_(nullptr),
 	vbo_colsz_(nullptr)
 {
-	Q_INIT_RESOURCE(fonte);
+//	Q_INIT_RESOURCE(fonte);
 	vbo_pos_ = cgogn::make_unique<cgogn::rendering::VBO>(4);
 	vbo_char_ = cgogn::make_unique<cgogn::rendering::VBO>(1);
 	vbo_colsz_ = cgogn::make_unique<cgogn::rendering::VBO>(4);
 	QImage img(":fonte4064.png");
-	texture_ = cgogn::make_unique<QOpenGLTexture>(img, QOpenGLTexture::DontGenerateMipMaps);
+	if (texture_ == nullptr)
+		texture_ = new QOpenGLTexture(img, QOpenGLTexture::DontGenerateMipMaps);
+	//	cgogn::make_unique<QOpenGLTexture>(img, QOpenGLTexture::DontGenerateMipMaps);
 }
 
 TextDrawer::~TextDrawer()
@@ -82,7 +87,7 @@ TextDrawer& TextDrawer::operator << (const std::string& str)
 	return *this;
 }
 
-TextDrawer& TextDrawer::operator << (TextDrawerEnd)
+TextDrawer& TextDrawer::operator << (TextDrawer::End)
 {
 	std::size_t nb = 0;
 	for (const auto& s : strings_)
@@ -154,13 +159,28 @@ void TextDrawer::update_text(std::size_t pos, const std::string& str)
 	vbo_char_->release_pointer();
 }
 
+void TextDrawer::scale_text(float sc)
+{
+	float32* sz = vbo_colsz_->lock_pointer() + 3;
+
+	for (uint32 i = 0; i != vbo_colsz_->size(); ++i)
+	{
+		*sz *= sc;
+		sz += 4;
+	}
+
+	vbo_colsz_->release_pointer();
+}
+
+
+
 
 TextDrawer::Renderer::Renderer(TextDrawer* tr) :
 	param_text_(nullptr),
 	text_drawer_data_(tr)
 {
 	param_text_ = ShaderText::generate_param();
-	param_text_->texture_ = text_drawer_data_->texture_.get();
+	param_text_->texture_ = text_drawer_data_->texture_;
 	param_text_->set_vbo(text_drawer_data_->vbo_pos_.get(), text_drawer_data_->vbo_char_.get(), text_drawer_data_->vbo_colsz_.get());
 }
 

@@ -40,7 +40,7 @@ namespace cgogn
 namespace rendering
 {
 
-class CGOGN_RENDERING_API TextDrawerEnd {};
+//class CGOGN_RENDERING_API TextDrawerEnd {};
 
 /**
  * @brief Rendering of volumes
@@ -74,7 +74,8 @@ protected:
 	std::unique_ptr<VBO> vbo_pos_;
 	std::unique_ptr<VBO> vbo_char_;
 	std::unique_ptr<VBO> vbo_colsz_;
-	std::unique_ptr<QOpenGLTexture> texture_;
+
+	static QOpenGLTexture* texture_;
 	
 	std::vector<Vec3f> positions_;
 	std::vector<std::string> strings_;
@@ -103,37 +104,11 @@ public:
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(TextDrawer);
 
-	//void begin();
+	class End {};
 
-	//void ending();
+	static TextDrawer::End end;
 
-	//void set_current_color(const QColor& col);
-
-	//void set_current_size(float32 sz);
-	//
-	//template <typename VEC3>
-	//void add_text(const VEC3& p, const std::string& str)
-	//{
-	//	std::size_t ind = current_index_;
-	//	positions_.push_back(Vec3f{ p[0],p[1],p[2] });
-	//	strings_.push_back(str);
-	//	colors_.push_back(current_color_);
-	//	sizes_.push_back(current_size_);
-	//	current_index_ += str.size();
-	//}
-
-	//template <typename VEC3>
-	//void add_text(const VEC3& p, const std::string& str, const QColor& col, float32 sz)
-	//{
-	//	positions_.push_back(Vec3f{ p[0],p[1],p[2] });
-	//	strings_.push_back(str);
-	//	colors_.push_back(col);
-	//	sizes_.push_back(sz);
-	//}
-
-	static TextDrawerEnd end;
-
-	Self& operator << (TextDrawerEnd);
+	Self& operator << (TextDrawer::End);
 
 	template <typename VEC3>
 	inline auto operator << (const VEC3& p) -> typename std::enable_if< geometry::vector_traits<VEC3>::OK, Self&>::type
@@ -156,6 +131,7 @@ public:
 	
 	void update_text(std::size_t pos, const std::string& str);
 
+	void scale_text(float sc);
 
 
 	class CGOGN_RENDERING_API Renderer

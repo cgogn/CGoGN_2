@@ -140,13 +140,11 @@ void Drawing::init()
 		drawer2_ = m_first->drawer2_;
 		wp_ = m_first->wp_;
 		button_ = m_first->button_;
-		tdr_ = m_first->tdr_;
 		
 		drawer_rend_ = drawer_->generate_renderer();
 		drawer2_rend_ = drawer2_->generate_renderer();
 		wp_rend_ = wp_->generate_renderer();
 		button_rend_ = button_->generate_renderer();
-		tdr_rend_ = tdr_->generate_renderer();
 		return;
 	}
 

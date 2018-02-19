@@ -42,6 +42,7 @@ public:
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(TextDrawing);
 	virtual void draw();
 	virtual void init();
+	virtual void keyPressEvent(QKeyEvent *ev);
 	std::unique_ptr<cgogn::rendering::TextDrawer> tdr_;
 	std::unique_ptr<cgogn::rendering::TextDrawer::Renderer> tdr_rend_;
 };
@@ -72,7 +73,7 @@ void TextDrawing::init()
 	showEntireScene();
 	glClearColor(0.1f,0.1f,0.2f,0.0f);
 
-	tdr_ = std::make_unique<cgogn::rendering::TextDrawer>();
+	tdr_ = cgogn::make_unique<cgogn::rendering::TextDrawer>();
 	tdr_rend_ = tdr_->generate_renderer();
 
 	for (float z=-4; z<4; z += 1)
@@ -85,6 +86,29 @@ void TextDrawing::init()
 				*tdr_ << P << col << sz << "Pi=3.14" ;
 			}
 	*tdr_ << cgogn::rendering::TextDrawer::end; 
+}
+
+
+void TextDrawing::keyPressEvent(QKeyEvent *ev)
+{
+	switch (ev->key())
+	{
+		case Qt::Key_A:
+				tdr_->update_text(8*8*7*7+7,"XXXXXXXYYYYYYYZZZZZZZXXXXXXXYYYYYYYZZZZZZZ");
+			break;
+		case Qt::Key_Minus:
+				tdr_->scale_text(0.9f);
+			break;
+		case Qt::Key_Plus:
+				tdr_->scale_text(1.1f);
+			break;
+		default:
+			break;
+	}
+	// enable QGLViewer keys
+	QOGLViewer::keyPressEvent(ev);
+	//update drawing
+	update();
 }
 
 
