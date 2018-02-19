@@ -34,6 +34,11 @@ namespace geometry
 Plane3D::Plane3D()
 {}
 
+std::string Plane3D::cgogn_name_of_type()
+{
+	return std::string("cgogn::geometry::Plane3D");
+}
+
 
 } // namespace geometry
 

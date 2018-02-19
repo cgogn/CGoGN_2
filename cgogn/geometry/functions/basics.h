@@ -36,8 +36,7 @@ namespace geometry
 {
 
 /**
- * @brief normalize_safe, normalize a non-zero vector
- * @param v
+ * @brief normalize a non-zero vector
  */
 template <typename VEC>
 inline void normalize_safe(Eigen::MatrixBase<VEC>& v)
@@ -48,21 +47,13 @@ inline void normalize_safe(Eigen::MatrixBase<VEC>& v)
 		v /= std::sqrt(norm2);
 }
 
-template <typename VEC>
-inline auto normalize_safe(VEC& v) -> typename std::enable_if <!is_eigen<VEC>::value,void>::type
-{
-	static_assert(vector_traits<VEC>::OK, "parameters must be vectors");
-	auto w = eigenize(v);
-	normalize_safe(w);
-}
-
 /**
- * @brief cosinus of the angle formed by 2 vectors
+ * @brief cosinus of the angle formed by 2 vectors (Eigen type)
  */
 template <typename VECa, typename VECb>
-typename vector_traits<VECa>::Scalar cos_angle(const Eigen::MatrixBase<VECa>& a, const Eigen::MatrixBase<VECb>& b)
+inline ScalarOf<VECa> cos_angle(const Eigen::MatrixBase<VECa>& a, const Eigen::MatrixBase<VECb>& b)
 {
-	static_assert(is_same_vectors<VECa,VECb>::value, "parameters must have same type");
+	static_assert(is_same_vector<VECa,VECb>::value, "parameters must have same type");
 
 	using Scalar = typename vector_traits<VECa>::Scalar;
 
@@ -73,31 +64,37 @@ typename vector_traits<VECa>::Scalar cos_angle(const Eigen::MatrixBase<VECa>& a,
 	return std::max(Scalar(-1), std::min(res, Scalar(1)));
 }
 
-
-template <typename VEC, typename X = typename std::enable_if <!is_eigen<VEC>::value,void>::type>
-inline ScalarOf<VEC> cos_angle(const VEC& a, const VEC& b)
-{
-	static_assert(vector_traits<VEC>::OK, "parameters must be vectors");
-	return cos_angle(eigenize(a),eigenize(b));
-}
-
-
-
 /**
  * @brief angle formed by 2 vectors
  */
 template <typename VECa, typename VECb>
-typename vector_traits<VECa>::Scalar angle(const Eigen::MatrixBase<VECa>& a, const Eigen::MatrixBase<VECb>& b)
+inline ScalarOf<VECa> angle(const Eigen::MatrixBase<VECa>& a, const Eigen::MatrixBase<VECb>& b)
 {
-	static_assert(is_same_vectors<VECa,VECb>::value, "parameters must have same type");
-	return std::acos(cos_angle(a, b));
+	static_assert(is_same_vector<VECa,VECb>::value, "parameters must have same type");
+	return std::acos(cos_angle(a,b));
 }
 
 
-template <typename VEC, typename X = typename std::enable_if <!is_eigen<VEC>::value,void>::type >
-inline ScalarOf<VEC> angle(const VEC& a, const VEC& b)
+/// non-eigen versions
+
+template <typename VEC>
+inline auto normalize_safe(VEC& v) -> typename std::enable_if <is_vec_non_eigen<VEC>::value,void>::type
 {
-	static_assert(vector_traits<VEC>::OK, "parameters must be vectors");
+	auto w = eigenize(v);
+	normalize_safe(w);
+}
+
+template <typename VEC>
+inline auto cos_angle(const VEC& a, const VEC& b)
+-> typename std::enable_if<is_vec_non_eigen<VEC>::value, ScalarOf<VEC>>::type
+{
+	return cos_angle(eigenize(a),eigenize(b));
+}
+
+template <typename VEC>
+inline auto angle(const VEC& a, const VEC& b)
+-> typename std::enable_if<is_vec_non_eigen<VEC>::value, ScalarOf<VEC> >::type
+{
 	return angle(eigenize(a),eigenize(b));
 }
 

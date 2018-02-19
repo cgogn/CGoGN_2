@@ -26,6 +26,8 @@
 
 #include <cgogn/topology/types/adjacency_cache.h>
 #include <cgogn/topology/types/critical_point.h>
+#include <cgogn/topology/dll.h>
+
 
 namespace cgogn
 {
@@ -1109,12 +1111,12 @@ private:
 	Scalar epsilon_;
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_TOPOLOGY_SCALAR_FIELD_CPP_))
-extern template class CGOGN_TOPLOGY_API ScalarField<float32, CMap2>;
-extern template class CGOGN_TOPLOGY_API ScalarField<float64, CMap2>;
-extern template class CGOGN_TOPLOGY_API ScalarField<float32, CMap3>;
-extern template class CGOGN_TOPLOGY_API ScalarField<float64, CMap3>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_TOPOLOGY_SCALAR_FIELD_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_TOPOLOGY_EXTERNAL_TEMPLATES_CPP_))
+extern template class CGOGN_TOPOLOGY_API ScalarField<float32, CMap2>;
+extern template class CGOGN_TOPOLOGY_API ScalarField<float64, CMap2>;
+extern template class CGOGN_TOPOLOGY_API ScalarField<float32, CMap3>;
+extern template class CGOGN_TOPOLOGY_API ScalarField<float64, CMap3>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_TOPOLOGY_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace topology
 

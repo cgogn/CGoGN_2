@@ -106,7 +106,7 @@ bool AdaptiveTriQuadCMap2::is_simplifiable(Face f)
 			break;
 		}
 		default:
-			return false; // to avoid warning
+			break;
 	}
 
 	return false; // should never reach

@@ -118,7 +118,7 @@ void ViewerTransparency::import(const std::string& surface_mesh)
 	if (!vertex_normal_.is_valid())
 	{
 		vertex_normal_ = map_.template add_attribute<Vec3, Map2::Vertex>("normal");
-		cgogn::geometry::compute_normal<Vec3>(map_, vertex_position_, vertex_normal_);
+		cgogn::geometry::compute_normal(map_, vertex_position_, vertex_normal_);
 	}
 
 
@@ -246,8 +246,8 @@ void ViewerTransparency::init()
 
 
 	render_ = cgogn::make_unique<cgogn::rendering::MapRender>();
-	render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
-	render_->init_primitives<Vec3>(map_, cgogn::rendering::POINTS, &vertex_position_);
+	render_->init_primitives(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
+	render_->init_primitives(map_, cgogn::rendering::POINTS, &vertex_position_);
 
 	param_point_sprite_ = cgogn::rendering::ShaderPointSprite::generate_param();
 	param_point_sprite_->set_position_vbo(vbo_pos_.get());

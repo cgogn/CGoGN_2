@@ -2626,7 +2626,7 @@ struct CMap3Type
 
 using CMap3 = CMap3_T<CMap3Type>;
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CMAP_CMAP3_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
 extern template class CGOGN_CORE_API CMap3_T<CMap3Type>;
 extern template class CGOGN_CORE_API CMap3Builder_T<CMap3>;
 extern template class CGOGN_CORE_API DartMarker<CMap3>;
@@ -2647,7 +2647,7 @@ extern template class CGOGN_CORE_API CellMarkerStore<CMap3, CMap3::Volume::ORBIT
 extern template class CGOGN_CORE_API CellCache<CMap3>;
 extern template class CGOGN_CORE_API BoundaryCache<CMap3>;
 extern template class CGOGN_CORE_API QuickTraversor<CMap3>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP3_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace cgogn
 

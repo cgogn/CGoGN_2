@@ -66,7 +66,9 @@ inline std::unique_ptr<GraphFileImport> new_graph_import(const std::string& file
 	switch (ft)
 	{
 		case FileType::FileType_SKEL:		return make_unique<SkelGraphImport<VEC3>>();
-		case FileType::FileType_VTK_LEGACY:	return make_unique<VtkGraphImport<VEC3>>();
+		case FileType::FileType_VTK_LEGACY:
+		case FileType::FileType_VTU:
+		case FileType::FileType_VTP:		return make_unique<VtkGraphImport<VEC3>>();
 		case FileType::FileType_CG:			return make_unique<CgGraphImport<VEC3>>();
 		case FileType::FileType_CSKEL:		return make_unique<CskelGraphImport<VEC3>>();
 		case FileType::FileType_DOT:		return make_unique<DotGraphImport<VEC3>>();
@@ -148,14 +150,14 @@ inline void import_volume(MAP& map, const std::string& filename)
 }
 
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_MAP_IMPORT_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
 extern template CGOGN_IO_API void import_graph<Eigen::Vector3f>(UndirectedGraph&, const std::string&);
 extern template CGOGN_IO_API void import_graph<Eigen::Vector3d>(UndirectedGraph&, const std::string&);
 extern template CGOGN_IO_API void import_surface<Eigen::Vector3f>(CMap2&, const std::string&);
 extern template CGOGN_IO_API void import_surface<Eigen::Vector3d>(CMap2&, const std::string&);
 extern template CGOGN_IO_API void import_volume<Eigen::Vector3f>(CMap3&, const std::string&);
 extern template CGOGN_IO_API void import_volume<Eigen::Vector3d>(CMap3&, const std::string&);
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_MAP_IMPORT_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace io
 

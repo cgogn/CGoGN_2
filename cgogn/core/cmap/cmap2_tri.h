@@ -1490,7 +1490,7 @@ struct CMap2TriType
 
 using CMap2Tri = CMap2Tri_T<CMap2TriType>;
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CMAP_CMAP2_TRI_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
 extern template class CGOGN_CORE_API CMap2Builder_T<CMap2Tri>;
 extern template class CGOGN_CORE_API DartMarker<CMap2Tri>;
 extern template class CGOGN_CORE_API DartMarkerStore<CMap2Tri>;
@@ -1507,7 +1507,7 @@ extern template class CGOGN_CORE_API CellMarkerStore<CMap2Tri, CMap2Tri::Vertex:
 extern template class CGOGN_CORE_API CellMarkerStore<CMap2Tri, CMap2Tri::Edge::ORBIT>;
 extern template class CGOGN_CORE_API CellMarkerStore<CMap2Tri, CMap2Tri::Face::ORBIT>;
 extern template class CGOGN_CORE_API CellMarkerStore<CMap2Tri, CMap2Tri::Volume::ORBIT>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP2_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace cgogn
 

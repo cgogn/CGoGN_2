@@ -649,7 +649,7 @@ struct UndirectedGraphType
 
 using UndirectedGraph = UndirectedGraph_T<UndirectedGraphType>;
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_GRAPH_UNDIRECTED_GRAPH_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
 extern template class CGOGN_CORE_API UndirectedGraph_T<UndirectedGraphType>;
 extern template class CGOGN_CORE_API UndirectedGraphBuilder_T<UndirectedGraph>;
 extern template class CGOGN_CORE_API DartMarker<UndirectedGraph>;
@@ -664,7 +664,7 @@ extern template class CGOGN_CORE_API CellMarkerStore<UndirectedGraph, Undirected
 extern template class CGOGN_CORE_API CellCache<UndirectedGraph>;
 extern template class CGOGN_CORE_API BoundaryCache<UndirectedGraph>;
 extern template class CGOGN_CORE_API QuickTraversor<UndirectedGraph>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_GRAPH_UNDIRECTED_GRAPH_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
 
 } // end namespace cgogn
 

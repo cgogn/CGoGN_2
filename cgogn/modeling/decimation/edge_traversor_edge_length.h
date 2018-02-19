@@ -135,7 +135,7 @@ public:
 		EdgeInfo& ei = einfo_[e];
 		if (map_.edge_can_collapse(e))
 		{
-			Scalar cost = geometry::length<VEC3>(map_, e, position_);
+			Scalar cost = geometry::length(map_, e, position_);
 			if (ei.valid_)
 			{
 				edges_.erase(ei.it_);

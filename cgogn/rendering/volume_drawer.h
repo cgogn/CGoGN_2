@@ -54,8 +54,8 @@ namespace rendering
  * init:
  *  volu_ = cgogn::make_unique<cgogn::rendering::VolumeDrawer>();
  *  volu_rend_ = volu_->generate_renderer();
- *  volu_->update_face<Vec3>(map_, vertex_position_);
- *  volu_->update_edge<Vec3>(map_, vertex_position_);
+ *  volu_->update_face(map_, vertex_position_);
+ *  volu_->update_edge(map_, vertex_position_);
  *
  * draw:
  *  volu_rend_->set_explode_volume(0.9);
@@ -135,14 +135,17 @@ public:
 		return std::unique_ptr<Renderer>(new Renderer(this));
 	}
 
-	template <typename VEC3, typename MAP>
-	void update_edge(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position);
+	template <typename MAP, typename VERTEX_ATTR>
+	void update_edge(const MAP& m, const VERTEX_ATTR& position);
 };
 
 
-template <typename VEC3, typename MAP>
-void VolumeDrawerGen::update_edge(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position)
+template <typename MAP, typename VERTEX_ATTR>
+void VolumeDrawerGen::update_edge(const MAP& m, const VERTEX_ATTR& position)
 {
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
+	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
 	using Volume = typename MAP::Volume;
@@ -155,7 +158,7 @@ void VolumeDrawerGen::update_edge(const MAP& m, const typename MAP::template Ver
 
 	m.foreach_cell([&] (Volume v)
 	{
-		VEC3 CV = geometry::centroid<VEC3>(m, v, position);
+		VEC3 CV = geometry::centroid(m, v, position);
 		m.foreach_incident_edge(v, [&] (Edge e)
 		{
 			const VEC3& P1 = position[Vertex(e.dart)];
@@ -188,9 +191,12 @@ public:
 	VolumeDrawerTpl() : VolumeDrawerGen(false)
 	{}
 
-	template <typename VEC3, typename MAP>
-	void update_face(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position)
+	template <typename MAP, typename VERTEX_ATTR>
+	void update_face(const MAP& m, const VERTEX_ATTR& position)
 	{
+		static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
+		using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 		using Vertex = typename MAP::Vertex;
 		using Face = typename MAP::Face;
 		using Volume = typename MAP::Volume;
@@ -203,7 +209,7 @@ public:
 
 		m.foreach_cell([&] (Volume v)
 		{
-			VEC3 CV = geometry::centroid<VEC3>(m, v, position);
+			VEC3 CV = geometry::centroid(m, v, position);
 			m.foreach_incident_face(v, [&] (Face f)
 			{
 				if (m.has_codegree(f, 3))
@@ -219,7 +225,7 @@ public:
 				else
 				{
 					ear_indices.clear();
-					cgogn::geometry::append_ear_triangulation<VEC3>(m, f, position, ear_indices);
+					cgogn::geometry::append_ear_triangulation(m, f, position, ear_indices);
 					for(std::size_t i = 0; i < ear_indices.size(); i += 3)
 					{
 						const VEC3& P1 = position[ear_indices[i]];
@@ -252,9 +258,12 @@ public:
 	VolumeDrawerTpl() : VolumeDrawerGen(true)
 	{}
 
-	template <typename VEC3, typename MAP>
-	void update_face(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position, const typename MAP::template VertexAttribute<VEC3>& color)
+	template <typename MAP, typename VERTEX_ATTR>
+	void update_face(const MAP& m, const VERTEX_ATTR& position, const VERTEX_ATTR& color)
 	{
+		static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
+		using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 		using Vertex = typename MAP::Vertex;
 		using Face = typename MAP::Face;
 		using Volume = typename MAP::Volume;
@@ -270,7 +279,7 @@ public:
 
 		m.foreach_cell([&] (Volume v)
 		{
-			VEC3 CV = geometry::centroid<VEC3>(m, v, position);
+			VEC3 CV = geometry::centroid(m, v, position);
 			m.foreach_incident_face(v, [&] (Face f)
 			{
 				if (m.has_codegree(f, 3))
@@ -296,7 +305,7 @@ public:
 				else
 				{
 					ear_indices.clear();
-					cgogn::geometry::append_ear_triangulation<VEC3>(m, f, position, ear_indices);
+					cgogn::geometry::append_ear_triangulation(m, f, position, ear_indices);
 					for(std::size_t i = 0; i < ear_indices.size(); i += 3)
 					{
 						const VEC3& P1 = position[ear_indices[i]];

@@ -1193,7 +1193,7 @@ struct CMap2QuadType
 
 using CMap2Quad = CMap2Quad_T<CMap2QuadType>;
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CMAP_CMAP2_QUAD_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
 extern template class CGOGN_CORE_API CMap2Builder_T<CMap2Quad>;
 extern template class CGOGN_CORE_API DartMarker<CMap2Quad>;
 extern template class CGOGN_CORE_API DartMarkerStore<CMap2Quad>;
@@ -1210,7 +1210,7 @@ extern template class CGOGN_CORE_API CellMarkerStore<CMap2Quad, CMap2Quad::Verte
 extern template class CGOGN_CORE_API CellMarkerStore<CMap2Quad, CMap2Quad::Edge::ORBIT>;
 extern template class CGOGN_CORE_API CellMarkerStore<CMap2Quad, CMap2Quad::Face::ORBIT>;
 extern template class CGOGN_CORE_API CellMarkerStore<CMap2Quad, CMap2Quad::Volume::ORBIT>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP2_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace cgogn
 

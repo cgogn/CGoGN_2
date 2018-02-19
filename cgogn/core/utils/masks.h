@@ -107,7 +107,7 @@ public:
 	template <typename CellType>
 	inline bool is_traversed() const
 	{
-		return traversed_cells_ & orbit_mask<CellType>();
+		return (traversed_cells_ & orbit_mask<CellType>()) != 0;
 	}
 
 protected:

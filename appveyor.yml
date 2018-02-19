@@ -8,6 +8,7 @@ version: 1.0.{build}
 branches:
   only:
     - develop
+    - test_attributes
 
 skip_commits:
   message: /\[skip ci\]|\[ci skip\]|\[skip appveyor\]|\[ci appveyor\]/
@@ -21,24 +22,37 @@ clone_folder: c:\projects\myproject
 # fetch repository as zip archive
 shallow_clone: true 
 
+image:
+  - Visual Studio 2015
+  - Visual Studio 2017
+
+configuration:
+  - Release
+  - Debug
+
 environment:
-    GENERATOR: "Visual Studio 14 Win64"
-    CONFIG: Release
+  matrix:
+    - arch: Win64
 
 build:
   parallel: true
   verbosity: minimal
 
+# skip unsupported combinations
+init:
+  - echo %arch%
+  - echo %APPVEYOR_BUILD_WORKER_IMAGE%
+  - if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2017" (set GENERATOR="Visual Studio 15 2017 %arch%" && set QT_DIR="C:\Qt\5.9.3\msvc2017_64\lib\cmake\Qt5")
+  - if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2015" (set GENERATOR="Visual Studio 14 2015 %arch%" && set QT_DIR="C:\Qt\5.8\msvc2015_64\lib\cmake\Qt5")
+  - if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2013" (set GENERATOR="Visual Studio 12 2013 %arch%" && set QT_DIR="C:\Qt\5.8\msvc2013_64\lib\cmake\Qt5")
+  - echo %GENERATOR%
+  - echo %QT_DIR%
+
 build_script:
   - md build
   - cd build
-  - cmake -Wno-dev -Wno-deprecated "-G%GENERATOR%" .. -DCMAKE_SUPPRESS_REGENERATION=1 -DQt5_DIR="C:\Qt\5.8\msvc2015_64\lib\cmake\Qt5" -DCGOGN_BUILD_TESTS=ON -DCGOGN_BUILD_EXAMPLES=ON -DCGOGN_BUILD_BENCHS=ON
-  - cmake --build . --config "%CONFIG%" -- /verbosity:minimal
-  - cmake --build . --config "%CONFIG%" --target RUN_TESTS -- /verbosity:minimal
-  - cmake --build . --config "%CONFIG%" --target INSTALL -- /verbosity:minimal
-  - cd ..
-  - mkdir build_app
-  - cd build_app
-  - cmake "-G%GENERATOR%" ../cgogn/geometry/examples/ -DCMAKE_SUPPRESS_REGENERATION=1 -DCGOGN_USE_QT=ON -DCMAKE_PREFIX_PATH="C:\Program Files\CGoGN"
-  - cmake --build . --config "%CONFIG%" -- /verbosity:minimal
-  
+  - cmake --version
+  - cmake -Wno-dev -Wno-deprecated -G %GENERATOR% .. -DCMAKE_SUPPRESS_REGENERATION=1 -DQt5_DIR=%QT_DIR% -DCGOGN_BUILD_TESTS=ON -DCGOGN_BUILD_EXAMPLES=ON -DCGOGN_BUILD_BENCHS=ON
+  - cmake --build . --config "%CONFIGURATION%" -- /verbosity:minimal
+  - cmake --build . --config "%CONFIGURATION%" --target RUN_TESTS -- /verbosity:minimal
+  - cmake --build . --config "%CONFIGURATION%" --target INSTALL -- /verbosity:minimal

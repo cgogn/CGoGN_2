@@ -575,7 +575,7 @@ protected:
 	template <typename T>
 	inline void reorient_hexa(const ChunkArray<T>& pos, uint32& p0, uint32& p1, uint32& p2, uint32& p3, uint32& p4, uint32& p5, uint32& p6, uint32& p7)
 	{
-		if (geometry::test_orientation_3D<T>(pos[p4], pos[p0], pos[p1], pos[p2]) == geometry::Orientation3D::OVER)
+        if (geometry::test_orientation_3D(pos[p4], pos[p0], pos[p1], pos[p2]) == geometry::Orientation3D::OVER)
 		{
 			std::swap(p0, p3);
 			std::swap(p1, p2);
@@ -632,10 +632,10 @@ public:
 	virtual ~VolumeFileImport() {}
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_VOLUME_IMPORT_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
 extern template class CGOGN_IO_API VolumeImport<CMap3>;
 extern template class CGOGN_IO_API VolumeFileImport<CMap3>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_VOLUME_IMPORT_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace io
 

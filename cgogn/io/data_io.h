@@ -202,25 +202,45 @@ public:
 		else
 		{
 			std::string line;
+			std::string rest;
 			line.reserve(256);
 			std::size_t i = 0ul;
-//			BUFFER_T buff;
-			for (; i < n && (!fp.eof()) && (!fp.bad()); )
+
+			while(i < n && (!fp.eof()) && (!fp.bad()))
 			{
 				getline_safe(fp,line);
+				if(line.length() > 0)
+					line = cgogn::trim_left(rest + line);
+				rest.clear();
+
+				uint32 count_spaces = uint32(std::count(line.begin(), line.end(), ' '));
 				std::istringstream line_stream(line);
+
 				// we need to avoid the specialization of istringstream operator>> for chars
 				using type = typename std::conditional<sizeof(BUFFER_T) == sizeof(char), int, BUFFER_T>::type;
 				type buff;
 				serialization::parse(line_stream, buff);
+				count_spaces -= this->nb_components();
 				bool no_error = static_cast<bool>(line_stream);
+
 				while (i < n && no_error)
 				{
 					data_[i+old_size] = internal::convert<T>(buff);
-					++i;
-					serialization::parse(line_stream, buff);
-					no_error = static_cast<bool>(line_stream);
+					++i;					
+					if(count_spaces < this->nb_components() && count_spaces > 0)
+					{
+						getline_safe(line_stream, rest);
+						line_stream.clear(std::ios_base::iostate(std::ios_base::eofbit));
+						no_error = false;
+					}
+					else
+					{
+						serialization::parse(line_stream, buff);
+						count_spaces -= this->nb_components();
+						no_error = static_cast<bool>(line_stream);
+					}
 				}
+
 				if (!no_error && (!line_stream.eof()))
 					break;
 			}
@@ -316,7 +336,7 @@ public:
 
 	virtual uint32 nb_components() const override
 	{
-		return geometry::vector_traits<T>::SIZE;
+		return uint32(geometry::vector_traits<T>::SIZE);
 	}
 
 	virtual std::size_t size() const override

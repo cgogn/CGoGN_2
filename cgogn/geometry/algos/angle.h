@@ -39,13 +39,19 @@ namespace cgogn
 namespace geometry
 {
 
-template <typename VEC3, typename MAP>
-inline ScalarOf<VEC3> angle(
-	const MAP& map,
-	const Cell<Orbit::DART> v,
-	const typename MAP::template VertexAttribute<VEC3>& position
-)
+/**
+* @brief angle at vertex in a face
+* @param map
+* @param v
+* @param position vertex attribute of position
+* @return
+*/
+template <typename MAP, typename VERTEX_ATTR>
+inline ScalarOf<InsideTypeOf<VERTEX_ATTR>> angle(const MAP& map, const Cell<Orbit::DART> v, const VERTEX_ATTR& position)
 {
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, "position must be a vertex attribute");
+
+	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 	using Vertex = typename MAP::Vertex;
 
 	const VEC3& p = position[Vertex(v.dart)];
@@ -54,16 +60,23 @@ inline ScalarOf<VEC3> angle(
 	return angle(v1, v2);
 }
 
+
 /**
- * compute and return the angle formed by the normals of the two faces incident to the given edge
+ * @brief compute and return the angle formed by the normals of the two faces incident to the given edge
+ * @param map
+ * @param e edge
+ * @param position vertex attribute of position position attribute
+ * @return
  */
-template <typename VEC3, typename MAP>
-inline ScalarOf<VEC3> angle_between_face_normals(
+template <typename MAP, typename VERTEX_ATTR>
+inline ScalarOf<InsideTypeOf<VERTEX_ATTR>> angle_between_face_normals(
 	const MAP& map,
 	const Cell<Orbit::PHI2> e,
-	const typename MAP::template VertexAttribute<VEC3>& position
-)
+	const VERTEX_ATTR& position)
 {
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, "position must be a vertex attribute");
+
+	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 	using Scalar = ScalarOf<VEC3>;
 	using Vertex2 = Cell<Orbit::PHI21>;
 	using Face2 = Cell<Orbit::PHI1>;
@@ -74,8 +87,8 @@ inline ScalarOf<VEC3> angle_between_face_normals(
 	const Dart d = e.dart;
 	const Dart d2 = map.phi2(d);
 
-	const VEC3 n1 = normal<VEC3>(map, Face2(d), position);
-	const VEC3 n2 = normal<VEC3>(map, Face2(d2), position);
+    const VEC3 n1 = normal(map, Face2(d), position);
+    const VEC3 n2 = normal(map, Face2(d2), position);
 
 	VEC3 edge = position[Vertex2(d2)] - position[Vertex2(d)];
 	edge.normalize();
@@ -97,40 +110,61 @@ inline ScalarOf<VEC3> angle_between_face_normals(
 	return a;
 }
 
-template <typename VEC3, typename MAP, typename MASK>
+
+/**
+ * @brief compute angle between face normals incident to each edge of a part of the map
+ * @param map
+ * @param mask
+ * @param position vertex attribute of position
+ * @param edge_angle attribute to store angles
+ */
+template <typename MAP, typename MASK, typename VERTEX_ATTR>
 inline void compute_angle_between_face_normals(
 	const MAP& map,
 	const MASK& mask,
-	const typename MAP::template VertexAttribute<VEC3>& position,
-	Attribute<ScalarOf<VEC3>, Orbit::PHI2>& edge_angle
+	const VERTEX_ATTR& position,
+	Attribute<ScalarOf<InsideTypeOf<VERTEX_ATTR>>, Orbit::PHI2>& edge_angle
 )
 {
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, "position must be a vertex attribute");
+
 	map.parallel_foreach_cell([&] (Cell<Orbit::PHI2> e)
 	{
-		edge_angle[e] = angle_between_face_normals<VEC3>(map, e, position);
+		edge_angle[e] = angle_between_face_normals(map, e, position);
 	},
 	mask);
 }
 
-template <typename VEC3, typename MAP>
+/**
+ * @brief compute angle between face normals incident to each edge of the map
+ * @param map
+ * @param position vertex attribute of position
+ * @param edge_angle edge attribute to store angles
+ */
+template <typename MAP, typename VERTEX_ATTR>
 inline void compute_angle_between_face_normals(
 	const MAP& map,
-	const typename MAP::template VertexAttribute<VEC3>& position,
-	Attribute<ScalarOf<VEC3>, Orbit::PHI2>& edge_angle
+	const VERTEX_ATTR& position,
+	Attribute<ScalarOf<InsideTypeOf<VERTEX_ATTR>>, Orbit::PHI2>& edge_angle
 )
 {
-	compute_angle_between_face_normals<VEC3>(map, AllCellsFilter(), position, edge_angle);
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, "position must be a vertex attribute");
+
+	compute_angle_between_face_normals(map, AllCellsFilter(), position, edge_angle);
 }
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_ALGOS_ANGLE_CPP_))
-extern template CGOGN_GEOMETRY_API float32 angle_between_face_normals<Eigen::Vector3f, CMap2>(const CMap2&, const Cell<Orbit::PHI2>, const CMap2::VertexAttribute<Eigen::Vector3f>&);
-extern template CGOGN_GEOMETRY_API float64 angle_between_face_normals<Eigen::Vector3d, CMap2>(const CMap2&, const Cell<Orbit::PHI2>, const CMap2::VertexAttribute<Eigen::Vector3d>&);
-extern template CGOGN_GEOMETRY_API void compute_angle_between_face_normals<Eigen::Vector3f, CMap2>(const CMap2&, const CMap2::VertexAttribute<Eigen::Vector3f>&, Attribute<float32, Orbit::PHI2>&);
-extern template CGOGN_GEOMETRY_API void compute_angle_between_face_normals<Eigen::Vector3d, CMap2>(const CMap2&, const CMap2::VertexAttribute<Eigen::Vector3d>&, Attribute<float64, Orbit::PHI2>&);
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_ALGOS_ANGLE_CPP_))
+
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_EXTERNAL_TEMPLATES_CPP_))
+extern template CGOGN_GEOMETRY_API float32 angle_between_face_normals(const CMap2&, const Cell<Orbit::PHI2>, const CMap2::VertexAttribute<Eigen::Vector3f>&);
+extern template CGOGN_GEOMETRY_API float64 angle_between_face_normals(const CMap2&, const Cell<Orbit::PHI2>, const CMap2::VertexAttribute<Eigen::Vector3d>&);
+extern template CGOGN_GEOMETRY_API void compute_angle_between_face_normals(const CMap2&, const CMap2::VertexAttribute<Eigen::Vector3f>&, Attribute<float32, Orbit::PHI2>&);
+extern template CGOGN_GEOMETRY_API void compute_angle_between_face_normals(const CMap2&, const CMap2::VertexAttribute<Eigen::Vector3d>&, Attribute<float64, Orbit::PHI2>&);
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace geometry
 
 } // namespace cgogn
 
 #endif // CGOGN_GEOMETRY_ALGOS_ANGLE_H_
+

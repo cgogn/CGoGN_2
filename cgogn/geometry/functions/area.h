@@ -35,11 +35,11 @@ namespace geometry
 /**
  * area of the triangle formed by 3 points in 3D
  */
-template <typename VEC3a, typename VEC3b, typename VEC3c>
+template <typename VEC3a, typename VEC3b, typename VEC3c, bool B=true>
 inline auto area(const Eigen::MatrixBase<VEC3a>& p1, const Eigen::MatrixBase<VEC3b>& p2, const Eigen::MatrixBase<VEC3c>& p3)
--> typename std::enable_if <SizeOf<VEC3a>() == 3, ScalarOf<VEC3a>>::type
+-> typename std::enable_if <is_dim_of<VEC3a, 3>::value, ScalarOf<VEC3a>>::type
 {
-	static_assert(is_same_vectors<VEC3a,VEC3b,VEC3c>::value, "parameters must have same type");
+	static_assert(is_same_vector<VEC3a,VEC3b,VEC3c>::value, "parameters must have same type");
 	using Scalar = ScalarOf<VEC3a>;
 	return (Scalar(0.5) * ((p2 - p1).cross(p3 - p1)).norm());
 }
@@ -48,15 +48,14 @@ inline auto area(const Eigen::MatrixBase<VEC3a>& p1, const Eigen::MatrixBase<VEC
 /**
  * area of the triangle formed by 3 points in 2D
  */
-template <typename VEC2a, typename VEC2b, typename VEC2c>
+template <typename VEC2a, typename VEC2b, typename VEC2c, bool B=true>
 inline auto area(const Eigen::MatrixBase<VEC2a>& p1, const Eigen::MatrixBase<VEC2b>& p2, const Eigen::MatrixBase<VEC2c>& p3)
--> typename std::enable_if <vector_traits<VEC2a>::SIZE == 2, ScalarOf<VEC2a>>::type
+-> typename std::enable_if <is_dim_of<VEC2a, 2>::value, ScalarOf<VEC2a>>::type
 {
-	static_assert(is_same_vectors<VEC2a,VEC2b,VEC2c>::value, "parameters must have same type");
+	static_assert(is_same_vector<VEC2a,VEC2b,VEC2c>::value, "parameters must have same type");
 	using Scalar = ScalarOf<VEC2a>;
-	using VEC = typename vector_traits<VEC2a>::Type;
-	VEC v1 = p2 - p1;
-	VEC v2 = p3 - p1;
+	auto v1 = p2 - p1;
+	auto v2 = p3 - p1;
 	return (Scalar(0.5) * (v1[0] * v2[1] - v1[1] * v2[0]));
 }
 
@@ -65,10 +64,10 @@ inline auto area(const Eigen::MatrixBase<VEC2a>& p1, const Eigen::MatrixBase<VEC
 /**
  * area of the triangle formed by 3 points (for not-Eigen parameters)
  */
-template <typename VEC, typename X = typename std::enable_if <!is_eigen<VEC>::value,void>::type>
-inline ScalarOf<VEC> area(const VEC& p1, const VEC& p2, const VEC& p3)
+template <typename VEC>
+inline auto area(const VEC& p1, const VEC& p2, const VEC& p3)
+-> typename std::enable_if <is_vec_non_eigen<VEC>::value, ScalarOf<VEC> >::type
 {
-	static_assert(vector_traits<VEC>::OK, "parameters must be vectors");
 	return area(eigenize(p1),eigenize(p2),eigenize(p3));
 }
 

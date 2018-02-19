@@ -137,11 +137,14 @@ public:
 	 *  @param[in] big_radius
 	 *  @param[in] small_radius
 	 */
-	template <typename T>
-	void embed_into_tore(typename MAP::template VertexAttribute<T>& attribute,
+	template <typename VERTEX_ATTR>
+	void embed_into_tore(VERTEX_ATTR& attribute,
 					   float32 big_radius,
 					   float32 small_radius)
 	{
+		static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
+		using T = InsideTypeOf<VERTEX_ATTR>;
 		const float32 alpha = 2.0f * float32(M_PI) / float32(this->nx_);
 		const float32 beta = 2.0f * float32(M_PI) / float32(this->ny_);
 
@@ -160,9 +163,9 @@ public:
 	//@}
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_TILING_SQUARE_TORE_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_EXTERNAL_TEMPLATES_CPP_))
 extern template class CGOGN_MODELING_API SquareTore<CMap2>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_TILING_SQUARE_TORE_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_EXTERNAL_TEMPLATES_CPP_))
 
 } //namespace modeling
 

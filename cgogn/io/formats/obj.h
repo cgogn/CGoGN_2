@@ -64,7 +64,7 @@ protected:
 		std::ifstream fp(filename.c_str(), std::ios::in);
 
 		ChunkArray<VEC3>* position = this->template add_vertex_attribute<VEC3>("position");
-		ChunkArray<VEC3>* normal;
+		ChunkArray<VEC3>* normal = nullptr;
 		std::vector<VEC3> norm_buff;
 
 		std::string line, tag;
@@ -227,8 +227,8 @@ protected:
 		// normalize
 		if (has_normals)
 		{
-			for(auto i: vertices_id)
-				(*normal)[i].normalize();
+			for(auto j: vertices_id)
+				(*normal)[j].normalize();
 		}
 		return true;
 	}
@@ -435,7 +435,7 @@ protected:
 };
 
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_FORMATS_OBJ_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
 extern template class CGOGN_IO_API ObjSurfaceImport<CMap2, Eigen::Vector3d>;
 extern template class CGOGN_IO_API ObjSurfaceImport<CMap2, Eigen::Vector3f>;
 extern template class CGOGN_IO_API ObjSurfaceImport<CMap2, geometry::Vec_T<std::array<float64, 3>>>;
@@ -450,7 +450,7 @@ extern template class CGOGN_IO_API ObjSurfaceExport<CMap2>;
 
 extern template class CGOGN_IO_API ObjGraphExport<UndirectedGraph>;
 
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_FORMATS_OBJ_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace io
 

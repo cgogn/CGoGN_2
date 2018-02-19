@@ -1727,7 +1727,7 @@ struct CMap3HexaType
 
 using CMap3Hexa = CMap3Hexa_T<CMap3HexaType>;
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_CMAP_CMAP3_HEXA_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
 extern template class CGOGN_CORE_API CMap3Builder_T<CMap3Hexa>;
 extern template class CGOGN_CORE_API DartMarker<CMap3Hexa>;
 extern template class CGOGN_CORE_API DartMarkerStore<CMap3Hexa>;
@@ -1744,7 +1744,7 @@ extern template class CGOGN_CORE_API CellMarkerStore<CMap3Hexa, CMap3Hexa::Verte
 extern template class CGOGN_CORE_API CellMarkerStore<CMap3Hexa, CMap3Hexa::Edge::ORBIT>;
 extern template class CGOGN_CORE_API CellMarkerStore<CMap3Hexa, CMap3Hexa::Face::ORBIT>;
 extern template class CGOGN_CORE_API CellMarkerStore<CMap3Hexa, CMap3Hexa::Volume::ORBIT>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP2_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace cgogn
 

@@ -54,7 +54,7 @@ namespace rendering
  * init:
  *  topo_ = cgogn::make_unique<cgogn::rendering::TopoDrawer>();
  *  topo_rend_ = topo_->generate_renderer();
- *  topo_->update<Vec3>(map_,vertex_position_);
+ *  topo_->update(map_,vertex_position_);
  *
  * draw:
  *  topo_rend_->draw(proj,view,this);
@@ -82,12 +82,13 @@ protected:
 	std::vector<Dart> darts_id_;
 
 public:
-	template <typename VEC3, typename MAP>
-	typename std::enable_if<MAP::DIMENSION == 2, void>::type update(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position);
+	template <typename MAP, typename VERTEX_ATTR>
+	auto update(const MAP& m, const VERTEX_ATTR& position)
+	-> typename std::enable_if<MAP::DIMENSION == 2, void>::type;
 
-	template <typename VEC3, typename MAP>
-	typename std::enable_if<MAP::DIMENSION == 3, void>::type update(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position);
-
+	template <typename MAP, typename VERTEX_ATTR>
+	auto update(const MAP& m, const VERTEX_ATTR& position)
+	-> typename std::enable_if<MAP::DIMENSION == 3, void>::type;
 
 	class CGOGN_RENDERING_API Renderer
 	{
@@ -196,10 +197,13 @@ public:
 };
 
 
-
-template <typename VEC3, typename MAP>
-typename std::enable_if<MAP::DIMENSION == 2, void>::type TopoDrawer::update(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position)
+template <typename MAP, typename VERTEX_ATTR>
+auto TopoDrawer::update(const MAP& m, const VERTEX_ATTR& position)
+-> typename std::enable_if<MAP::DIMENSION == 2, void>::type
 {
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
+	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
 	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
@@ -296,9 +300,13 @@ typename std::enable_if<MAP::DIMENSION == 2, void>::type TopoDrawer::update(cons
 	vbo_relations_->release();
 }
 
-template <typename VEC3, typename MAP>
-typename std::enable_if<MAP::DIMENSION == 3, void>::type TopoDrawer::update(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position)
+template <typename MAP, typename VERTEX_ATTR>
+auto TopoDrawer::update(const MAP& m, const VERTEX_ATTR& position)
+-> typename std::enable_if<MAP::DIMENSION == 3, void>::type
 {
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
+	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
 	using Volume = typename MAP::Volume;
@@ -328,7 +336,7 @@ typename std::enable_if<MAP::DIMENSION == 3, void>::type TopoDrawer::update(cons
 
 	m.foreach_cell([&] (Volume v)
 	{
-		VEC3 center_vol = geometry::centroid<VEC3>(m, v, position);
+		VEC3 center_vol = geometry::centroid(m, v, position);
 		m.foreach_incident_face(v, [&] (Face f)
 		{
 			local_vertices.clear();
@@ -413,10 +421,10 @@ typename std::enable_if<MAP::DIMENSION == 3, void>::type TopoDrawer::update(cons
 
 
 
-template <typename ATTR>
-void TopoDrawer::update_colors(const ATTR& color)
+template <typename VERTEX_ATTR>
+void TopoDrawer::update_colors(const VERTEX_ATTR& color)
 {
-	using VEC3 = array_data_type<ATTR>;
+	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 
 	std::vector<Vec3f> darts_col;
 	darts_col.reserve(2*darts_id_.size());

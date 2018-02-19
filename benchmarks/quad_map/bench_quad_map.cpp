@@ -85,7 +85,7 @@ static void BENCH_faces_normals_poly(benchmark::State& state)
 
 		bench_map.foreach_cell<cgogn::TraversalStrategy::FORCE_DART_MARKING>([&] (Face f)
 		{
-			face_normal[f] = cgogn::geometry::normal<Vec3>(bench_map, f, vertex_position);
+			face_normal[f] = cgogn::geometry::normal(bench_map, f, vertex_position);
 		});
 	}
 }
@@ -103,7 +103,7 @@ static void BENCH_vertices_normals_poly(benchmark::State& state)
 
 		bench_map.foreach_cell<cgogn::TraversalStrategy::FORCE_DART_MARKING>([&] (Vertex v)
 		{
-			vertices_normal[v] = cgogn::geometry::normal<Vec3>(bench_map, v, vertex_position);
+			vertices_normal[v] = cgogn::geometry::normal(bench_map, v, vertex_position);
 		});
 	}
 }
@@ -121,7 +121,7 @@ static void BENCH_faces_normals_quad(benchmark::State& state)
 
 		bench_quad_map.foreach_cell<cgogn::TraversalStrategy::FORCE_DART_MARKING>([&] (QFace f)
 		{
-			face_normal[f] = cgogn::geometry::normal<Vec3>(bench_quad_map, f, vertex_position);
+			face_normal[f] = cgogn::geometry::normal(bench_quad_map, f, vertex_position);
 		});
 	}
 }
@@ -139,7 +139,7 @@ static void BENCH_vertices_normals_quad(benchmark::State& state)
 
 		bench_quad_map.foreach_cell<cgogn::TraversalStrategy::FORCE_DART_MARKING>([&] (QVertex v)
 		{
-			vertices_normal[v] = cgogn::geometry::normal<Vec3>(bench_quad_map, v, vertex_position);
+			vertices_normal[v] = cgogn::geometry::normal(bench_quad_map, v, vertex_position);
 		});
 	}
 }
@@ -156,7 +156,7 @@ static void BENCH_vertices_filter_poly(benchmark::State& state)
 
 		state.ResumeTiming();
 
-		cgogn::geometry::filter_average<Vec3>(bench_map, vertex_position, vertex_position2);
+		cgogn::geometry::filter_average(bench_map, vertex_position, vertex_position2);
 	}
 }
 
@@ -173,7 +173,7 @@ static void BENCH_vertices_filter_quad(benchmark::State& state)
 
 		state.ResumeTiming();
 
-		cgogn::geometry::filter_average<Vec3>(bench_quad_map, vertex_position, vertex_position2);
+		cgogn::geometry::filter_average(bench_quad_map, vertex_position, vertex_position2);
 	}
 }
 

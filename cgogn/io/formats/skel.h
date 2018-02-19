@@ -193,14 +193,14 @@ protected:
     }
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_FORMATS_SKELL_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
 extern template class CGOGN_IO_API SkelGraphImport<Eigen::Vector3d>;
 extern template class CGOGN_IO_API SkelGraphImport<Eigen::Vector3f>;
 extern template class CGOGN_IO_API SkelGraphImport<geometry::Vec_T<std::array<float64,3>>>;
 extern template class CGOGN_IO_API SkelGraphImport<geometry::Vec_T<std::array<float32,3>>>;
 
 extern template class CGOGN_IO_API SkelGraphExport<UndirectedGraph>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_FORMATS_SKELL_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
 
 
 } // namespace io

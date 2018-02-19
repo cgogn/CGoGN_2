@@ -79,8 +79,8 @@ TYPED_TEST(Algos_TEST, TriangleCatmullClark)
 
 	this->add_polygone(3);
 
-	cgogn::modeling::catmull_clark<TypeParam>(this->map2_, vertex_position);
-	cgogn::modeling::catmull_clark<TypeParam>(this->map2_, vertex_position);
+	cgogn::modeling::catmull_clark(this->map2_, vertex_position);
+	cgogn::modeling::catmull_clark(this->map2_, vertex_position);
 
 	int nb_f2 = 0;
 	this->map2_.foreach_cell([&nb_f2] (Face)
@@ -97,8 +97,8 @@ TYPED_TEST(Algos_TEST, QuadCatmullClark)
 
 	this->add_polygone(4);
 
-	cgogn::modeling::catmull_clark<TypeParam>(this->map2_, vertex_position);
-	cgogn::modeling::catmull_clark<TypeParam>(this->map2_, vertex_position);
+	cgogn::modeling::catmull_clark(this->map2_, vertex_position);
+	cgogn::modeling::catmull_clark(this->map2_, vertex_position);
 
 	int nb_f2 = 0;
 	this->map2_.foreach_cell([&nb_f2] (Face)
