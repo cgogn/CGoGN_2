@@ -48,7 +48,7 @@ template class CGOGN_CORE_API ChunkArrayContainer<CGOGN_CHUNK_SIZE, uint32>;
 template class CGOGN_CORE_API ChunkArrayContainer<CGOGN_CHUNK_SIZE, uint8>;
 
 template class CGOGN_CORE_API ChunkArrayFactory<CGOGN_CHUNK_SIZE>;
-//template class CGOGN_CORE_API ChunkArrayFactory<CGOGN_CHUNK_SIZE>& chunk_array_factory<CGOGN_CHUNK_SIZE>();
+template CGOGN_CORE_API ChunkArrayFactory<CGOGN_CHUNK_SIZE>& chunk_array_factory<CGOGN_CHUNK_SIZE>();
 
 template class CGOGN_CORE_API ChunkStack<CGOGN_CHUNK_SIZE, uint32>;
 
