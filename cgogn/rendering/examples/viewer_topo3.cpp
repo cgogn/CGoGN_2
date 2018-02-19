@@ -360,19 +360,19 @@ void Viewer::draw()
 	{
 		glEnable(GL_POLYGON_OFFSET_FILL);
 		glPolygonOffset(1.0f, 1.0f);
-		volume_drawer_rend_->draw_faces(proj,view,this);
+		volume_drawer_rend_->draw_faces(proj,view);
 		glDisable(GL_POLYGON_OFFSET_FILL);
 	}
 
 	if (edge_rendering_)
-		volume_drawer_rend_->draw_edges(proj,view,this);
+		volume_drawer_rend_->draw_edges(proj,view);
 
 	if (topo_drawering_)
-		topo_drawer_rend_->draw(proj,view,this);
+		topo_drawer_rend_->draw(proj,view);
 
-	drawer_rend_->draw(proj, view, this);
+	drawer_rend_->draw(proj, view);
 
-	frame_manip_->draw(true,true,proj, view, this);
+	frame_manip_->draw(true,true,proj, view);
 }
 
 void Viewer::init()

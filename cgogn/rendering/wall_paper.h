@@ -76,7 +76,7 @@ public:
 
 		~Renderer();
 
-		void draw(QOpenGLFunctions_3_3_Core* ogl33);
+		void draw();
 	};
 
 	using Self = WallPaper;
@@ -163,7 +163,7 @@ public:
 	 */
 	void set_local_position(float x, float y, float w, float h, bool front = true);
 
-	void draw(QOpenGLFunctions_3_3_Core* ogl33);
+	void draw();
 };
 
 } // namespace rendering

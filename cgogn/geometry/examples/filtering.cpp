@@ -315,7 +315,7 @@ void Viewer::draw()
 	}
 
 	if (bb_rendering_)
-		drawer_rend_->draw(proj, view, this);
+		drawer_rend_->draw(proj, view);
 }
 
 void Viewer::init()

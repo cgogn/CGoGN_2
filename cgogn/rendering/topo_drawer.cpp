@@ -69,8 +69,10 @@ TopoDrawer::Renderer::Renderer(TopoDrawer* tr) :
 TopoDrawer::Renderer::~Renderer()
 {}
 
-void TopoDrawer::Renderer::draw(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33, bool with_blending)
+void TopoDrawer::Renderer::draw(const QMatrix4x4& projection, const QMatrix4x4& modelview, bool with_blending)
 {
+	QOpenGLFunctions_3_3_Core * ogl33 = QOpenGLContext::currentContext()->versionFunctions<QOpenGLFunctions_3_3_Core>();
+
 	float32 lw = 2.0f;
 	if(with_blending)
 	{

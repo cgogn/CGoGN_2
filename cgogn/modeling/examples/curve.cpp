@@ -302,8 +302,8 @@ void Viewer::draw()
 	camera()->getProjectionMatrix(proj);
 	camera()->getModelViewMatrix(view);
 
-	drawer_rend_->draw(proj, view, this);
-	frame_drawer_rend_->draw(proj, view, this);
+	drawer_rend_->draw(proj, view);
+	frame_drawer_rend_->draw(proj, view);
 }
 
 void Viewer::init()
