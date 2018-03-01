@@ -28,6 +28,7 @@
 #include <cgogn/core/cmap/cmap3.h>
 #include <cgogn/core/utils/masks.h>
 #include <cgogn/geometry/algos/centroid.h>
+#include <cgogn/geometry/types/geometry_traits.h>
 
 namespace cgogn
 {
@@ -58,26 +59,28 @@ typename MAP::Vertex triangule(MAP& map, typename MAP::Face f)
 	return Vertex(map.phi2(x));
 }
 
-template<typename MAP, typename VEC3>
-void triangule(MAP& map, typename MAP::template VertexAttribute<VEC3>& position)
+template<typename MAP, typename VERTEX_ATTR>
+auto triangule(MAP& map, VERTEX_ATTR& position)
+-> typename std::enable_if<is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, void>::type
 {
+	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 	using Face = typename MAP::Face;
 	typename MAP::CellCache cache(map);
 	cache.template build<Face>();
-	map.parallel_foreach_cell([&map, &position](Face f)
+	map.parallel_foreach_cell([&map, &position](Face fa)
 	{
-		const VEC3& center = geometry::centroid<VEC3>(map, f, position);
-		const auto central_vertex = triangule(map, f);
+		const VEC3& center = geometry::centroid(map, fa, position);
+		const auto central_vertex = triangule(map, fa);
 		position[central_vertex] = center;
 	}, cache);
 }
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_REFINEMENTS_CPP_))
-extern template CGOGN_MODELING_API CMap2::Vertex triangule<CMap2>(CMap2&, CMap2::Face);
-extern template CGOGN_MODELING_API CMap3::Vertex triangule<CMap3>(CMap3&, CMap3::Face);
-extern template CGOGN_MODELING_API void triangule<CMap2, Eigen::Vector3f>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&);
-extern template CGOGN_MODELING_API void triangule<CMap2, Eigen::Vector3d>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&);
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_REFINEMENTS_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_EXTERNAL_TEMPLATES_CPP_))
+extern template CGOGN_MODELING_API CMap2::Vertex triangule(CMap2&, CMap2::Face);
+extern template CGOGN_MODELING_API CMap3::Vertex triangule(CMap3&, CMap3::Face);
+extern template CGOGN_MODELING_API void triangule(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&);
+extern template CGOGN_MODELING_API void triangule(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&);
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace modeling
 

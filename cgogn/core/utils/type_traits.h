@@ -394,6 +394,9 @@ inline typename std::enable_if<is_func_return_same<FUNC, bool>::value, bool>::ty
 	return func(std::forward<Args>(args)...);
 }
 
+#define RETURN_TYPE_IF(COND,TYPE) typename std::enable_if<COND,TYPE>::type
+
+
 } // namespace internal
 
 } // namespace cgogn

@@ -57,15 +57,19 @@ enum EdgeApproximatorType
 	EdgeApproximator_QEM_T
 };
 
-template <typename VEC3, typename EdgeTraversor>
+template <typename EdgeTraversor, typename VERTEX_ATTR>
 void decimate(
 	CMap2& map,
-	typename CMap2::template VertexAttribute<VEC3>& position,
+	VERTEX_ATTR& position,
 	EdgeTraversor& trav,
-	EdgeApproximator<CMap2, VEC3>& approx,
+	EdgeApproximator<CMap2, InsideTypeOf<VERTEX_ATTR>>& approx,
 	uint32 nb
 )
 {
+	static_assert(is_orbit_of<VERTEX_ATTR, CMap2::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
+	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
+
 	using Vertex = CMap2::Vertex;
 	using Edge = CMap2::Edge;
 
@@ -91,15 +95,18 @@ void decimate(
 	);
 }
 
-template <typename VEC3>
+template <typename VERTEX_ATTR>
 void decimate(
 	CMap2& map,
-	typename CMap2::template VertexAttribute<VEC3>& position,
+	VERTEX_ATTR& position,
 	EdgeTraversorType trav_type,
 	EdgeApproximatorType approx_type,
 	uint32 nb
 )
 {
+	static_assert(is_orbit_of<VERTEX_ATTR, CMap2::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
+	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 	EdgeApproximator<CMap2, VEC3>* approx=nullptr;
 
 	switch (approx_type)
@@ -134,10 +141,10 @@ void decimate(
 	delete approx;
 }
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_DECIMATION_CPP_))
-extern template CGOGN_MODELING_API void decimate<Eigen::Vector3f>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&, EdgeTraversorType, EdgeApproximatorType, uint32);
-extern template CGOGN_MODELING_API void decimate<Eigen::Vector3d>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&, EdgeTraversorType, EdgeApproximatorType, uint32);
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_DECIMATION_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_EXTERNAL_TEMPLATES_CPP_))
+extern template CGOGN_MODELING_API void decimate(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&, EdgeTraversorType, EdgeApproximatorType, uint32);
+extern template CGOGN_MODELING_API void decimate(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&, EdgeTraversorType, EdgeApproximatorType, uint32);
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace modeling
 

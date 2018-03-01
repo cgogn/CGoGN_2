@@ -42,8 +42,20 @@ class Intesection_TEST : public testing::Test
 
 TYPED_TEST_CASE(Intesection_TEST, VecTypes );
 
+
+
+template <typename M>
+struct Pipo
+{
+	using Ty = typename Eigen::internal::traits<M>::Scalar;
+};
+
 TYPED_TEST(Intesection_TEST, intersection_ray_triangle)
 {
+	static_assert(cgogn::geometry::is_eigen<Eigen::Vector3d>::value, "Ahhhh");
+//	using T = typename Pipo<Eigen::MatrixBase<Eigen::Vector3d>>::Ty;
+//	using Ty = typename Eigen::internal::traits<Eigen::MatrixBase<Eigen::Vector3d>>::Scalar;
+
 	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
 	TypeParam p0(Scalar(1), Scalar(1), Scalar(96.1));
 	TypeParam p1(Scalar(5), Scalar(1), Scalar(92.3));

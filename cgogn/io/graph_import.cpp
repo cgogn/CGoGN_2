@@ -58,6 +58,13 @@ uint32 GraphImport::nb_edges() const
 	return uint32(edges_nb_vertices_.size());
 }
 
+GraphFileImport::GraphFileImport() : Inherit1(), Inherit2()
+{}
+
+GraphFileImport::~GraphFileImport()
+{}
+
+
 } // namespace io
 
 } // namespace cgogn

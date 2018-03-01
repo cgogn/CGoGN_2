@@ -47,13 +47,13 @@ enum Orientation2D
  * @param Pb end point
  * @return the orientation
  */
-template <typename VEC2>
-Orientation2D side(const VEC2& P, const VEC2& Pa, const VEC2& Pb)
+template <typename VEC2a, typename VEC2b, typename VEC2c>
+Orientation2D side(const Eigen::MatrixBase<VEC2a>& P, const Eigen::MatrixBase<VEC2b>& Pa, const Eigen::MatrixBase<VEC2c>& Pb)
 {
-	static_assert(vector_traits<VEC2>::SIZE == 2ul, "The size of the vector must be equal to 2.");
+	static_assert(is_same_vector<VEC2a,VEC2b,VEC2c>::value, "parameters must have same type");
+	static_assert(is_dim_of<VEC2a,2>::value, "The size of the vector must be equal to 2.");
 
-	using Scalar = typename vector_traits<VEC2>::Scalar;
-	const Scalar zero(0.000001);
+	using Scalar = ScalarOf<VEC2a>;
 
 	Scalar p = (P[0] - Pa[0]) * (Pb[1] - Pa[1]) - (Pb[0] - Pa[0]) * (P[1] - Pa[1]) ;
 
@@ -65,6 +65,7 @@ Orientation2D side(const VEC2& P, const VEC2& Pa, const VEC2& Pb)
 		return Orientation2D::LEFT;
 }
 
+
 /**
  * return the orientation of point P w.r.t. the plane defined by 3 points
  * @param P the point
@@ -73,12 +74,15 @@ Orientation2D side(const VEC2& P, const VEC2& Pa, const VEC2& Pb)
  * @param C plane point 3
  * @return the orientation
  */
-template <typename VEC3>
-Orientation3D test_orientation_3D(const VEC3& P, const VEC3& A, const VEC3& B, const VEC3& C)
+template <typename VEC3a, typename VEC3b, typename VEC3c, typename VEC3d>
+Orientation3D test_orientation_3D(const Eigen::MatrixBase<VEC3a>& P, const Eigen::MatrixBase<VEC3b>& A, const Eigen::MatrixBase<VEC3c>& B, const Eigen::MatrixBase<VEC3d>& C)
 {
-	static_assert(vector_traits<VEC3>::SIZE == 3ul, "The size of the vector must be equal to 3.");
-	return Plane3D<VEC3>(A, B, C).orient(P);
+	static_assert(is_same_vector<VEC3a,VEC3b,VEC3c,VEC3d>::value, "parameters must have same type");
+	static_assert(is_dim_of<VEC3a, 3>::value, "The size of the vector must be equal to 3.");
+	return Plane3D(A, B, C).orient(P);
 }
+
+
 
 /**
  * return the orientation of point P w.r.t. the plane defined by its normal and 1 point
@@ -87,12 +91,39 @@ Orientation3D test_orientation_3D(const VEC3& P, const VEC3& A, const VEC3& B, c
  * @param PP plane point
  * @return the orientation
  */
-template <typename VEC3>
-Orientation3D test_orientation_3D(const VEC3& P, const VEC3& N, const VEC3& PP)
+template <typename VEC3a, typename VEC3b, typename VEC3c>
+Orientation3D test_orientation_3D(const Eigen::MatrixBase<VEC3a>& P, const Eigen::MatrixBase<VEC3b>& N, const Eigen::MatrixBase<VEC3c>& PP)
 {
-	static_assert(vector_traits<VEC3>::SIZE == 3ul, "The size of the vector must be equal to 3.");
-	return Plane3D<VEC3>(N, PP).orient(P);
+	static_assert(is_same_vector<VEC3a,VEC3b,VEC3c>::value, "parameters must have same type");
+	static_assert(is_dim_of<VEC3a, 3>::value, "The size of the vector must be equal to 3.");
+
+	return Plane3D(N, PP).orient(P);
 }
+
+/// non eigen versions
+
+template <typename VEC3>
+inline auto side(const VEC3& P, const VEC3& Pa, const VEC3& Pb)
+-> typename std::enable_if <is_vec_non_eigen<VEC3>::value, Orientation2D >::type
+{
+	return side(eigenize(P),eigenize(Pa),eigenize(Pb));
+}
+
+template <typename VEC3>
+inline auto test_orientation_3D(const VEC3& P, const VEC3& A, const VEC3& B, const VEC3& C)
+-> typename std::enable_if <is_vec_non_eigen<VEC3>::value, Orientation3D >::type
+{
+	static_assert(vector_traits<VEC3>::OK, "parameters must be vectors");
+	return test_orientation_3D(eigenize(P),eigenize(A),eigenize(B),eigenize(C));
+}
+
+template <typename VEC3>
+inline auto test_orientation_3D(const VEC3& P, const VEC3& N, const VEC3& PP)
+-> typename std::enable_if <is_vec_non_eigen<VEC3>::value, Orientation3D >::type
+{
+	return test_orientation_3D(eigenize(P),eigenize(N),eigenize(PP));
+}
+
 
 } // namespace geometry
 

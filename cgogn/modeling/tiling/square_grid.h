@@ -26,6 +26,8 @@
 
 #include <cgogn/core/cmap/cmap2_builder.h>
 #include <cgogn/modeling/tiling/tiling.h>
+#include <cgogn/geometry/types/geometry_traits.h>
+
 
 namespace cgogn
 {
@@ -177,12 +179,15 @@ public:
 	 *  @param[in] x size in Y
 	 *  @param[in] y attribute in Z (centered on 0 by default)
 	 */
-	template <typename T>
-	void embed_into_grid(typename MAP::template VertexAttribute<T>& attribute,
+	template <typename VERTEX_ATTR>
+	void embed_into_grid(VERTEX_ATTR& attribute,
 						 float32 x,
 						 float32 y,
 						 float32 z)
 	{
+		static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
+		using T = InsideTypeOf<VERTEX_ATTR>;
 		const float32 dx = x / float32(this->nx_);
 		const float32 dy = y / float32(this->ny_);
 
@@ -204,12 +209,15 @@ public:
 	 *  @param[in] radius_max
 	 *  @param[in] turns number of turn multiplied by 2*PI
 	 */
-	template <typename T>
-	void embed_into_twisted_strip(typename MAP::template VertexAttribute<T>& attribute,
+	template <typename VERTEX_ATTR>
+	void embed_into_twisted_strip(VERTEX_ATTR& attribute,
 								  float32 radius_min,
 								  float32 radius_max,
 								  float32 turns)
 	{
+		static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
+		using T = InsideTypeOf<VERTEX_ATTR>;
 		const float32 alpha = 2.0f * float32(M_PI) / this->ny_;
 		const float32 beta = turns / float32(this->ny_);
 
@@ -239,14 +247,17 @@ public:
 	 *  @param[in] turns number of turn
 	 *  @param[in] orient
 	 */
-	template <typename T>
-	void embed_into_helicoid(typename MAP::template VertexAttribute<T>& attribute,
+	template <typename VERTEX_ATTR>
+	void embed_into_helicoid(VERTEX_ATTR& attribute,
 							 float32 radius_min,
 							 float32 radius_max,
 							 float32 maxHeight,
 							 float32 nbTurn,
 							 int32 orient)
 	{
+		static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
+		using T = InsideTypeOf<VERTEX_ATTR>;
 		const float32 alpha = 2.0f * float32(M_PI) * nbTurn / this->nx_ ;
 		const float32 hS = maxHeight / float32(this->nx_);
 
@@ -266,9 +277,9 @@ public:
 	//@}
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_TILING_SQUARE_GRID_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_EXTERNAL_TEMPLATES_CPP_))
 extern template class CGOGN_MODELING_API SquareGrid<CMap2>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_TILING_SQUARE_GRID_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_EXTERNAL_TEMPLATES_CPP_))
 
 } //namespace modeling
 

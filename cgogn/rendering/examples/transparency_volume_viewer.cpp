@@ -336,7 +336,7 @@ void Viewer::init()
 	cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
 
 	volume_drawer_ = cgogn::make_unique<VolumeDrawer>();
-	volume_drawer_->update_face<Vec3>(map_,vertex_position_);
+	volume_drawer_->update_face(map_,vertex_position_);
 
 	volume_drawer_rend_ = volume_drawer_->generate_renderer();
 	volume_drawer_rend_->set_explode_volume(expl_);

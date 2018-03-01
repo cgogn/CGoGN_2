@@ -39,20 +39,24 @@ namespace cgogn
 namespace modeling
 {
 
-template <typename VEC3>
+template <typename VERTEX_ATTR>
 void pliant_remeshing(
 	CMap2& map,
-	typename CMap2::template VertexAttribute<VEC3>& position
+	VERTEX_ATTR& position
 )
 {
-	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
+	static_assert(is_orbit_of<VERTEX_ATTR, CMap2::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
+	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
+	using Scalar = geometry::ScalarOf<VEC3>;
+
 	using Vertex = typename CMap2::Vertex;
 	using Edge = typename CMap2::Edge;
 
 	CMap2::CellCache cache(map);
 	cache.template build<Edge>();
 
-	Scalar mean_edge_length = geometry::mean_edge_length<VEC3>(map, cache, position);
+	Scalar mean_edge_length = geometry::mean_edge_length(map, cache, position);
 
 	const Scalar squared_min_edge_length = Scalar(0.5625) * mean_edge_length * mean_edge_length; // 0.5625 = 0.75^2
 	const Scalar squared_max_edge_length = Scalar(1.5625) * mean_edge_length * mean_edge_length; // 1.5625 = 1.25^2
@@ -134,10 +138,10 @@ void pliant_remeshing(
 	);
 }
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_PLIANT_REMESHING_CPP_))
-extern template CGOGN_MODELING_API void pliant_remeshing<Eigen::Vector3f>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&);
-extern template CGOGN_MODELING_API void pliant_remeshing<Eigen::Vector3d>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&);
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_PLIANT_REMESHING_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_EXTERNAL_TEMPLATES_CPP_))
+extern template CGOGN_MODELING_API void pliant_remeshing(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&);
+extern template CGOGN_MODELING_API void pliant_remeshing(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&);
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace modeling
 

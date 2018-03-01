@@ -39,8 +39,8 @@ int main(int , char** )
 		std::cout << "is good ? " << std::boolalpha << map.check_embedding_integrity() << std::endl;
 
 		g.embed_into_grid(vertex_grid, 10.0f, 10.0f, 0.0f);
-		g.embed_into_twisted_strip<Vec3>(vertex_twisted_strip, 10.0f, 5.0f, 3.1f);
-		g.embed_into_helicoid<Vec3>(vertex_helicoid, 10.0f, 5.0f, 15.0f, 3.0f, 1);
+		g.embed_into_twisted_strip(vertex_twisted_strip, 10.0f, 5.0f, 3.1f);
+		g.embed_into_helicoid(vertex_helicoid, 10.0f, 5.0f, 15.0f, 3.0f, 1);
 
 		cgogn::io::export_surface(map, cgogn::io::ExportOptions::create().filename("grid.off").position_attribute(vertorb, "grid").binary(false));
 		cgogn::io::export_surface(map, cgogn::io::ExportOptions::create().filename("twisted_strip.off").position_attribute(vertorb, "twisted_strip").binary(false));
@@ -68,8 +68,8 @@ int main(int , char** )
 		g.triangule_bottom();
 
 		g.embed_into_cylinder(vertex_cylinder, 10.0f, 8.0f, 5.0f);
-		g.embed_into_sphere<Vec3>(vertex_sphere, 10.0f);
-		g.embed_into_cone<Vec3>(vertex_cone, 10.0f, 5.0f);
+		g.embed_into_sphere(vertex_sphere, 10.0f);
+		g.embed_into_cone(vertex_cone, 10.0f, 5.0f);
 
 		cgogn::io::export_surface(map, cgogn::io::ExportOptions::create().filename("cylinder.off").position_attribute(vertorb, "cylinder").binary(false));
 		cgogn::io::export_surface(map, cgogn::io::ExportOptions::create().filename("sphere.off").position_attribute(vertorb, "sphere").binary(false));

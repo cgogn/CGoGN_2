@@ -37,18 +37,16 @@ set(HEADER_TYPES
 set(HEADER_FILES dll.h ${HEADER_ALGOS} ${HEADER_FUNCTIONS} ${HEADER_TYPES})
 
 
-set(SOURCE_ALGOS
-	algos/angle.cpp
-	algos/selection.cpp
-)
 set(SOURCE_TYPES
-	types/aabb.cpp
-	types/obb.cpp
 	types/plane_3d.cpp
 	types/quadric.cpp
-	types/vec.cpp
 )
-set(SOURCE_FILES ${SOURCE_ALGOS} ${SOURCE_TYPES})
+
+if(${CGOGN_EXTERNAL_TEMPLATES})
+    set(SOURCE_FILES ${SOURCE_TYPES} external_templates.cpp)
+else()
+    set(SOURCE_FILES ${SOURCE_TYPES})
+endif()
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 

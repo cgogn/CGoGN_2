@@ -41,7 +41,7 @@ class EarTriangulation
 {
 	using Vertex = typename MAP::Vertex;
 	using Face   = typename MAP::Face;
-	using Scalar = typename vector_traits<VEC3>::Scalar;
+	using Scalar = ScalarOf<VEC3>;
 
 	class VertexPoly
 	{
@@ -232,7 +232,7 @@ public:
 		}
 
 		// compute normals for orientation
-		normalPoly_ = normal<VEC3>(map_, Cell<Orbit::PHI1>(f.dart), position);
+		normalPoly_ = normal(map_, Cell<Orbit::PHI1>(f.dart), position);
 
 		// first pass create polygon in chained list with angle computation
 		VertexPoly* vpp = nullptr;
@@ -389,15 +389,18 @@ public:
  * @param position
  * @param table_indices table of indices (vertex embedding) to append
  */
-template <typename VEC3, typename MAP>
+template <typename MAP, typename VERTEX_ATTR>
 static void append_ear_triangulation(
 	MAP& map,
 	const typename MAP::Face f,
-	const typename MAP::template VertexAttribute<VEC3>& position,
+	const VERTEX_ATTR& position,
 	std::vector<uint32>& table_indices
 )
 {
-	EarTriangulation<VEC3, MAP> tri(map, f, position);
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"attribute must be a vertex attribute");
+
+
+	EarTriangulation<InsideTypeOf<VERTEX_ATTR>, MAP> tri(map, f, position);
 	tri.append_indices(table_indices);
 }
 
@@ -407,14 +410,16 @@ static void append_ear_triangulation(
  * @param f
  * @param position
  */
-template <typename VEC3, typename MAP>
+template <typename MAP, typename VERTEX_ATTR>
 static void apply_ear_triangulation(
 	MAP& map,
 	const typename MAP::Face f,
-	const typename MAP::template VertexAttribute<VEC3>& position
+	const VERTEX_ATTR& position
 )
 {
-	EarTriangulation<VEC3, MAP> tri(map, f, position);
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"attribute must be a vertex attribute");
+
+	EarTriangulation<InsideTypeOf<VERTEX_ATTR>, MAP> tri(map, f, position);
 	tri.apply();
 }
 
@@ -424,17 +429,19 @@ static void apply_ear_triangulation(
  * @param f
  * @param position
  */
-template <typename VEC3, typename MAP>
+template <typename MAP, typename VERTEX_ATTR>
 static void apply_ear_triangulation(
 	MAP& map,
-	const typename MAP::template VertexAttribute<VEC3>& position
+	const VERTEX_ATTR& position
 )
 {
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"attribute must be a vertex attribute");
+
 	map.template foreach_cell([&] (typename MAP::Face f)
 	{
 		if (!map.has_codegree(f, 3))
 		{
-			EarTriangulation<VEC3, MAP> tri(map, f, position);
+			EarTriangulation<InsideTypeOf<VERTEX_ATTR>, MAP> tri(map, f, position);
 			tri.apply();
 		}
 	});

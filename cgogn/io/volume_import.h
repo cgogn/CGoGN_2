@@ -30,7 +30,7 @@
 #include <cgogn/core/utils/string.h>
 
 #include <cgogn/core/cmap/cmap3.h>
-
+#include <cgogn/geometry/types/geometry_traits.h>
 #include <cgogn/geometry/functions/orientation.h>
 
 #include <cgogn/io/dll.h>
@@ -575,7 +575,7 @@ protected:
 	template <typename T>
 	inline void reorient_hexa(const ChunkArray<T>& pos, uint32& p0, uint32& p1, uint32& p2, uint32& p3, uint32& p4, uint32& p5, uint32& p6, uint32& p7)
 	{
-		if (geometry::test_orientation_3D<T>(pos[p4], pos[p0], pos[p1], pos[p2]) == geometry::Orientation3D::OVER)
+        if (geometry::test_orientation_3D(pos[p4], pos[p0], pos[p1], pos[p2]) == geometry::Orientation3D::OVER)
 		{
 			std::swap(p0, p3);
 			std::swap(p1, p2);
@@ -587,21 +587,21 @@ protected:
 	template <typename T>
 	inline void reorient_tetra(const ChunkArray<T>& pos, uint32& p0, uint32& p1, uint32& p2, uint32& p3)
 	{
-		if (geometry::test_orientation_3D<T>(pos[p0], pos[p1], pos[p2], pos[p3]) == geometry::Orientation3D::OVER)
+		if (geometry::test_orientation_3D(pos[p0], pos[p1], pos[p2], pos[p3]) == geometry::Orientation3D::OVER)
 			std::swap(p1, p2);
 	}
 
 	template <typename T>
 	inline void reorient_pyramid(const ChunkArray<T>& pos, uint32& p0, uint32& p1, uint32& p2, uint32& p3, uint32& p4)
 	{
-		if (geometry::test_orientation_3D<T>(pos[p4], pos[p0], pos[p1], pos[p2]) == geometry::Orientation3D::OVER)
+		if (geometry::test_orientation_3D(pos[p4], pos[p0], pos[p1], pos[p2]) == geometry::Orientation3D::OVER)
 			std::swap(p1, p3);
 	}
 
 	template <typename T>
 	inline void reorient_triangular_prism(const ChunkArray<T>& pos, uint32& p0, uint32& p1, uint32& p2, uint32& p3, uint32& p4, uint32& p5)
 	{
-		if (geometry::test_orientation_3D<T>(pos[p3], pos[p0], pos[p1], pos[p2]) == geometry::Orientation3D::OVER)
+		if (geometry::test_orientation_3D(pos[p3], pos[p0], pos[p1], pos[p2]) == geometry::Orientation3D::OVER)
 		{
 			std::swap(p1, p2);
 			std::swap(p4, p5);
@@ -632,10 +632,10 @@ public:
 	virtual ~VolumeFileImport() {}
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_VOLUME_IMPORT_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
 extern template class CGOGN_IO_API VolumeImport<CMap3>;
 extern template class CGOGN_IO_API VolumeFileImport<CMap3>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_VOLUME_IMPORT_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace io
 

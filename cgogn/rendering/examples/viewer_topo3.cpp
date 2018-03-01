@@ -205,13 +205,13 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			expl_ += 0.05f;
 			volume_drawer_rend_->set_explode_volume(expl_);
 			topo_drawer_->set_explode_volume(expl_);
-			topo_drawer_->update<Vec3>(map_,vertex_position_);
+			topo_drawer_->update(map_,vertex_position_);
 			break;
 		case Qt::Key_Minus:
 			expl_ -= 0.05f;
 			volume_drawer_rend_->set_explode_volume(expl_);
 			topo_drawer_->set_explode_volume(expl_);
-			topo_drawer_->update<Vec3>(map_,vertex_position_);
+			topo_drawer_->update(map_,vertex_position_);
 			break;
 		case Qt::Key_X:
 			frame_manip_->rotate(cgogn::rendering::FrameManipulator::Xr, 0.1507f);
@@ -273,7 +273,7 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 	{
 		drawer_->new_list();
 		std::vector<Map3::Volume> selected;
-		cgogn::geometry::picking<Vec3>(map_, vertex_position_, A, B, selected);
+		cgogn::geometry::picking(map_, vertex_position_, A, B, selected);
 		cgogn_log_info("Viewer") << "Selected volumes: " << selected.size();
 		if (!selected.empty())
 		{
@@ -281,11 +281,11 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 			drawer_->begin(GL_LINES);
 			// closest vol in red
 			drawer_->color3f(1.0, 0.0, 0.0);
-			cgogn::rendering::add_to_drawer<Vec3>(map_, selected[0], vertex_position_, drawer_.get());
+			cgogn::rendering::add_to_drawer(map_, selected[0], vertex_position_, drawer_.get());
 			// others in yellow
 			drawer_->color3f(1.0, 1.0, 0.0);
 			for (uint32 i = 1u; i < selected.size(); ++i)
-				cgogn::rendering::add_to_drawer<Vec3>(map_, selected[i], vertex_position_, drawer_.get());
+				cgogn::rendering::add_to_drawer(map_, selected[i], vertex_position_, drawer_.get());
 			drawer_->end();
 		}
 		drawer_->line_width(4.0);
@@ -385,11 +385,11 @@ void Viewer::init()
 	topo_drawer_ =  cgogn::make_unique<cgogn::rendering::TopoDrawer>();
 	topo_drawer_rend_ = topo_drawer_->generate_renderer();
 	topo_drawer_->set_explode_volume(expl_);
-	topo_drawer_->update<Vec3>(map_,vertex_position_);
+	topo_drawer_->update(map_,vertex_position_);
 
 	volume_drawer_ = cgogn::make_unique<cgogn::rendering::VolumeDrawer>();
-	volume_drawer_->update_face<Vec3>(map_,vertex_position_);
-	volume_drawer_->update_edge<Vec3>(map_,vertex_position_);
+	volume_drawer_->update_face(map_,vertex_position_);
+	volume_drawer_->update_edge(map_,vertex_position_);
 
 	volume_drawer_rend_ = volume_drawer_->generate_renderer();
 	volume_drawer_rend_->set_explode_volume(expl_);

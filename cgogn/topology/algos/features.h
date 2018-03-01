@@ -362,12 +362,12 @@ private:
 	bool intern_edge_weight_;
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_TOPOLOGY_FEATURES_CPP_))
-extern template class CGOGN_TOPLOGY_API FeaturesFinder<float32, CMap2>;
-extern template class CGOGN_TOPLOGY_API FeaturesFinder<float64, CMap2>;
-extern template class CGOGN_TOPLOGY_API FeaturesFinder<float32, CMap3>;
-extern template class CGOGN_TOPLOGY_API FeaturesFinder<float64, CMap3>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_TOPOLOGY_FEATURES_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_TOPOLOGY_EXTERNAL_TEMPLATES_CPP_))
+extern template class CGOGN_TOPOLOGY_API FeaturesFinder<float32, CMap2>;
+extern template class CGOGN_TOPOLOGY_API FeaturesFinder<float64, CMap2>;
+extern template class CGOGN_TOPOLOGY_API FeaturesFinder<float32, CMap3>;
+extern template class CGOGN_TOPOLOGY_API FeaturesFinder<float64, CMap3>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_TOPOLOGY_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace topology
 

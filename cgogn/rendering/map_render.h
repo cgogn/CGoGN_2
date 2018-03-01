@@ -152,7 +152,7 @@ protected:
 				table_indices.push_back(m.embedding(Vertex(m.phi1(m.phi1(f.dart)))));
 			}
 			else
-				cgogn::geometry::append_ear_triangulation<VEC3>(m, f, *position, table_indices);
+				cgogn::geometry::append_ear_triangulation(m, f, *position, table_indices);
 		},
 		mask);
 	}
@@ -234,14 +234,18 @@ public:
 		return nb_indices_[prim];
 	}
 
-	template <typename VEC3, typename MAP, typename MASK>
+	template <typename MAP, typename MASK, typename VERTEX_ATTR>
 	inline void init_primitives(
 		const MAP& m,
 		const MASK& mask,
 		DrawingType prim,
-		const typename MAP::template VertexAttribute<VEC3>* position
+		const VERTEX_ATTR* position
 	)
 	{
+		static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"attribute must be a vertex attribute");
+
+		using VEC3 = InsideTypeOf<VERTEX_ATTR>;
+
 		std::vector<uint32> table_indices;
 
 		switch (prim)
@@ -280,14 +284,14 @@ public:
 		indices_buffers_[prim]->release();
 	}
 
-	template <typename VEC3, typename MAP>
+	template <typename MAP, typename VERTEX_ATTR>
 	inline void init_primitives(
 		const MAP& m,
 		DrawingType prim,
-		const typename MAP::template VertexAttribute<VEC3>* position
+		const VERTEX_ATTR* position
 	)
 	{
-		init_primitives<VEC3>(m, AllCellsFilter(), prim, position);
+		init_primitives(m, AllCellsFilter(), prim, position);
 	}
 
 	template <typename MAP, typename MASK>
@@ -351,9 +355,12 @@ public:
  * @param pos_out transformed positions
  * @param view modelview matrix
  */
-template <typename VEC3, typename MAP>
-void transform_position(const MAP& map, const typename MAP::template VertexAttribute<VEC3>& pos_in, typename MAP::template VertexAttribute<VEC3>& pos_out, const QMatrix4x4& view)
+template <typename MAP, typename VERTEX_ATTR>
+void transform_position(const MAP& map, const VERTEX_ATTR& pos_in, VERTEX_ATTR& pos_out, const QMatrix4x4& view)
 {
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
+	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 	map.template const_attribute_container<MAP::Vertex::ORBIT>().parallel_foreach_index( [&] (uint32 i)
 	{
 		QVector3D P = view.map(QVector3D(pos_in[i][0],pos_in[i][1],pos_in[i][2]));
@@ -368,14 +375,16 @@ void transform_position(const MAP& map, const typename MAP::template VertexAttri
  * @param indices1 embedding indices of vertices
  * @param indices2 embedding indices of faces
  */
-template <typename VEC3, typename MAP>
+template <typename MAP, typename VERTEX_ATTR>
 void create_indices_vertices_faces(
 	const MAP& m,
-	const typename MAP::template VertexAttribute<VEC3>& position,
+	const VERTEX_ATTR& position,
 	std::vector<uint32>& indices1,
 	std::vector<uint32>& indices2
 )
 {
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
 
@@ -402,7 +411,7 @@ void create_indices_vertices_faces(
 		}
 		else
 		{
-			cgogn::geometry::append_ear_triangulation<VEC3>(m, f, position, local_vert_indices);
+			cgogn::geometry::append_ear_triangulation(m, f, position, local_vert_indices);
 			for (uint32 i : local_vert_indices)
 			{
 				indices1.push_back(i);
@@ -412,18 +421,22 @@ void create_indices_vertices_faces(
 	});
 }
 
-template <typename VEC3, typename MAP>
-void add_to_drawer(const MAP& m, typename MAP::Edge e, const typename MAP::template VertexAttribute<VEC3>& position, DisplayListDrawer* dr)
+template <typename MAP, typename VERTEX_ATTR>
+void add_to_drawer(const MAP& m, typename MAP::Edge e, const VERTEX_ATTR& position, DisplayListDrawer* dr)
 {
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
 	using Vertex = typename MAP::Vertex;
 
 	dr->vertex3fv(position[Vertex(e.dart)]);
 	dr->vertex3fv(position[Vertex(m.phi1(e.dart))]);
 }
 
-template <typename VEC3, typename MAP>
-void add_to_drawer(const MAP& m, typename MAP::Face f, const typename MAP::template VertexAttribute<VEC3>& position, DisplayListDrawer* dr)
+template <typename MAP, typename VERTEX_ATTR>
+void add_to_drawer(const MAP& m, typename MAP::Face f, const VERTEX_ATTR& position, DisplayListDrawer* dr)
 {
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
 
@@ -434,9 +447,11 @@ void add_to_drawer(const MAP& m, typename MAP::Face f, const typename MAP::templ
 	});
 }
 
-template <typename VEC3, typename MAP>
-void add_to_drawer(const MAP& m, typename MAP::Volume vo, const typename MAP::template VertexAttribute<VEC3>& position, DisplayListDrawer* dr)
+template <typename MAP, typename VERTEX_ATTR>
+void add_to_drawer(const MAP& m, typename MAP::Volume vo, const VERTEX_ATTR& position, DisplayListDrawer* dr)
 {
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
 

@@ -20,22 +20,38 @@
 * Contact information: cgogn@unistra.fr                                        *
 *                                                                              *
 *******************************************************************************/
+#define CGOGN_TOPOLOGY_EXTERNAL_TEMPLATES_CPP_
 
-#define CGOGN_IO_MAP_IMPORT_CPP_
-
-#include <cgogn/io/map_import.h>
+#include <cgogn/topology/algos/distance_field.h>
+#include <cgogn/topology/algos/features.h>
+#include <cgogn/topology/algos/scalar_field.h>
 
 namespace cgogn
 {
 
-namespace io
+namespace topology
 {
-template CGOGN_IO_API void import_graph<Eigen::Vector3f>(UndirectedGraph&, const std::string&);
-template CGOGN_IO_API void import_graph<Eigen::Vector3d>(UndirectedGraph&, const std::string&);
-template CGOGN_IO_API void import_surface<Eigen::Vector3f>(CMap2&, const std::string&);
-template CGOGN_IO_API void import_surface<Eigen::Vector3d>(CMap2&, const std::string&);
-template CGOGN_IO_API void import_volume<Eigen::Vector3f>(CMap3&, const std::string&);
-template CGOGN_IO_API void import_volume<Eigen::Vector3d>(CMap3&, const std::string&);
-} // namespace io
+
+template class CGOGN_TOPOLOGY_API DistanceField<float32, CMap2>;
+template class CGOGN_TOPOLOGY_API DistanceField<float64, CMap2>;
+template class CGOGN_TOPOLOGY_API DistanceField<float32, CMap3>;
+template class CGOGN_TOPOLOGY_API DistanceField<float64, CMap3>;
+
+template class CGOGN_TOPOLOGY_API FeaturesFinder<float32, CMap2>;
+template class CGOGN_TOPOLOGY_API FeaturesFinder<float64, CMap2>;
+template class CGOGN_TOPOLOGY_API FeaturesFinder<float32, CMap3>;
+template class CGOGN_TOPOLOGY_API FeaturesFinder<float64, CMap3>;
+
+template class CGOGN_TOPOLOGY_API ScalarField<float32, CMap2>;
+template class CGOGN_TOPOLOGY_API ScalarField<float64, CMap2>;
+template class CGOGN_TOPOLOGY_API ScalarField<float32, CMap3>;
+template class CGOGN_TOPOLOGY_API ScalarField<float64, CMap3>;
+
+template class CGOGN_TOPOLOGY_API AdjacencyCache<CMap2>;
+template class CGOGN_TOPOLOGY_API AdjacencyCache<CMap3>;
+
+
+} // namespace topology
 
 } // namespace cgogn
+

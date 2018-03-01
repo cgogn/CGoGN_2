@@ -37,7 +37,7 @@ using namespace cgogn;
 using MapTypes = ::testing::Types<CMap2, CMap2Tri, CMap2Quad, CMap3, CMap3Tetra, CMap3Hexa>;
 
 template<typename Builder>
-void setup(Builder& builder)
+void setup(Builder&)
 {
 	cgogn_assert_not_reached("The setup() function has to be specialized.");
 }

@@ -453,7 +453,7 @@ public:
 		std::vector<Vertex> features;
 		compute_length(edge_metric_);
 
-		Vertex center = cgogn::geometry::central_vertex<Vec3, MAP>(map_, vertex_position_);
+		Vertex center = cgogn::geometry::central_vertex(map_, vertex_position_);
 		cgogn::topology::FeaturesFinder<Scalar, MAP> features_finder(map_, adjacency_cache_, edge_metric_);
 		features_finder.basic_features(center, features);
 
@@ -580,7 +580,7 @@ public:
 
 		if (dimension_ == 2u)
 		{
-			Vertex center = cgogn::geometry::central_vertex<Vec3, MAP>(map_, vertex_position_);
+			Vertex center = cgogn::geometry::central_vertex(map_, vertex_position_);
 			distance_field.distance_to_features({center}, scalar_field_);
 		}
 		else
@@ -604,7 +604,7 @@ public:
 		std::vector<Vertex> features;
 		compute_length(edge_metric_);
 
-		Vertex center = cgogn::geometry::central_vertex<Vec3, MAP>(map_, vertex_position_);
+		Vertex center = cgogn::geometry::central_vertex(map_, vertex_position_);
 		cgogn::topology::FeaturesFinder<Scalar, MAP> features_finder(map_, adjacency_cache_, edge_metric_);
 		features_finder.get_maximal_diameter(center, features);
 
@@ -651,7 +651,7 @@ public:
 		std::vector<Vertex> features;
 		compute_length(edge_metric_);
 
-		Vertex center = cgogn::geometry::central_vertex<Vec3, MAP>(map_, vertex_position_);
+		Vertex center = cgogn::geometry::central_vertex(map_, vertex_position_);
 		cgogn::topology::FeaturesFinder<Scalar, MAP> features_finder(map_, adjacency_cache_, edge_metric_);
 		features_finder.filtered_features(center, features_proximity, scalar_field_, features);
 
@@ -672,7 +672,7 @@ public:
 		std::vector<Vertex> features;
 		compute_length(edge_metric_);
 
-		Vertex center = cgogn::geometry::central_vertex<Vec3, MAP>(map_, vertex_position_);
+		Vertex center = cgogn::geometry::central_vertex(map_, vertex_position_);
 		cgogn::topology::FeaturesFinder<Scalar, MAP> features_finder(map_, adjacency_cache_, edge_metric_);
 		features_finder.filtered_features(center, features_proximity, scalar_field_, features);
 
@@ -695,7 +695,7 @@ public:
 		std::vector<Vertex> features;
 		compute_curvature<MAP>(edge_metric_);
 
-		Vertex center = cgogn::geometry::central_vertex<Vec3, MAP>(map_, vertex_position_);
+		Vertex center = cgogn::geometry::central_vertex(map_, vertex_position_);
 		cgogn::topology::FeaturesFinder<Scalar, MAP> features_finder(map_, adjacency_cache_, edge_metric_);
 		features_finder.filtered_features(center, features_proximity, scalar_field_, features);
 
@@ -714,7 +714,7 @@ public:
 		// Find features for the edge_metric
 		std::vector<Vertex> features;
 
-		Vertex center = cgogn::geometry::central_vertex<Vec3, MAP>(map_, vertex_position_);
+		Vertex center = cgogn::geometry::central_vertex(map_, vertex_position_);
 		cgogn::topology::FeaturesFinder<Scalar, MAP> features_finder(map_, adjacency_cache_);
 		features_finder.filtered_features(center, features_proximity, scalar_field_, features);
 
@@ -738,7 +738,7 @@ public:
 		std::vector<Vertex> features;
 		compute_length(edge_metric_);
 
-		Vertex center = cgogn::geometry::central_vertex<Vec3, MAP>(map_, vertex_position_);
+		Vertex center = cgogn::geometry::central_vertex(map_, vertex_position_);
 		cgogn::topology::FeaturesFinder<Scalar, MAP> features_finder(map_, adjacency_cache_, edge_metric_);
 		features_finder.filtered_features(center, features_proximity, scalar_field_, features);
 		edge_metric_normalize();
@@ -759,7 +759,7 @@ public:
 		std::vector<Vertex> features;
 		compute_curvature<MAP>(edge_metric_);
 
-		Vertex center = cgogn::geometry::central_vertex<Vec3, MAP>(map_, vertex_position_);
+		Vertex center = cgogn::geometry::central_vertex(map_, vertex_position_);
 		cgogn::topology::FeaturesFinder<Scalar, MAP> features_finder(map_, adjacency_cache_, edge_metric_);
 		features_finder.filtered_features(center, features_proximity, scalar_field_, features);
 
@@ -776,7 +776,7 @@ public:
 		// Find features for the edge_metric
 		std::vector<Vertex> features;
 
-		Vertex center = cgogn::geometry::central_vertex<Vec3, MAP>(map_, vertex_position_);
+		Vertex center = cgogn::geometry::central_vertex(map_, vertex_position_);
 		cgogn::topology::FeaturesFinder<Scalar, MAP> features_finder(map_, adjacency_cache_, edge_metric_);
 		features_finder.filtered_features(center, features_proximity, scalar_field_, features);
 
@@ -801,7 +801,7 @@ public:
 	{
 		map_.foreach_cell([&](Edge e)
 		{
-			length[e] = cgogn::geometry::length<Vec3>(map_, e, vertex_position_);
+			length[e] = cgogn::geometry::length(map_, e, vertex_position_);
 		});
 	}
 
@@ -821,14 +821,14 @@ public:
 
 		compute_length(length);
 
-		cgogn::geometry::compute_angle_between_face_normals<Vec3, MAP>(map_, vertex_position_, edgeangle);
-		cgogn::geometry::compute_incident_faces_area<Vec3, Edge, MAP>(map_, vertex_position_, edgeaera);
+		cgogn::geometry::compute_angle_between_face_normals(map_, vertex_position_, edgeangle);
+		cgogn::geometry::compute_incident_faces_area<Edge>(map_, vertex_position_, edgeaera);
 
-		Scalar meanEdgeLength = cgogn::geometry::mean_edge_length<Vec3>(map_, vertex_position_);
+		Scalar meanEdgeLength = cgogn::geometry::mean_edge_length(map_, vertex_position_);
 
 		Scalar radius = Scalar(2.0) * meanEdgeLength;
 
-		cgogn::geometry::compute_curvature<Vec3>(map_, radius, vertex_position_, vertex_normal, edgeangle,edgeaera,kmax,kmin,Kmax,Kmin,knormal);
+		cgogn::geometry::compute_curvature(map_, radius, vertex_position_, vertex_normal, edgeangle,edgeaera,kmax,kmin,Kmax,Kmin,knormal);
 
 		//compute kmean
 		VertexAttribute<Scalar> kmean = map_.template add_attribute<Scalar, Vertex>("kmean");

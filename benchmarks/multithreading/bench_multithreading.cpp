@@ -109,7 +109,7 @@ static void BENCH_faces_normals_single_threaded(benchmark::State& state)
 
 		bench_map.template foreach_cell<STRATEGY>([&] (Face f)
 		{
-			face_normal[f] = cgogn::geometry::normal<Vec3>(bench_map, f, vertex_position);
+			face_normal[f] = cgogn::geometry::normal(bench_map, f, vertex_position);
 		});
 	}
 }
@@ -130,7 +130,7 @@ static void BENCH_faces_normals_cache_single_threaded(benchmark::State& state)
 
 		bench_map.foreach_cell([&] (Face f)
 		{
-			face_normal[f] = cgogn::geometry::normal<Vec3>(bench_map, f, vertex_position);
+			face_normal[f] = cgogn::geometry::normal(bench_map, f, vertex_position);
 		},
 		cache);
 	}
@@ -150,7 +150,7 @@ static void BENCH_faces_normals_multi_threaded(benchmark::State& state)
 
 		bench_map.template parallel_foreach_cell<STRATEGY>([&] (Face f)
 		{
-			face_normal_mt[f] = cgogn::geometry::normal<Vec3>(bench_map, f, vertex_position);
+			face_normal_mt[f] = cgogn::geometry::normal(bench_map, f, vertex_position);
 		});
 
 		{
@@ -189,7 +189,7 @@ static void BENCH_faces_normals_cache_multi_threaded(benchmark::State& state)
 
 		bench_map.parallel_foreach_cell([&] (Face f)
 		{
-			face_normal[f] = cgogn::geometry::normal<Vec3>(bench_map, f, vertex_position);
+			face_normal[f] = cgogn::geometry::normal(bench_map, f, vertex_position);
 		},
 		cache);
 	}
@@ -210,7 +210,7 @@ static void BENCH_vertices_normals_single_threaded(benchmark::State& state)
 
 		bench_map.template foreach_cell<STRATEGY>([&] (Vertex v)
 		{
-			vertices_normal[v] = cgogn::geometry::normal<Vec3>(bench_map, v, vertex_position);
+			vertices_normal[v] = cgogn::geometry::normal(bench_map, v, vertex_position);
 		});
 	}
 }
@@ -231,7 +231,7 @@ static void BENCH_vertices_normals_cache_single_threaded(benchmark::State& state
 
 		bench_map.foreach_cell([&] (Vertex v)
 		{
-			vertices_normal[v] = cgogn::geometry::normal<Vec3>(bench_map, v, vertex_position);
+			vertices_normal[v] = cgogn::geometry::normal(bench_map, v, vertex_position);
 		},
 		cache);
 	}
@@ -251,7 +251,7 @@ static void BENCH_vertices_normals_multi_threaded(benchmark::State& state)
 
 		bench_map.template parallel_foreach_cell<STRATEGY>([&] (Vertex v)
 		{
-			vertices_normal_mt[v] = cgogn::geometry::normal<Vec3>(bench_map, v, vertex_position);
+			vertices_normal_mt[v] = cgogn::geometry::normal(bench_map, v, vertex_position);
 		});
 
 		{
@@ -290,7 +290,7 @@ static void BENCH_vertices_normals_cache_multi_threaded(benchmark::State& state)
 
 		bench_map.parallel_foreach_cell([&] (Vertex v)
 		{
-			vertices_normal_mt[v] = cgogn::geometry::normal<Vec3>(bench_map, v, vertex_position);
+			vertices_normal_mt[v] = cgogn::geometry::normal(bench_map, v, vertex_position);
 		},
 		cache);
 
