@@ -50,6 +50,8 @@ public:
 
 	QOpenGLTexture* texture_;
 
+	float32 italic_;
+
 	ShaderParamText(ShaderText* sh);
 
 	void set_vbo(VBO* vbo_pos, VBO* vbo_str, VBO* vbo_colsize);
@@ -59,6 +61,7 @@ class CGOGN_RENDERING_API ShaderText : public ShaderProgram
 {
 	static const char* vertex_shader_source_;
 	static const char* fragment_shader_source_;
+	GLint unif_italic_;
 
 public:
 
@@ -75,15 +78,13 @@ public:
 	 * @brief generate shader parameter object
 	 * @return pointer
 	 */
-	inline static std::unique_ptr<Param> generate_param()
-	{
-		if (!instance_)
-		{
-			instance_ = new ShaderText();
-			ShaderProgram::register_instance(instance_);
-		}
-		return cgogn::make_unique<Param>(instance_);
-	}
+	static std::unique_ptr<Param> generate_param();
+
+	/**
+	 * @brief set_italic
+	 * @param i %
+	 */
+	void set_italic(float32 i);
 
 protected:
 	ShaderText();

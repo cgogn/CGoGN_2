@@ -181,6 +181,7 @@ TextDrawer::Renderer::Renderer(TextDrawer* tr) :
 {
 	param_text_ = ShaderText::generate_param();
 	param_text_->texture_ = text_drawer_data_->texture_;
+	param_text_->italic_ = 0;
 	param_text_->set_vbo(text_drawer_data_->vbo_pos_.get(), text_drawer_data_->vbo_char_.get(), text_drawer_data_->vbo_colsz_.get());
 }
 

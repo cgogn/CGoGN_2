@@ -134,15 +134,28 @@ public:
 	void scale_text(float sc);
 
 
+
+
 	class CGOGN_RENDERING_API Renderer
 	{
 		friend class TextDrawer;
 		std::unique_ptr<ShaderText::Param> param_text_;
 		TextDrawer* text_drawer_data_;
 		Renderer(TextDrawer* td);
+
 	public:
 		~Renderer();
+
 		void draw(const QMatrix4x4& projection, const QMatrix4x4& modelview);
+
+		/**
+		 * @brief set italic %
+		 * @param it [0, 0.5]
+		 */
+		void inline set_italic(float32 it)
+		{
+			param_text_->italic_ = it;
+		}
 	};
 
 	/**

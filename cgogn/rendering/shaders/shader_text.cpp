@@ -41,6 +41,7 @@ const char* ShaderText::vertex_shader_source_ =
 "in vec4 colsz_in;\n"
 "uniform mat4 projection_matrix;\n"
 "uniform mat4 model_view_matrix;\n"
+"uniform vec4 italic;\n"
 "out vec2 tc;\n"
 "out vec3 color;\n"
 "const vec2 quad[4] = vec2[](vec2(-0.5,-1.0),vec2(0.5,-1.0),vec2(0.5,1.0),vec2(-0.5,1.));\n"
@@ -51,7 +52,7 @@ const char* ShaderText::vertex_shader_source_ =
 "	float size = colsz_in.w;\n"
 "   vec4 P4 = model_view_matrix * vec4(vertex_in.xyz,1.0);\n"
 "   P4[0] += size*vertex_in.w;\n"
-"   P4 += vec4(size*quad[gl_VertexID],0,0);\n"
+"   P4 += vec4(size*(quad[gl_VertexID]+italic[gl_VertexID]),0,0);\n"
 "	tc = vec2( char_in + tc_u[gl_VertexID], tc_v[gl_VertexID]);\n"
 "   gl_Position = projection_matrix * P4;\n"
 "	color = colsz_in.rgb;\n"
@@ -83,11 +84,27 @@ ShaderText::ShaderText()
 
 	prg_.link();
 	get_matrices_uniforms();
+	unif_italic_ = prg_.uniformLocation("italic");
 	bind();
 	prg_.setUniformValue("texture_unit", 0);
+	set_italic(0);
 	release();
 }
 
+void ShaderText::set_italic(float32 i)
+{
+		prg_.setUniformValue(unif_italic_, QVector4D(-i,-i,i,i));
+}
+
+std::unique_ptr<ShaderText::Param> ShaderText::generate_param()
+{
+	if (!instance_)
+	{
+		instance_ = new ShaderText();
+		ShaderProgram::register_instance(instance_);
+	}
+	return cgogn::make_unique<ShaderText::Param>(instance_);
+}
 
 ShaderParamText::ShaderParamText(ShaderText* sh) :
 	ShaderParam(sh),
@@ -101,6 +118,10 @@ void ShaderParamText::set_uniforms()
 		QOpenGLContext::currentContext()->functions()->glActiveTexture(GL_TEXTURE0);
 		texture_->bind();
 	}
+
+	ShaderText* sh = static_cast<ShaderText*>(this->shader_);
+	sh->set_italic(italic_);
+
 }
 
 void ShaderParamText::set_vbo(VBO* vbo_pos, VBO* vbo_char, VBO* vbo_colsize)

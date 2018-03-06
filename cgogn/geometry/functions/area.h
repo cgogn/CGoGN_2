@@ -35,7 +35,7 @@ namespace geometry
 /**
  * area of the triangle formed by 3 points in 3D
  */
-template <typename VEC3a, typename VEC3b, typename VEC3c, bool B=true>
+template <typename VEC3a, typename VEC3b, typename VEC3c>
 inline auto area(const Eigen::MatrixBase<VEC3a>& p1, const Eigen::MatrixBase<VEC3b>& p2, const Eigen::MatrixBase<VEC3c>& p3)
 -> typename std::enable_if <is_dim_of<VEC3a, 3>::value, ScalarOf<VEC3a>>::type
 {
@@ -48,7 +48,7 @@ inline auto area(const Eigen::MatrixBase<VEC3a>& p1, const Eigen::MatrixBase<VEC
 /**
  * area of the triangle formed by 3 points in 2D
  */
-template <typename VEC2a, typename VEC2b, typename VEC2c, bool B=true>
+template <typename VEC2a, typename VEC2b, typename VEC2c>
 inline auto area(const Eigen::MatrixBase<VEC2a>& p1, const Eigen::MatrixBase<VEC2b>& p2, const Eigen::MatrixBase<VEC2c>& p3)
 -> typename std::enable_if <is_dim_of<VEC2a, 2>::value, ScalarOf<VEC2a>>::type
 {
