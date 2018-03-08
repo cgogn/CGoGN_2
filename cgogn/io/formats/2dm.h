@@ -101,7 +101,7 @@ protected:
 			getline_safe(fp, line);
 		} while (!fp.eof());
 
-		this->reserve(vertices_id.size() * 2);
+		this->reserve(uint32(vertices_id.size()) * 2);
 
         // lecture des faces TRI
 
@@ -176,12 +176,12 @@ protected:
 	}
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_FORMATS_2DM_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
 extern template class CGOGN_IO_API SMS2DMSurfaceImport<CMap2, Eigen::Vector3d>;
 extern template class CGOGN_IO_API SMS2DMSurfaceImport<CMap2, Eigen::Vector3f>;
 extern template class CGOGN_IO_API SMS2DMSurfaceImport<CMap2, geometry::Vec_T<std::array<float64, 3>>>;
 extern template class CGOGN_IO_API SMS2DMSurfaceImport<CMap2, geometry::Vec_T<std::array<float32, 3>>>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_FORMATS_2DM_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace io
 

@@ -226,7 +226,7 @@ void update_vbo(const std::vector<VEC>& vector, VBO* vbo)
 template <typename ATTR>
 void update_vbo(const ATTR& attr, VBO* vbo)
 {
-	using Scalar = typename geometry::vector_traits<typename ATTR::value_type>::Scalar;
+	using Scalar = geometry::ScalarOf<InsideTypeOf<ATTR>>;
 	static_assert(std::is_same<Scalar, float32>::value || std::is_same<Scalar, float64>::value, "only float or double allowed for vbo");
 
 	const typename ATTR::TChunkArray* ca = attr.data();
@@ -238,14 +238,14 @@ void update_vbo(const ATTR& attr, VBO* vbo)
 	std::vector<const void*> chunk_addr = ca->chunks_pointers(byte_chunk_size);
 	const uint32 nb_chunks = uint32(chunk_addr.size());
 
-	const uint32 vec_dim = geometry::vector_traits<typename ATTR::value_type>::SIZE;
+	const uint32 vec_dim = geometry::vector_traits<InsideTypeOf<ATTR>>::SIZE;
 
 	vbo->allocate(nb_chunks * ATTR::CHUNK_SIZE, vec_dim);
 
 	const uint32 vbo_blk_bytes = ATTR::CHUNK_SIZE * vec_dim * sizeof(float32);
 
 	// handle the case where we want to use SIMD with Eigen::AlignedVector3
-	if (std::is_same<typename ATTR::value_type, Eigen::AlignedVector3<Scalar>>::value)
+	if (std::is_same<InsideTypeOf<ATTR>, Eigen::AlignedVector3<Scalar>>::value)
 	{
 		// copy (after conversion to float)
 		float32* float_buffer = new float32[ATTR::CHUNK_SIZE * vec_dim];

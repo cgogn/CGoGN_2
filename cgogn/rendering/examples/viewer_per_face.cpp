@@ -104,7 +104,7 @@ void Viewer::import(const std::string& surfaceMesh)
 	vertex_position_ = map_.template get_attribute<Vec3, Map2::Vertex>("position");
 	face_normal_ = map_.template add_attribute<Vec3, Map2::Face>("normal");
 
-	cgogn::geometry::compute_normal<Vec3>(map_, vertex_position_, face_normal_);
+	cgogn::geometry::compute_normal(map_, vertex_position_, face_normal_);
 	cgogn::geometry::compute_AABB(vertex_position_, bb_);
 
 	setSceneRadius(bb_.diag_size()/2.0);
@@ -195,7 +195,7 @@ void Viewer::init()
 	std::vector<uint32> ind_f;
 
 	// create indices ( need to be done only after topo modifications
-	cgogn::rendering::create_indices_vertices_faces<Vec3>(map_,vertex_position_,ind_v,ind_f);
+	cgogn::rendering::create_indices_vertices_faces(map_,vertex_position_,ind_v,ind_f);
 
 	// generate VBO: positions
 	cgogn::rendering::generate_vbo(vertex_position_, ind_v, vbo_pos_.get(), [] (const Vec3& v) -> std::array<float32,3>

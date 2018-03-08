@@ -134,8 +134,8 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			v0 = cgogn::modeling::generate_curve<Vec3>(map_,
 											 vertex_position_,
 											 200,
-											 0.,
-											 10.*M_PI,
+											 0,
+											 float32(10*M_PI),
 											 [&](float32 t){return Vec3(t*std::cos(t),t*std::sin(t),t); });
 		}
 			break;
@@ -147,8 +147,8 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			v0 = cgogn::modeling::generate_curve<Vec3>(map_,
 											 vertex_position_,
 											 200,
-											 0.,
-											 4.*M_PI,
+											 0,
+											 float32(4*M_PI),
 											 [&](float32 t){return Vec3(std::sin(2*t),std::cos(t),t); });
 		}
 			break;
@@ -160,8 +160,8 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			v0 = cgogn::modeling::generate_curve<Vec3>(map_,
 											 vertex_position_,
 											 200,
-											 0.,
-											 10.*M_PI,
+											 0,
+											 float32(10*M_PI),
 											 [&](float32 t){return Vec3(std::cos(t),std::sin(t),t); });
 		}
 			break;
@@ -186,8 +186,8 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			v0 = cgogn::modeling::generate_curve<Vec3>(map_,
 											 vertex_position_,
 											 200,
-											 0.,
-											 10.*M_PI,
+											 0,
+											 float32(10*M_PI),
 											 [&](float32 t){return Vec3(t,t*std::cos(t),t*std::sin(t)); });
 		}
 			break;
@@ -199,8 +199,8 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			v0 = cgogn::modeling::generate_curve<Vec3>(map_,
 											 vertex_position_,
 											 200,
-											 0.,
-											 2.*M_PI,
+											 0,
+											 float32(2*M_PI),
 											 [&](float32 t){return Vec3(3.*std::cos(t)+std::cos(10.*t)*std::cos(t),
 																		3.*std::sin(t)+std::cos(10.*t)*std::sin(t),
 																		std::sin(10.*t)); });
@@ -214,8 +214,8 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			v0 = cgogn::modeling::generate_curve<Vec3>(map_,
 											 vertex_position_,
 											 200,
-											 0.,
-											 2.*M_PI,
+											 0,
+											 float32(2*M_PI),
 											 [&](float32 t){return Vec3(t*std::cos(t), t, t*std::cos(t)); });
 		}
 			break;
@@ -227,8 +227,8 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			v0 = cgogn::modeling::generate_curve<Vec3>(map_,
 											 vertex_position_,
 											 200,
-											 0.,
-											 2.*M_PI,
+											 0,
+											 float32(2*M_PI),
 											 [&](float32 t){return Vec3(5.*std::cos(t)-std::cos(5.*t), 5.*std::sin(t)-std::sin(5.*t), t); });
 		}
 			break;
@@ -240,9 +240,9 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			v0 = cgogn::modeling::generate_curve<Vec3>(map_,
 											 vertex_position_,
 											 200,
-											 0.,
-											 2.*M_PI,
-											 [&](float32 t){return Vec3(2.*std::sin(3.*t)*std::cos(t), 2.*std::sin(3.*t)*std::sin(t), 0.); });
+											 0,
+											 float32(2*M_PI),
+											 [&](float32 t){return Vec3(2.*std::sin(3.*t)*std::cos(t), 2.*std::sin(3.*t)*std::sin(t), 0); });
 		}
 			break;
 		case Qt::Key_9:
@@ -253,8 +253,8 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			v0 = cgogn::modeling::generate_curve<Vec3>(map_,
 											 vertex_position_,
 											 200,
-											 0.,
-											 2.*M_PI,
+											 0,
+											 float32(2*M_PI),
 											 [&](float32 t){return Vec3(2.*std::sin(3.*t)*std::cos(t), 2.*std::sin(3.*t)*std::sin(t), std::sin(3.*t)); });
 		}
 			break;
@@ -272,7 +272,7 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 		drawer_->vertex3fv(vertex_position_[v]);
 	});
 	drawer_->end();
-	drawer_->line_width_aa(0.8);
+	drawer_->line_width_aa(0.8f);
 	drawer_->begin(GL_LINES);
 	drawer_->color3f(0.0,0.0,0.0);
 	map_.foreach_cell([&](UndirectedGraph::Edge e)
@@ -330,7 +330,7 @@ void Viewer::init()
 			drawer_->vertex3fv(vertex_position_[v]);
 		});
 		drawer_->end();
-		drawer_->line_width_aa(0.8);
+		drawer_->line_width_aa(0.8f);
 		drawer_->begin(GL_LINES);
 		drawer_->color3f(0.0,0.0,0.0);
 		map_.foreach_cell([&](UndirectedGraph::Edge e)

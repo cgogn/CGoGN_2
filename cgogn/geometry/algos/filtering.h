@@ -33,15 +33,18 @@ namespace cgogn
 namespace geometry
 {
 
-template <typename T, typename MAP, typename MASK>
+template <typename MAP, typename MASK, typename VERTEX_ATTR>
 void filter_average(
 	const MAP& map,
 	const MASK& mask,
-	const typename MAP::template VertexAttribute<T>& attribute_in,
-	typename MAP::template VertexAttribute<T>& attribute_out
+	const VERTEX_ATTR& attribute_in,
+	VERTEX_ATTR& attribute_out
 )
 {
-	using Scalar = typename vector_traits<T>::Scalar;
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"attribute_in & attribute_out must be a vertex attribute");
+
+	using T = InsideTypeOf<VERTEX_ATTR>;
+	using Scalar = ScalarOf<T>;
 	using Vertex = typename MAP::Vertex;
 
 	map.parallel_foreach_cell([&] (Vertex v)
@@ -59,26 +62,31 @@ void filter_average(
 	mask);
 }
 
-template <typename T, typename MAP>
+template <typename MAP, typename VERTEX_ATTR>
 void filter_average(
 	const MAP& map,
-	const typename MAP::template VertexAttribute<T>& attribute_in,
-	typename MAP::template VertexAttribute<T>& attribute_out
+	const VERTEX_ATTR& attribute_in,
+	VERTEX_ATTR& attribute_out
 )
 {
-	filter_average<T>(map, AllCellsFilter(), attribute_in, attribute_out);
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"attribute_in & attribute_out must be a vertex attribute");
+
+	filter_average(map, AllCellsFilter(), attribute_in, attribute_out);
 }
 
-template <typename VEC3, typename MAP, typename MASK>
+template <typename MAP, typename MASK, typename VERTEX_ATTR>
 void filter_bilateral(
 	const MAP& map,
 	const MASK& mask,
-	const typename MAP::template VertexAttribute<VEC3>& position_in,
-	typename MAP::template VertexAttribute<VEC3>& position_out,
-	const typename MAP::template VertexAttribute<VEC3>& normal
+	const VERTEX_ATTR& position_in,
+	VERTEX_ATTR& position_out,
+	const VERTEX_ATTR& normal
 )
 {
-	using Scalar = typename vector_traits<VEC3>::Scalar;
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position_in, position_out & normal must be a vertex attribute");
+
+	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
+	using Scalar = ScalarOf<VEC3>;
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
 
@@ -119,25 +127,30 @@ void filter_bilateral(
 	mask);
 }
 
-template <typename VEC3, typename MAP>
+
+template <typename MAP, typename VERTEX_ATTR>
 void filter_bilateral(
 	const MAP& map,
-	const typename MAP::template VertexAttribute<VEC3>& position_in,
-	typename MAP::template VertexAttribute<VEC3>& position_out,
-	const typename MAP::template VertexAttribute<VEC3>& normal
+	const VERTEX_ATTR& position_in,
+	VERTEX_ATTR& position_out,
+	const VERTEX_ATTR& normal
 )
 {
-	filter_bilateral<VEC3>(map, AllCellsFilter(), position_in, position_out, normal);
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position_in, position_out & normal must be a vertex attribute");
+	filter_bilateral(map, AllCellsFilter(), position_in, position_out, normal);
 }
 
-template <typename VEC3, typename MAP, typename MASK>
+template <typename MAP, typename MASK, typename VERTEX_ATTR>
 void filter_taubin(
 	const MAP& map,
 	const MASK& mask,
-	typename MAP::template VertexAttribute<VEC3>& position,
-	typename MAP::template VertexAttribute<VEC3>& position_tmp)
+	VERTEX_ATTR& position,
+	VERTEX_ATTR& position_tmp)
 {
-	using Scalar = typename vector_traits<VEC3>::Scalar;
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position & position_tmp must be a vertex attribute");
+
+	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
+	using Scalar = ScalarOf<VEC3>;
 	using Vertex = typename MAP::Vertex;
 
 	const Scalar lambda = 0.6307;
@@ -176,14 +189,15 @@ void filter_taubin(
 	mask);
 }
 
-template <typename VEC3, typename MAP>
+template <typename MAP, typename VERTEX_ATTR>
 void filter_taubin(
 	const MAP& map,
-	typename MAP::template VertexAttribute<VEC3>& position,
-	typename MAP::template VertexAttribute<VEC3>& position_tmp
+	VERTEX_ATTR& position,
+	VERTEX_ATTR& position_tmp
 )
 {
-	filter_taubin<VEC3>(map, AllCellsFilter(), position, position_tmp);
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position & position_tmp must be a vertex attribute");
+	filter_taubin(map, AllCellsFilter(), position, position_tmp);
 }
 
 } // namespace geometry

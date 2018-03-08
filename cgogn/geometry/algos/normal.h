@@ -40,14 +40,17 @@ namespace cgogn
 namespace geometry
 {
 
-template <typename VEC3, typename MAP>
-inline VEC3 normal(
+template <typename MAP, typename VERTEX_ATTR>
+InsideTypeOf<VERTEX_ATTR> normal(
 	const MAP& map,
 	Cell<Orbit::PHI1> f,
-	const typename MAP::template VertexAttribute<VEC3>& position
+	const VERTEX_ATTR& position
 )
 {
-	using Scalar = typename vector_traits<VEC3>::Scalar;
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
+	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
+	using Scalar = ScalarOf<VEC3>;
 	using Vertex = typename MAP::Vertex;
 
 	if (map.codegree(f) == 3)
@@ -76,41 +79,48 @@ inline VEC3 normal(
 	}
 }
 
-template <typename VEC3, typename MAP>
-inline VEC3 normal(
+
+template <typename MAP, typename VERTEX_ATTR>
+inline InsideTypeOf<VERTEX_ATTR> normal(
 	const MAP& map,
 	Cell<Orbit::PHI21> v,
-	const typename MAP::template VertexAttribute<VEC3>& position
+	const VERTEX_ATTR& position
 )
 {
-	using Scalar = typename vector_traits<VEC3>::Scalar;
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
+	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
+	using Scalar = ScalarOf<VEC3>;
 	using Vertex = typename MAP::Vertex;
 
 	VEC3 n{Scalar{0}, Scalar{0}, Scalar{0}};
 	const VEC3& p = position[Vertex(v.dart)];
 	map.foreach_incident_face(v, [&] (Cell<Orbit::PHI1> f)
 	{
-		VEC3 face_normal = normal<VEC3>(map, f, position);
+		VEC3 face_normal = normal(map, f, position);
 		const VEC3& p1 = position[Vertex(map.phi1(f.dart))];
 		const VEC3& p2 = position[Vertex(map.phi_1(f.dart))];
 		const Scalar l = (p1-p).squaredNorm() * (p2-p).squaredNorm();
 		if (l != Scalar(0))
-			face_normal *= convex_area<VEC3>(map, f, position) / l;
+			face_normal *= convex_area(map, f, position) / l;
 		n += face_normal;
 	});
 	normalize_safe(n);
 	return n;
 }
 
-template <typename VEC3, typename MAP>
-inline VEC3 normal(
+template <typename MAP, typename VERTEX_ATTR>
+inline InsideTypeOf<VERTEX_ATTR> normal(
 	const MAP& map,
 	Cell<Orbit::PHI21> v,
-	const typename MAP::template VertexAttribute<VEC3>& position,
-	const Attribute<VEC3, Orbit::PHI1>& face_normal
+	const VERTEX_ATTR& position,
+	const Attribute<InsideTypeOf<VERTEX_ATTR>, Orbit::PHI1>& face_normal
 )
 {
-	using Scalar = typename vector_traits<VEC3>::Scalar;
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
+	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
+	using Scalar = ScalarOf<VEC3>;
 	using Vertex = typename MAP::Vertex;
 
 	VEC3 n{Scalar{0}, Scalar{0}, Scalar{0}};
@@ -129,81 +139,98 @@ inline VEC3 normal(
 	return n;
 }
 
-template <typename VEC3, typename MAP, typename MASK>
+
+template <typename MAP, typename VERTEX_ATTR, typename MASK>
 inline void compute_normal(
 	const MAP& map,
 	const MASK& mask,
-	const typename MAP::template VertexAttribute<VEC3>& position,
-	Attribute<VEC3, Orbit::PHI1>& face_normal
+	const VERTEX_ATTR& position,
+	Attribute<InsideTypeOf<VERTEX_ATTR>, Orbit::PHI1>& face_normal
 )
 {
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
 	map.parallel_foreach_cell([&] (Cell<Orbit::PHI1> f)
 	{
-		face_normal[f] = normal<VEC3>(map, f, position);
+		face_normal[f] = normal(map, f, position);
 	},
 	mask);
 }
 
-template <typename VEC3, typename MAP>
+
+template <typename MAP, typename VERTEX_ATTR>
 inline void compute_normal(
 	const MAP& map,
-	const typename MAP::template VertexAttribute<VEC3>& position,
-	Attribute<VEC3, Orbit::PHI1>& face_normal
+	const VERTEX_ATTR& position,
+	Attribute<InsideTypeOf<VERTEX_ATTR>, Orbit::PHI1>& face_normal
 )
 {
-	compute_normal<VEC3>(map, AllCellsFilter(), position, face_normal);
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
+	compute_normal(map, AllCellsFilter(), position, face_normal);
 }
 
-template <typename VEC3, typename MAP, typename MASK>
+template <typename MAP, typename VERTEX_ATTR, typename MASK>
 inline void compute_normal(
 	const MAP& map,
 	const MASK& mask,
-	const typename MAP::template VertexAttribute<VEC3>& position,
-	Attribute<VEC3, Orbit::PHI21>& vertex_normal
+	const VERTEX_ATTR& position,
+	Attribute<InsideTypeOf<VERTEX_ATTR>, Orbit::PHI21>& vertex_normal
 )
 {
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
 	map.parallel_foreach_cell([&] (Cell<Orbit::PHI21> v)
 	{
-		vertex_normal[v] = normal<VEC3>(map, v, position);
+		vertex_normal[v] = normal(map, v, position);
 	},
 	mask);
 }
 
-template <typename VEC3, typename MAP>
+
+template <typename MAP, typename VERTEX_ATTR>
 inline void compute_normal(
 	const MAP& map,
-	const typename MAP::template VertexAttribute<VEC3>& position,
-	Attribute<VEC3, Orbit::PHI21>& vertex_normal
+	const VERTEX_ATTR& position,
+	Attribute<InsideTypeOf<VERTEX_ATTR>, Orbit::PHI21>& vertex_normal
 )
 {
-	compute_normal<VEC3>(map, AllCellsFilter(), position, vertex_normal);
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
+	compute_normal(map, AllCellsFilter(), position, vertex_normal);
 }
 
-template <typename VEC3, typename MAP, typename MASK>
+
+template <typename MAP, typename VERTEX_ATTR, typename MASK>
 inline void compute_normal(
 	const MAP& map,
 	const MASK& mask,
-	const typename MAP::template VertexAttribute<VEC3>& position,
-	const Attribute<VEC3, Orbit::PHI1>& face_normal,
-	Attribute<VEC3, Orbit::PHI21>& vertex_normal
+	const VERTEX_ATTR& position,
+	const Attribute<InsideTypeOf<VERTEX_ATTR>, Orbit::PHI1>& face_normal,
+	Attribute<InsideTypeOf<VERTEX_ATTR>, Orbit::PHI21>& vertex_normal
 )
 {
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
 	map.parallel_foreach_cell([&] (Cell<Orbit::PHI21> v)
 	{
-		vertex_normal[v] = normal<VEC3>(map, v, position, face_normal);
+		vertex_normal[v] = normal(map, v, position, face_normal);
 	},
 	mask);
 }
 
-template <typename VEC3, typename MAP>
+
+template <typename MAP, typename VERTEX_ATTR>
 inline void compute_normal(
 	const MAP& map,
-	const typename MAP::template VertexAttribute<VEC3>& position,
-	const Attribute<VEC3, Orbit::PHI1>& face_normal,
-	Attribute<VEC3, Orbit::PHI21>& vertex_normal
+	const VERTEX_ATTR& position,
+	const Attribute<InsideTypeOf<VERTEX_ATTR>, Orbit::PHI1>& face_normal,
+	Attribute<InsideTypeOf<VERTEX_ATTR>, Orbit::PHI21>& vertex_normal
 )
 {
-	compute_normal<VEC3>(map, AllCellsFilter(), position, face_normal, vertex_normal);
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
+	compute_normal(map, AllCellsFilter(), position, face_normal, vertex_normal);
 }
 
 } // namespace geometry

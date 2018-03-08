@@ -73,7 +73,7 @@ void bench_vec_direct(CMap2& cmap, VertexAttribute<Vec3>& vertex_position, int32
 			for (auto& att : va)
 				vertex_position[vi] += att[vi];
 		}
-		vertex_position[vi] /= va.size() + 1;
+		vertex_position[vi] /= double(va.size() + 1);
 	}
 
 	std::chrono::time_point<std::chrono::system_clock> end = std::chrono::system_clock::now();
@@ -103,7 +103,7 @@ void bench_vec_get_index(CMap2& cmap, VertexAttribute<Vec3>& vertex_position, in
 			for (auto& att : va)
 				vertex_position[vi] += att[vi];
 		}
-		vertex_position[vi] /= va.size() + 1;
+		vertex_position[vi] /= double(va.size() + 1);
 	});
 
 	std::chrono::time_point<std::chrono::system_clock> end = std::chrono::system_clock::now();
@@ -131,7 +131,7 @@ void bench_vec_cell(CMap2& cmap, VertexAttribute<Vec3>& vertex_position, int32 n
 			for (auto& att : va)
 				vertex_position[v] += att[v];
 		}
-		vertex_position[v] /= va.size() + 1;
+		vertex_position[v] /= double(va.size() + 1);
 	});
 
 	std::chrono::time_point<std::chrono::system_clock> end = std::chrono::system_clock::now();
@@ -162,7 +162,7 @@ void bench_mat_direct(CMap2& cmap, VertexAttribute<Mat4>& vertex_matrice, int32 
 			for (auto& att : va)
 				vertex_matrice[vi] -= att[vi];
 		}
-		vertex_matrice[vi] /= va.size() + 1;
+		vertex_matrice[vi] /= double(va.size() + 1);
 	};
 
 	std::chrono::time_point<std::chrono::system_clock> end = std::chrono::system_clock::now();
@@ -192,7 +192,7 @@ void bench_mat_get_index(CMap2& cmap, VertexAttribute<Mat4>& vertex_matrice, int
 			for (auto& att : va)
 				vertex_matrice[vi] -= att[vi];
 		}
-		vertex_matrice[vi] /= va.size() + 1;
+		vertex_matrice[vi] /= double(va.size() + 1);
 	});
 
 	std::chrono::time_point<std::chrono::system_clock> end = std::chrono::system_clock::now();
@@ -221,7 +221,7 @@ void bench_mat_cell(CMap2& cmap, VertexAttribute<Mat4>& vertex_matrice, int32 nb
 			for (auto& att : va)
 				vertex_matrice[v] -= att[v];
 		}
-		vertex_matrice[v] /= va.size() + 1;
+		vertex_matrice[v] /= double(va.size() + 1);
 	});
 
 	std::chrono::time_point<std::chrono::system_clock> end = std::chrono::system_clock::now();
@@ -253,7 +253,7 @@ void bench_parallel_vec_direct(CMap2& cmap, VertexAttribute<Vec3>& vertex_positi
 			for (auto& att : va)
 				vertex_position[vi] += att[vi];
 		}
-		vertex_position[vi] /= va.size() + 1;
+		vertex_position[vi] /= double(va.size() + 1);
 	});
 
 	std::chrono::time_point<std::chrono::system_clock> end = std::chrono::system_clock::now();
@@ -283,7 +283,7 @@ void bench_parallel_vec_get_index(CMap2& cmap, VertexAttribute<Vec3>& vertex_pos
 			for (auto& att : va)
 				vertex_position[vi] += att[vi];
 		}
-		vertex_position[vi] /= va.size() + 1;
+		vertex_position[vi] /= double(va.size() + 1);
 	});
 
 	std::chrono::time_point<std::chrono::system_clock> end = std::chrono::system_clock::now();
@@ -311,7 +311,7 @@ void bench_parallel_vec_cell(CMap2& cmap, VertexAttribute<Vec3>& vertex_position
 			for (auto& att : va)
 				vertex_position[v] += att[v];
 		}
-		vertex_position[v] /= va.size() + 1;
+		vertex_position[v] /= double(va.size() + 1);
 	});
 
 	std::chrono::time_point<std::chrono::system_clock> end = std::chrono::system_clock::now();
@@ -340,7 +340,7 @@ void bench_parallel_mat_direct(CMap2& cmap, VertexAttribute<Mat4>& vertex_matric
 			for (auto& att : va)
 				vertex_matrice[vi] -= att[vi];
 		}
-		vertex_matrice[vi] /= va.size() + 1;
+		vertex_matrice[vi] /= double(va.size() + 1);
 	});
 
 	std::chrono::time_point<std::chrono::system_clock> end = std::chrono::system_clock::now();
@@ -370,7 +370,7 @@ void bench_parallel_mat_get_index(CMap2& cmap, VertexAttribute<Mat4>& vertex_mat
 			for (auto& att : va)
 				vertex_matrice[vi] -= att[vi];
 		}
-		vertex_matrice[vi] /= va.size() + 1;
+		vertex_matrice[vi] /= double(va.size() + 1);
 	});
 
 	std::chrono::time_point<std::chrono::system_clock> end = std::chrono::system_clock::now();
@@ -399,7 +399,7 @@ void bench_parallel_mat_cell(CMap2& cmap, VertexAttribute<Mat4>& vertex_matrice,
 			for (auto& att : va)
 				vertex_matrice[v] -= att[v];
 		}
-		vertex_matrice[v] /= va.size() + 1;
+		vertex_matrice[v] /= double(va.size() + 1);
 	});
 
 	std::chrono::time_point<std::chrono::system_clock> end = std::chrono::system_clock::now();

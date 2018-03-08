@@ -103,17 +103,20 @@ public:
 		return std::unique_ptr<Renderer>(new Renderer(this));
 	}
 
-	template <typename VEC3, typename MAP>
-	void update_face(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position);
+	template <typename MAP, typename VERTEX_ATTR>
+	void update_face(const MAP& m, const VERTEX_ATTR& position);
 };
 
 
 
 
 
-template <typename VEC3, typename MAP>
-void VolumeTransparencyDrawer::update_face(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position)
+template <typename MAP, typename VERTEX_ATTR>
+void VolumeTransparencyDrawer::update_face(const MAP& m, const VERTEX_ATTR& position)
 {
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
+	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
 	using Volume = typename MAP::Volume;
@@ -126,7 +129,7 @@ void VolumeTransparencyDrawer::update_face(const MAP& m, const typename MAP::tem
 
 	m.foreach_cell([&] (Volume v)
 	{
-		VEC3 CV = geometry::centroid<VEC3>(m, v, position);
+		VEC3 CV = geometry::centroid(m, v, position);
 		m.foreach_incident_face(v, [&] (Face f)
 		{
 			if (m.has_codegree(f, 3))
@@ -142,7 +145,7 @@ void VolumeTransparencyDrawer::update_face(const MAP& m, const typename MAP::tem
 			else
 			{
 				ear_indices.clear();
-				cgogn::geometry::append_ear_triangulation<VEC3>(m, f, position, ear_indices);
+				cgogn::geometry::append_ear_triangulation(m, f, position, ear_indices);
 				for(std::size_t i = 0; i < ear_indices.size(); i += 3)
 				{
 					const VEC3& P1 = position[ear_indices[i]];

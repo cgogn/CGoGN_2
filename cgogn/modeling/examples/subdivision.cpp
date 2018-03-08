@@ -33,6 +33,8 @@
 
 #include <cgogn/io/map_import.h>
 
+#include <cgogn/io/map_export.h>
+
 #include <cgogn/geometry/algos/bounding_box.h>
 
 #include <cgogn/rendering/map_render.h>
@@ -89,7 +91,7 @@ public:
 		render_ = cgogn::make_unique<cgogn::rendering::MapRender>();
 		render_->init_primitives(map_, cgogn::rendering::POINTS);
 		render_->init_primitives(map_, cgogn::rendering::LINES);
-		render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
+		render_->init_primitives(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
 
 		param_flat_ = cgogn::rendering::ShaderFlat::generate_param();
 		param_flat_->set_position_vbo(vbo_pos_.get());
@@ -104,7 +106,7 @@ public:
 
 		param_point_sprite_ = cgogn::rendering::ShaderPointSprite::generate_param();
 		param_point_sprite_->set_position_vbo(vbo_pos_.get());
-		Scalar mel = cgogn::geometry::mean_edge_length<Vec3>(map_, vertex_position_);
+		Scalar mel = cgogn::geometry::mean_edge_length(map_, vertex_position_);
 		param_point_sprite_->size_ = mel / 6.0;
 	}
 
@@ -153,44 +155,44 @@ public:
 				vertices_rendering_ = !vertices_rendering_;
 				break;
 			case Qt::Key_L: {
-				cgogn::modeling::loop<Vec3>(map_, vertex_position_);
+				cgogn::modeling::loop(map_, vertex_position_);
 
-				Scalar mel = cgogn::geometry::mean_edge_length<Vec3>(map_, vertex_position_);
+				Scalar mel = cgogn::geometry::mean_edge_length(map_, vertex_position_);
 				param_point_sprite_->size_ = mel / 6.0;
 
 				cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
 
 				render_->init_primitives(map_, cgogn::rendering::POINTS);
 				render_->init_primitives(map_, cgogn::rendering::LINES);
-				render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
+				render_->init_primitives(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
 
 				break;
 			}
 			case Qt::Key_C: {
-				cgogn::modeling::catmull_clark<Vec3>(map_, vertex_position_);
+				cgogn::modeling::catmull_clark(map_, vertex_position_);
 
-				Scalar mel = cgogn::geometry::mean_edge_length<Vec3>(map_, vertex_position_);
+				Scalar mel = cgogn::geometry::mean_edge_length(map_, vertex_position_);
 				param_point_sprite_->size_ = mel / 6.0;
 
 				cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
 
 				render_->init_primitives(map_, cgogn::rendering::POINTS);
 				render_->init_primitives(map_, cgogn::rendering::LINES);
-				render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
+				render_->init_primitives(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
 
 				break;
 			}
 			case Qt::Key_D: {
-				cgogn::modeling::doo_sabin<Vec3>(map_, vertex_position_);
+				cgogn::modeling::doo_sabin(map_, vertex_position_);
 
-				Scalar mel = cgogn::geometry::mean_edge_length<Vec3>(map_, vertex_position_);
+				Scalar mel = cgogn::geometry::mean_edge_length(map_, vertex_position_);
 				param_point_sprite_->size_ = mel / 6.0;
 
 				cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
 
 				render_->init_primitives(map_, cgogn::rendering::POINTS);
 				render_->init_primitives(map_, cgogn::rendering::LINES);
-				render_->init_primitives<Vec3>(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
+				render_->init_primitives(map_, cgogn::rendering::TRIANGLES, &vertex_position_);
 
 				break;
 			}
@@ -206,6 +208,7 @@ public:
 	void import(const std::string& surface_mesh)
 	{
 		cgogn::io::import_surface<Vec3>(map_, surface_mesh);
+
 
 		vertex_position_ = map_.template get_attribute<Vec3, Map2::Vertex>("position");
 		if (!vertex_position_.is_valid())

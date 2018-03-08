@@ -94,10 +94,10 @@ int main(int argc, char** argv)
 		start = std::chrono::system_clock::now();
 
 		for	(uint32 i = 0; i < 10; ++i)
-			cgogn::geometry::compute_normal<Vec3>(map, vertex_position, face_normal);
+            cgogn::geometry::compute_normal(map, vertex_position, face_normal);
 
 		for	(uint32 i = 0; i < 10; ++i)
-			cgogn::geometry::compute_normal<Vec3>(map, vertex_position, vertex_normal);
+            cgogn::geometry::compute_normal(map, vertex_position, vertex_normal);
 
 		end = std::chrono::system_clock::now();
 		std::chrono::duration<float64> elapsed_seconds = end - start;

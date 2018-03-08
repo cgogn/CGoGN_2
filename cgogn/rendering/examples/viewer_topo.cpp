@@ -205,7 +205,7 @@ void Viewer::init()
 
 	topo_drawer_ = cgogn::make_unique<cgogn::rendering::TopoDrawer>();
 	topo_drawer_rend_ = topo_drawer_->generate_renderer();
-	topo_drawer_->update<Vec3>(map_,vertex_position_);
+	topo_drawer_->update(map_,vertex_position_);
 }
 
 int main(int argc, char** argv)

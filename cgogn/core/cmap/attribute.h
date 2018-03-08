@@ -449,6 +449,41 @@ public:
 	}
 };
 
+
+//template<typename VERTEX_ATTR>
+//constexpr auto is_orbit_of(uint32)
+//-> typename std::enable_if<!std::is_base_of<AttributeGen,VERTEX_ATTR>::value, bool>::type
+//{
+//	return  false;
+//}
+//
+//template<typename VERTEX_ATTR>
+//constexpr auto is_orbit_of(uint32 orb)
+//-> typename std::enable_if<std::is_base_of<AttributeGen,VERTEX_ATTR>::value, bool>::type
+//{
+//	return  VERTEX_ATTR::orb_ == orb;
+//}
+
+template<typename VERTEX_ATTR, int ORB, typename EN = void>
+struct is_orbit_of
+{
+	static const bool value = false;
+};
+
+template<typename VERTEX_ATTR, int ORB>
+struct is_orbit_of<VERTEX_ATTR, ORB, typename std::enable_if<std::is_base_of<AttributeGen, VERTEX_ATTR>::value, void>::type>
+{
+	static const bool value = VERTEX_ATTR::orb_ == ORB;
+};
+
+
+/**
+ * type of the attribut content
+ */
+template <typename ATTR>
+using InsideTypeOf = typename ATTR::value_type;
+
+
 } // namespace cgogn
 
 #endif // CGOGN_CORE_MAP_ATTRIBUTE_H_

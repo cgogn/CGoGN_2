@@ -129,7 +129,7 @@ static void BENCH_vol_centroid_poly(benchmark::State& state)
 
 		bench_map.foreach_cell([&] (Volume v)
 		{
-			centroids[v] = cgogn::geometry::centroid<Vec3>(bench_map, v, vertex_position);
+			centroids[v] = cgogn::geometry::centroid(bench_map, v, vertex_position);
 		});
 	}
 }
@@ -147,7 +147,7 @@ static void BENCH_vol_centroid_tetra(benchmark::State& state)
 
 		bench_tetra_map.foreach_cell([&] (Volume v)
 		{
-			centroids[v] = cgogn::geometry::centroid<Vec3>(bench_tetra_map, v, vertex_position);
+			centroids[v] = cgogn::geometry::centroid(bench_tetra_map, v, vertex_position);
 		});
 	}
 }
@@ -165,7 +165,7 @@ static void BENCH_vol_centroid_poly_pure_topo(benchmark::State& state)
 
 		bench_map.foreach_cell<cgogn::TraversalStrategy::FORCE_DART_MARKING>([&] (Volume v)
 		{
-			centroids[v] = cgogn::geometry::centroid<Vec3>(bench_map, v, vertex_position);
+			centroids[v] = cgogn::geometry::centroid(bench_map, v, vertex_position);
 		});
 	}
 }
@@ -183,7 +183,7 @@ static void BENCH_vol_centroid_tetra_pure_topo(benchmark::State& state)
 
 		bench_tetra_map.foreach_cell<cgogn::TraversalStrategy::FORCE_DART_MARKING>([&] (Volume v)
 		{
-			centroids[v] = cgogn::geometry::centroid<Vec3>(bench_tetra_map, v, vertex_position);
+			centroids[v] = cgogn::geometry::centroid(bench_tetra_map, v, vertex_position);
 		});
 	}
 }
@@ -205,7 +205,7 @@ static void BENCH_vol_centroid_shrink_poly(benchmark::State& state)
 
 		bench_map.foreach_cell<cgogn::TraversalStrategy::FORCE_DART_MARKING>([&] (Volume v)
 		{
-			Vec3 c = cgogn::geometry::centroid<Vec3>(bench_map, v, vertex_position);
+			Vec3 c = cgogn::geometry::centroid(bench_map, v, vertex_position);
 
 			bench_map.foreach_incident_vertex(v, [&] ( Vertex x)
 			{
@@ -230,7 +230,7 @@ static void BENCH_vol_centroid_shrink_tetra(benchmark::State& state)
 
 		bench_tetra_map.foreach_cell<cgogn::TraversalStrategy::FORCE_DART_MARKING>([&] (Volume v)
 		{
-			Vec3 c = cgogn::geometry::centroid<Vec3>(bench_tetra_map, v, vertex_position);
+			Vec3 c = cgogn::geometry::centroid(bench_tetra_map, v, vertex_position);
 
 			bench_tetra_map.foreach_incident_vertex(v, [&] ( Vertex x)
 			{
@@ -252,7 +252,7 @@ static void BENCH_vertices_filter_poly(benchmark::State& state)
 
 		state.ResumeTiming();
 
-		cgogn::geometry::filter_average<Vec3>(bench_map, vertex_position, vertex_position2);
+		cgogn::geometry::filter_average(bench_map, vertex_position, vertex_position2);
 	}
 }
 
@@ -268,7 +268,7 @@ static void BENCH_vertices_filter_tetra(benchmark::State& state)
 
 		state.ResumeTiming();
 
-		cgogn::geometry::filter_average<Vec3>(bench_tetra_map, vertex_position, vertex_position2);
+		cgogn::geometry::filter_average(bench_tetra_map, vertex_position, vertex_position2);
 	}
 }
 

@@ -43,16 +43,19 @@ namespace cgogn
 namespace geometry
 {
 
-template <typename VEC3, typename MAP>
+template <typename MAP, typename VERTEX_ATTR>
 inline void picking_internal_face(
 	const MAP& m,
-	const typename MAP::template VertexAttribute<VEC3>& position,
-	const VEC3& A,
-	const VEC3& B,
-	typename std::vector<std::tuple<typename MAP::Face, VEC3, typename vector_traits<VEC3>::Scalar>>& selected
+	const VERTEX_ATTR& position,
+	const InsideTypeOf<VERTEX_ATTR>& A,
+	const InsideTypeOf<VERTEX_ATTR>& B,
+	typename std::vector<std::tuple<typename MAP::Face, InsideTypeOf<VERTEX_ATTR>, ScalarOf<InsideTypeOf<VERTEX_ATTR>>>>& selected
 )
 {
-	using Scalar = typename vector_traits<VEC3>::Scalar;
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
+	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
+	using Scalar = ScalarOf<VEC3>;
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
 	using Triplet = typename std::tuple<Face, VEC3, Scalar>;
@@ -75,20 +78,20 @@ inline void picking_internal_face(
 			const VEC3& p1 = position[Vertex(f.dart)];
 			const VEC3& p2 = position[Vertex(m.phi1(f.dart))];
 			const VEC3& p3 = position[Vertex(m.phi1(m.phi1(f.dart)))];
-			if (intersection_ray_triangle<VEC3>(A, AB, p1, p2, p3, &inter))
+			if (intersection_ray_triangle(A, AB, p1, p2, p3, &inter))
 				selected_th[th].push_back(std::make_tuple(f, inter, (inter-A).squaredNorm()));
 		}
 		else
 		{
 			std::vector<uint32>& ear_indices = ear_indices_th[th];
 			ear_indices.clear();
-			append_ear_triangulation<VEC3>(m, f, position, ear_indices);
+			append_ear_triangulation(m, f, position, ear_indices);
 			for (std::size_t i = 0; i < ear_indices.size(); i += 3)
 			{
 				const VEC3& p1 = position[ear_indices[i]];
 				const VEC3& p2 = position[ear_indices[i+1]];
 				const VEC3& p3 = position[ear_indices[i+2]];
-				if (intersection_ray_triangle<VEC3>(A, AB, p1, p2, p3, &inter))
+				if (intersection_ray_triangle(A, AB, p1, p2, p3, &inter))
 				{
 					selected_th[th].push_back(std::make_tuple(f, inter, (inter-A).squaredNorm()));
 					i = ear_indices.size();
@@ -114,21 +117,23 @@ inline void picking_internal_face(
 	std::sort(selected.begin(), selected.end(), dist_sort);
 }
 
-template <typename VEC3, typename MAP>
+template <typename MAP, typename VERTEX_ATTR>
 bool picking(
 	const MAP& m,
-	const typename MAP::template VertexAttribute<VEC3>& position,
-	const VEC3& A,
-	const VEC3& B,
+	const VERTEX_ATTR& position,
+	const InsideTypeOf<VERTEX_ATTR>& A,
+	const InsideTypeOf<VERTEX_ATTR>& B,
 	typename std::vector<typename MAP::Face>& selected
 )
 {
-	using Scalar = typename vector_traits<VEC3>::Scalar;
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
+	using Scalar = ScalarOf<VEC3>;
 	using Face = typename MAP::Face;
 	using Triplet = typename std::tuple<Face, VEC3, Scalar>;
 
 	std::vector<Triplet> sel;
-	picking_internal_face<VEC3>(m, position, A, B, sel);
+	picking_internal_face(m, position, A, B, sel);
 
 	selected.clear();
 	for (const auto& fs : sel)
@@ -137,22 +142,25 @@ bool picking(
 	return !selected.empty();
 }
 
-template <typename VEC3, typename MAP>
+template <typename MAP, typename VERTEX_ATTR>
 bool picking(
 	const MAP& m,
-	const typename MAP::template VertexAttribute<VEC3>& position,
-	const VEC3& A,
-	const VEC3& B,
+	const VERTEX_ATTR& position,
+	const InsideTypeOf<VERTEX_ATTR>& A,
+	const InsideTypeOf<VERTEX_ATTR>& B,
 	typename std::vector<typename MAP::Vertex>& selected
 )
 {
-	using Scalar = typename vector_traits<VEC3>::Scalar;
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
+	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
+	using Scalar = ScalarOf<VEC3>;
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
 	using Triplet = typename std::tuple<Face, VEC3, Scalar>;
 
 	std::vector<Triplet> sel;
-	picking_internal_face<VEC3>(m, position, A, B, sel);
+	picking_internal_face(m, position, A, B, sel);
 
 	DartMarkerStore<MAP> dm(m);
 	selected.clear();
@@ -184,23 +192,25 @@ bool picking(
 	return !selected.empty();
 }
 
-template <typename VEC3, typename MAP>
+template <typename MAP, typename VERTEX_ATTR>
 bool picking(
 	const MAP& m,
-	const typename MAP::template VertexAttribute<VEC3>& position,
-	const VEC3& A,
-	const VEC3& B,
+	const VERTEX_ATTR& position,
+	const InsideTypeOf<VERTEX_ATTR>& A,
+	const InsideTypeOf<VERTEX_ATTR>& B,
 	typename std::vector<typename MAP::Edge>& selected
 )
 {
-	using Scalar = typename vector_traits<VEC3>::Scalar;
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
+	using Scalar = ScalarOf<VEC3>;
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
 	using Face = typename MAP::Face;
 	using Triplet = typename std::tuple<Face, VEC3, Scalar>;
 
 	std::vector<Triplet> sel;
-	picking_internal_face<VEC3>(m, position, A, B, sel);
+	picking_internal_face(m, position, A, B, sel);
 
 	DartMarkerStore<MAP> dm(m);
 	selected.clear();
@@ -234,22 +244,24 @@ bool picking(
 	return !selected.empty();
 }
 
-template <typename VEC3, typename MAP>
+template <typename MAP, typename VERTEX_ATTR>
 bool picking(
 	const MAP& m,
-	const typename MAP::template VertexAttribute<VEC3>& position,
-	const VEC3& A,
-	const VEC3& B,
+	const VERTEX_ATTR& position,
+	const InsideTypeOf<VERTEX_ATTR>& A,
+	const InsideTypeOf<VERTEX_ATTR>& B,
 	typename std::vector<typename MAP::Volume>& selected
 )
 {
-	using Scalar = typename vector_traits<VEC3>::Scalar;
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
+	using Scalar = ScalarOf<VEC3>;
 	using Face = typename MAP::Face;
 	using Volume = typename MAP::Volume;
 	using Triplet = typename std::tuple<Face, VEC3, Scalar>;
 
 	std::vector<Triplet> sel;
-	picking_internal_face<VEC3>(m, position, A, B, sel);
+	picking_internal_face(m, position, A, B, sel);
 
 	selected.clear();
 	DartMarker<MAP> dm(m);

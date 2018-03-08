@@ -25,6 +25,7 @@
 #define CGOGN_GEOMETRY_FUNCTIONS_DISTANCE_H_
 
 #include <cgogn/core/utils/assert.h>
+#include <cgogn/geometry/types/geometry_traits.h>
 
 namespace cgogn
 {
@@ -39,11 +40,15 @@ namespace geometry
  * @param P point o compute distance to line
  * @return distance
  */
-template <typename VEC3>
-inline typename vector_traits<VEC3>::Scalar squared_distance_normalized_line_point(const VEC3& A, const VEC3& AB_norm, const VEC3& P)
+template <typename VEC3a, typename VEC3b, typename VEC3c >
+inline ScalarOf<VEC3a> squared_distance_normalized_line_point(const Eigen::MatrixBase<VEC3a>& A, const Eigen::MatrixBase<VEC3b>& AB_norm, const Eigen::MatrixBase<VEC3c>& P)
 {
+	static_assert(is_same_vector<VEC3a,VEC3b,VEC3c>::value, "parameters must have same type");
+	static_assert(is_dim_of<VEC3a, 3>::value, "The size of the vector must be equal to 3.");
+
 	return ((A - P).cross(AB_norm)).squaredNorm() ;
 }
+
 
 /**
  * @brief squared distance line point
@@ -52,14 +57,18 @@ inline typename vector_traits<VEC3>::Scalar squared_distance_normalized_line_poi
  * @param P point o compute distance to line
  * @return distance
  */
-template <typename VEC3>
-inline typename vector_traits<VEC3>::Scalar squared_distance_line_point(const VEC3& A, const VEC3& B, const VEC3& P)
+template <typename VEC3a, typename VEC3b, typename VEC3c >
+inline ScalarOf<VEC3a> squared_distance_line_point(const Eigen::MatrixBase<VEC3a>& A, const Eigen::MatrixBase<VEC3b>& B, const Eigen::MatrixBase<VEC3c>& P)
 {
-	VEC3 AB = B - A ;
+	static_assert(is_same_vector<VEC3a,VEC3b,VEC3c>::value, "parameters must have same type");
+	static_assert(is_dim_of<VEC3a, 3>::value, "The size of the vector must be equal to 3.");
+
+	VecType<VEC3a> AB = B - A ;
 	cgogn_message_assert(AB.squaredNorm() > 0.0, "line must be defined by 2 different points");
 	AB.normalize();
 	return squared_distance_normalized_line_point(A, AB, P) ;
 }
+
 
 /**
 * compute squared distance from line to segment
@@ -70,45 +79,50 @@ inline typename vector_traits<VEC3>::Scalar squared_distance_line_point(const VE
 * @param Q second point of segment
 * @return the squared distance
 */
-template <typename VEC3>
-typename vector_traits<VEC3>::Scalar squared_distance_line_seg(const VEC3& A, const VEC3& AB, typename vector_traits<VEC3>::Scalar AB2, const VEC3& P, const VEC3& Q)
+template <typename VEC3a, typename VEC3b, typename VEC3c, typename VEC3d>
+ScalarOf<VEC3a> squared_distance_line_seg(const Eigen::MatrixBase<VEC3a>& A, const Eigen::MatrixBase<VEC3b>& AB, ScalarOf<VEC3a> AB2, const Eigen::MatrixBase<VEC3c>& P, const Eigen::MatrixBase<VEC3d>& Q)
 {
-	using Scalar = typename vector_traits<VEC3>::Scalar;
+	static_assert(is_same_vector<VEC3a,VEC3b,VEC3c,VEC3d>::value, "parameters must have same type");
+	static_assert(is_dim_of<VEC3a, 3>::value, "The size of the vector must be equal to 3.");
 
-	VEC3 PQ = Q - P ;
+	using Scalar = ScalarOf<VEC3a>;
+	using NVEC3 = VecType<VEC3a>;
+
+	NVEC3 PQ = Q - P;
 	Scalar PQ_n2 = PQ.squaredNorm();
 
 	// if P == Q compute distance to P
 	if (PQ_n2 == Scalar(0)) // P == Q
 	{
-		VEC3 V = AB / AB.norm();
+		NVEC3 V = AB / AB.norm();
 		return squared_distance_normalized_line_point(A, V, P);
 	}
 
 	Scalar X = AB.dot(PQ) ;
-	VEC3 AP = P - A ;
+	NVEC3 AP = P - A ;
 
 	Scalar beta = ( AB2 * (AP.dot(PQ)) - X * (AP.dot(AB)) ) / ( X*X - AB2 * PQ_n2 ) ;
 
 	if(beta < Scalar(0))
 	{
-		VEC3 W = AB.cross(AP) ;
+		NVEC3 W = AB.cross(AP) ;
 		return W.squaredNorm() / AB2 ;
 	}
 
 	if(beta > Scalar(1))
 	{
-		VEC3 AQ = Q - A ;
-		VEC3 W = AB.cross(AQ) ;
+		NVEC3 AQ = Q - A ;
+		NVEC3 W = AB.cross(AQ) ;
 		return W.squaredNorm() / AB2 ;
 	}
 
-	VEC3 temp = AB.cross(PQ) ;
+	NVEC3 temp = AB.cross(PQ) ;
 	Scalar num = AP.dot(temp) ;
 	Scalar den = temp.squaredNorm() ;
 
 	return (num * num) / den ;
 }
+
 
 /**
 * compute squared distance from line to segment
@@ -119,12 +133,16 @@ typename vector_traits<VEC3>::Scalar squared_distance_line_seg(const VEC3& A, co
 * @param Q second point of segment
 * @return the squared distance
 */
-template <typename VEC3>
-typename vector_traits<VEC3>::Scalar squared_distance_line_seg(const VEC3& A, const VEC3& B, const VEC3& P, const VEC3& Q)
+template <typename VEC3a, typename VEC3b, typename VEC3c, typename VEC3d>
+inline ScalarOf<VEC3a> squared_distance_line_seg(const Eigen::MatrixBase<VEC3a>& A, const Eigen::MatrixBase<VEC3b>& B, const Eigen::MatrixBase<VEC3c>& P, const Eigen::MatrixBase<VEC3d>& Q)
 {
-	VEC3 AB = B-A;
+	static_assert(is_same_vector<VEC3a,VEC3b,VEC3c,VEC3d>::value, "parameters must have same type");
+	static_assert(is_dim_of<VEC3a, 3>::value, "The size of the vector must be equal to 3.");
+
+	VecType<VEC3a> AB = B-A;
 	return squared_distance_line_seg(A,AB, AB.dot(AB),P,Q);
 }
+
 
 /**
 * compute squared distance from segment to point
@@ -133,12 +151,16 @@ typename vector_traits<VEC3>::Scalar squared_distance_line_seg(const VEC3& A, co
 * @param P the point
 * @return the squared distance
 */
-template <typename VEC3>
-typename vector_traits<VEC3>::Scalar squared_distance_seg_point(const VEC3& A, const VEC3& AB, const VEC3& P)
+template <typename VEC3a, typename VEC3b, typename VEC3c>
+ScalarOf<VEC3a> squared_distance_seg_point(const Eigen::MatrixBase<VEC3a>& A, const Eigen::MatrixBase<VEC3b>& AB, const Eigen::MatrixBase<VEC3c>& P)
 {
-	using Scalar = typename vector_traits<VEC3>::Scalar;
-	
-	VEC3 AP = P - A;
+	static_assert(is_same_vector<VEC3a,VEC3b,VEC3c>::value, "parameters must have same type");
+	static_assert(is_dim_of<VEC3a, 3>::value, "The size of the vector must be equal to 3.");
+
+	using Scalar = ScalarOf<VEC3a>;
+	using NVEC3 = VecType<VEC3a>;
+
+	NVEC3 AP = P - A;
 
 	// squared vector length
 	Scalar AB2 = AB.dot(AB);
@@ -153,13 +175,58 @@ typename vector_traits<VEC3>::Scalar squared_distance_seg_point(const VEC3& A, c
 	// after B, distance is PB
 	if (t >= Scalar(1.))
 	{
-		VEC3 BP = P - (AB + A);
+		NVEC3 BP = P - (AB + A);
 		return BP.squaredNorm();
 	}
 
 	// between A & B, distance is projection on (AB)
-	VEC3 X = AB.cross(AP);
+	NVEC3 X = AB.cross(AP);
 	return X.squaredNorm() / AB2;
+}
+
+
+/// non Eigen versions
+
+template <typename VEC3>
+inline auto squared_distance_normalized_line_point(const VEC3& A, const VEC3& AB_norm, const VEC3& P)
+-> typename std::enable_if <is_vec_non_eigen<VEC3>::value, ScalarOf<VEC3>>::type
+{
+	static_assert(vector_traits<VEC3>::OK, "parameters must be vectors");
+	return squared_distance_normalized_line_point(eigenize(A),eigenize(AB_norm),eigenize(P));
+}
+
+
+template <typename VEC3>
+inline auto squared_distance_line_point(const VEC3& A, const VEC3& B, const VEC3& P)
+-> typename std::enable_if <is_vec_non_eigen<VEC3>::value, ScalarOf<VEC3>>::type
+{
+	static_assert(vector_traits<VEC3>::OK, "parameters must be vectors");
+	return squared_distance_line_point(eigenize(A),eigenize(B),eigenize(P));
+}
+
+
+template <typename VEC3>
+inline auto squared_distance_line_seg(const VEC3& A, const VEC3& AB, ScalarOf<VEC3> AB2, const VEC3& P, const VEC3& Q )
+-> typename std::enable_if <is_vec_non_eigen<VEC3>::value, ScalarOf<VEC3>>::type
+{
+	return squared_distance_line_seg(eigenize(A),eigenize(AB),AB2,eigenize(P),eigenize(Q));
+}
+
+
+template <typename VEC3>
+inline auto squared_distance_line_seg(const VEC3& A, const VEC3& B, const VEC3& P, const VEC3& Q )
+-> typename std::enable_if <is_vec_non_eigen<VEC3>::value, ScalarOf<VEC3>>::type
+{
+	static_assert(vector_traits<VEC3>::OK, "parameters must be vectors");
+	return squared_distance_line_seg(eigenize(A),eigenize(B),eigenize(P),eigenize(Q));
+}
+
+
+template <typename VEC3>
+inline auto squared_distance_seg_point(const VEC3& A, const VEC3& AB, const VEC3& P)
+-> typename std::enable_if <is_vec_non_eigen<VEC3>::value, ScalarOf<VEC3> >::type
+{
+	return squared_distance_seg_point(eigenize(A),eigenize(AB),eigenize(P));
 }
 
 } // namespace geometry

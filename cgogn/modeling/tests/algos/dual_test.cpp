@@ -67,7 +67,7 @@ void dual_test(const std::string& filename)
 	cgogn::modeling::dual(map2, map2_dual,nullptr,{"position"},
 	[&] (Map2::Face f )
 	{
-		return cgogn::geometry::centroid<Vec3>(map2, f, pos);
+		return cgogn::geometry::centroid(map2, f, pos);
 	});
 
 	auto pos_dual = map2_dual.get_attribute<Vec3, Map2::Vertex>("position");
@@ -154,7 +154,7 @@ void dual_test2(const std::string& filename, const std::string& filename2)
 	cgogn::modeling::dual(map2, map2_dual,nullptr,{"position"},
 	[&] (Map2::Face f )
 	{
-		return cgogn::geometry::centroid<Vec3>(map2, f, pos);
+		return cgogn::geometry::centroid(map2, f, pos);
 	});
 
 	auto pos_dual = map2_dual.get_attribute<Vec3, Map2::Vertex>("position");
@@ -230,7 +230,7 @@ TEST(DualTest, with_boundaries)
 	cgogn::modeling::dual(map2, map2_dual,&cm,{"position"},
 	[&] (Map2::Face f )
 	{
-		return cgogn::geometry::centroid<Vec3>(map2, f, pos);
+		return cgogn::geometry::centroid(map2, f, pos);
 	});
 
 	auto pos_dual = map2_dual.get_attribute<Vec3, Map2::Vertex>("position");

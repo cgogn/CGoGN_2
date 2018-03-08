@@ -41,34 +41,17 @@ set(HEADER_FILES
 )
 
 set(SOURCE_FILES
-	map_export.cpp
-	map_import.cpp
-	graph_export.cpp
 	graph_import.cpp
-	surface_import.cpp
-	surface_export.cpp
-	volume_import.cpp
-	volume_export.cpp
 	mesh_io_gen.cpp
 	io_utils.cpp
-	formats/2dm.cpp
-	formats/dot.cpp
-	formats/cg.cpp
-	formats/cskel.cpp
-	formats/meshb.cpp
-	formats/msh.cpp
-	formats/nastran.cpp
-	formats/obj.cpp
-	formats/off.cpp
 	formats/ply.cpp
 	formats/ply_data.cpp
-	formats/skel.cpp
-	formats/stl.cpp
-	formats/tet.cpp
-	formats/tetgen.cpp
-	formats/tetmesh.cpp
 	formats/vtk.cpp
 )
+
+if(${CGOGN_EXTERNAL_TEMPLATES})
+    set(SOURCE_FILES ${SOURCE_FILES} external_templates.cpp)
+endif()
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 

@@ -33,13 +33,15 @@ namespace cgogn
 namespace geometry
 {
 
-template <typename VEC3, typename MAP>
+template <typename MAP, typename FACE_ATTR>
 void mark_feature_edges(
 	const MAP& map,
-	const typename MAP::template FaceAttribute<VEC3>& normal,
+	const FACE_ATTR& normal,
 	typename MAP::template CellMarker<MAP::Edge::ORBIT>& feature_edge
 )
 {
+	static_assert(is_orbit_of<FACE_ATTR>(MAP::Face::ORBIT),"attribute must be a vertex attribute");
+
 	feature_edge.unmark_all();
 
 	map.parallel_foreach_cell([&] (typename MAP::Edge e)

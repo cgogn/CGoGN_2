@@ -32,22 +32,6 @@ namespace cgogn
 namespace io
 {
 
-template class CGOGN_IO_API VtkIO<1, Eigen::Vector3d>;
-template class CGOGN_IO_API VtkIO<1, Eigen::Vector3f>;
-
-template class CGOGN_IO_API VtkSurfaceImport<CMap2, Eigen::Vector3d>;
-template class CGOGN_IO_API VtkSurfaceImport<CMap2, Eigen::Vector3f>;
-
-template class CGOGN_IO_API VtkVolumeImport<CMap3, Eigen::Vector3d>;
-template class CGOGN_IO_API VtkVolumeImport<CMap3, Eigen::Vector3f>;
-
-template class CGOGN_IO_API VtkVolumeExport<CMap3>;
-template class CGOGN_IO_API VtkSurfaceExport<CMap2>;
-
-template class CGOGN_IO_API VtkGraphImport<Eigen::Vector3d>;
-template class CGOGN_IO_API VtkGraphImport<Eigen::Vector3f>;
-
-template class CGOGN_IO_API VtkGraphExport<UndirectedGraph>;
 
 CGOGN_IO_API std::string  vtk_data_type_to_cgogn_name_of_type(const std::string& vtk_type_str)
 {

@@ -47,7 +47,7 @@ class AABB
 public:
 
 	using Vec = VEC_T;
-	using Scalar = typename vector_traits<Vec>::Scalar;
+	using Scalar = ScalarOf<Vec>;
 	using Self = AABB<Vec>;
 	static const uint32 dim_ = vector_traits<Vec>::SIZE;
 	// https://eigen.tuxfamily.org/dox-devel/group__TopicStructHavingEigenMembers.html
@@ -276,7 +276,7 @@ public:
 	/// \tparam VEC3 the domain of the box. Has to be of dimension 3
 	template <bool B = true>
 	auto ray_intersect(const Vec& P, const Vec& V) const
-	  -> typename std::enable_if<B && vector_traits<Vec>::SIZE == 3, bool>::type
+	  -> typename std::enable_if<B && is_dim_of<Vec, 3>::value, bool>::type
 	{
 		if (!cgogn::almost_equal_relative(V[2], Scalar(0)))
 		{
@@ -349,12 +349,12 @@ inline void aabb_union(AABB<VEC_T>& target, const AABB<VEC_T>& b1, const AABB<VE
 	}
 }
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_TYPES_AABB_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_EXTERNAL_TEMPLATES_CPP_))
 extern template class CGOGN_GEOMETRY_API AABB<Eigen::Vector3d>;
 extern template class CGOGN_GEOMETRY_API AABB<Eigen::Vector3f>;
 extern template class CGOGN_GEOMETRY_API AABB<Vec_T<std::array<float32, 3>>>;
 extern template class CGOGN_GEOMETRY_API AABB<Vec_T<std::array<float64,3>>>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_TYPES_AABB_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace geometry
 

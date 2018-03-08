@@ -42,11 +42,13 @@ namespace modeling
 /// \param[in, out] map the surface to be subdivded
 /// \param[in, out] position the geometric position of the surface
 /// \todo handle objects with open boundaries
-template <typename VEC3, typename MAP>
-void doo_sabin(MAP& map,
-			   typename MAP::template VertexAttribute<VEC3>& position)
+template <typename MAP, typename VERTEX_ATTR>
+void doo_sabin(MAP& map, VERTEX_ATTR& position)
 {
-	using Scalar = typename VEC3::Scalar;
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
+	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
+	using Scalar = geometry::ScalarOf<VEC3>;
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
 	using Face = typename MAP::Face;
@@ -135,12 +137,12 @@ void doo_sabin(MAP& map,
 			e = map.phi1(e);
 		}while (e != f.dart);
 
-		int N = buffer.size();
-		for (int i = 0; i < N; ++i)
+		std::size_t N = buffer.size();
+		for (std::size_t i = 0; i < N; ++i)
 		{
 			VEC3 P;
 			P.setZero();
-			for (int j = 0; j < N; ++j)
+			for (std::size_t j = 0; j < N; ++j)
 			{
 				if (j==i)
 				{
@@ -149,7 +151,7 @@ void doo_sabin(MAP& map,
 				}
 				else
 				{
-					Scalar c2 = (3.0+2.0*std::cos(2.0*M_PI*(Scalar(i-j))/Scalar(N))) /(4.0*N);
+					Scalar c2 = Scalar( (3.0+2.0*std::cos(2.0*M_PI*(Scalar(i-j))/Scalar(N))) /(4.0*N) );
 					P += c2*buffer[j];
 				}
 			}
@@ -162,10 +164,10 @@ void doo_sabin(MAP& map,
 	initial_cache);
 }
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_DOO_SABIN_CPP_))
-extern template CGOGN_MODELING_API void doo_sabin<Eigen::Vector3f, CMap2>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&);
-extern template CGOGN_MODELING_API void doo_sabin<Eigen::Vector3d, CMap2>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&);
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_DOO_SABIN_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_EXTERNAL_TEMPLATES_CPP_))
+extern template CGOGN_MODELING_API void doo_sabin(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&);
+extern template CGOGN_MODELING_API void doo_sabin(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&);
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace modeling
 

@@ -30,7 +30,9 @@
 #include <cgogn/core/utils/numerics.h>
 
 #include <cgogn/geometry/dll.h>
+#include <cgogn/geometry/types/eigen.h>
 #include <cgogn/geometry/types/geometry_traits.h>
+
 
 namespace cgogn
 {
@@ -45,46 +47,62 @@ enum Orientation3D
 	UNDER
 };
 
-template <typename VEC_T>
-class Plane3D
+
+// TODO specialize template function for Eigen::Vector3d
+
+class CGOGN_GEOMETRY_API Plane3D
 {
-	static_assert(vector_traits<VEC_T>::SIZE == 3ul, "The size of the vector must be equal to 3.");
+	template <typename VEC3>
+	inline Eigen::Vector3d to_eigen(const VEC3& v) const
+	{
+		return Eigen::Vector3d(v[0],v[1],v[2]);
+	}
 
 public:
 
-	using Vec = VEC_T;
-	using Scalar = typename vector_traits<Vec>::Scalar;
-	using Self = Plane3D<Vec>;
+	using Vec = Eigen::Vector3d;
+	using Scalar = double;
+	using Self = Plane3D;
 
-	static const bool eigen_make_aligned = std::is_same<Eigen::AlignedVector3<Scalar>, Vec>::value;
+	static const bool eigen_make_aligned = std::is_same<Eigen::AlignedVector3<double>, Vec>::value;
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW_IF(eigen_make_aligned)
 
-	inline Plane3D() {}
+	Plane3D();
 	Plane3D(const Self&) = default;
 	Self& operator=(const Self&) = default;
 
 	// construct the plane from a normal vector and a scalar
-	inline Plane3D(const Vec& normal, Scalar d) :
-		normal_(normal),
+	template <typename VEC3, typename SCALAR>
+	inline Plane3D(const VEC3& normal, SCALAR d) :
+		normal_(normal[0],normal[1],normal[2]),
 		d_(d)
 	{
+		static_assert(is_dim_of<VEC3, 3>::value, "normal must be of dim 3");
+		static_assert(std::is_arithmetic<SCALAR>::value, "d must be arithmetic");
 		normal_.normalize();
 	}
 
 	// construct the plane with normal vector and going through p
-	inline Plane3D(const Vec& normal, const Vec& p) :
-		normal_(normal),
-		d_(-(p.dot(normal)))
+	template <typename VEC3>
+	inline Plane3D(const VEC3& normal, const VEC3& p) :
+		normal_(normal[0],normal[1],normal[2])
 	{
+		static_assert(is_dim_of<VEC3, 3>::value, "normal and p must be of dim 3");
 		normal_.normalize();
+		d_ = -(to_eigen(p).dot(normal_));
 	}
 
 	// construct the plane going through p1, p2 and p3
-	inline Plane3D(const Vec& p1, const Vec& p2, const Vec& p3) :
-		normal_((p2-p1).cross(p3-p1))
+	template <typename VEC3>
+	inline Plane3D(const VEC3& p1, const VEC3& p2, const VEC3& p3)
 	{
+		static_assert(is_dim_of<VEC3, 3>::value, "p1 p2 p3 must be of dim 3");
+		Vec q1 = to_eigen(p1);
+		Vec u = to_eigen(p2)-q1;
+		Vec v = to_eigen(p3)-q1;
+		normal_ = u.cross(v);
 		normal_.normalize();
-		d_ = -(p1.dot(normal_));
+		d_ = -(q1.dot(normal_));
 	}
 
 	/**********************************************/
@@ -115,19 +133,24 @@ public:
 	}
 
 	// project the point p onto the plane
-	inline void project(Vec& p) const
+	template <typename VEC3>
+	inline void project(VEC3& q) const
 	{
+		Vec p = to_eigen(q);
 		Scalar d = -distance(p);
 
 		if (!cgogn::almost_equal_relative(d,Scalar(0)))
 		{
 			p += normal_*d;
 		}
+		q = VEC3(p[0],p[1],p[2]);
 	}
 
 	// return on/over/under according to the side of the plane where point p is
-	inline Orientation3D orient(const Vec& p) const
+	template <typename VEC3>
+	inline Orientation3D orient(const VEC3& q) const
 	{
+		Vec p = to_eigen(q);
 		const Scalar dist = distance(p);
 
 		if (cgogn::almost_equal_relative(dist, Scalar(0)))
@@ -139,23 +162,13 @@ public:
 		return Orientation3D::OVER;
 	}
 
-	static std::string cgogn_name_of_type()
-	{
-		return std::string("cgogn::geometry::Plane3D<") + name_of_type(Vec()) + std::string(">");
-	}
+	static std::string cgogn_name_of_type();
 
 private:
 
-	Vec normal_;
-	Scalar d_;
+	Eigen::Vector3d normal_;
+	double d_;
 };
-
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_TYPES_PLANE_3D_CPP_))
-extern template class CGOGN_GEOMETRY_API Plane3D<Eigen::Vector3d>;
-extern template class CGOGN_GEOMETRY_API Plane3D<Eigen::Vector3f>;
-extern template class CGOGN_GEOMETRY_API Plane3D<Vec_T<std::array<float32,3>>>;
-extern template class CGOGN_GEOMETRY_API Plane3D<Vec_T<std::array<float64,3>>>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_TYPES_PLANE_3D_CPP_))
 
 } // namespace geometry
 

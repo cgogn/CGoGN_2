@@ -63,10 +63,13 @@ typename MAP::Vertex quadrangule_face(MAP& map, typename MAP::Face f)
 	return Vertex(map.phi2(x));	// Return a dart of the central vertex
 }
 
-template <typename VEC3, typename MAP>
-void catmull_clark(MAP& map, typename MAP::template VertexAttribute<VEC3>& position)
+template < typename MAP, typename VERTEX_ATTR>
+void catmull_clark(MAP& map, VERTEX_ATTR& position)
 {
-	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
+	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
+	using Scalar = geometry::ScalarOf<VEC3>;
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
 	using Face = typename MAP::Face;
@@ -96,7 +99,7 @@ void catmull_clark(MAP& map, typename MAP::template VertexAttribute<VEC3>& posit
 
 		initial_edge_marker.unmark_orbit(ff);
 
-		VEC3 center = geometry::centroid<VEC3>(map, ff, position);
+		VEC3 center = geometry::centroid(map, ff, position);
 		Vertex vc = quadrangule_face(map, ff);
 		position[vc] = center;
 	}
@@ -155,12 +158,12 @@ void catmull_clark(MAP& map, typename MAP::template VertexAttribute<VEC3>& posit
 	, initial_cache);
 }
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_CATMULL_CLARK_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_EXTERNAL_TEMPLATES_CPP_))
 extern template CGOGN_MODELING_API CMap2::Vertex quadrangule_face<CMap2>(CMap2&, CMap2::Face);
 extern template CGOGN_MODELING_API CMap3::Vertex quadrangule_face<CMap3>(CMap3&, CMap3::Face);
-extern template CGOGN_MODELING_API void catmull_clark<Eigen::Vector3f, CMap2>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&);
-extern template CGOGN_MODELING_API void catmull_clark<Eigen::Vector3d, CMap2>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&);
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_CATMULL_CLARK_CPP_))
+extern template CGOGN_MODELING_API void catmull_clark(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&);
+extern template CGOGN_MODELING_API void catmull_clark(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&);
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace modeling
 

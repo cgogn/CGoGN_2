@@ -128,11 +128,11 @@ inline void export_volume(MAP& map3, const ExportOptions& options)
 		ve->export_file(map3, options);
 }
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_MAP_EXPORT_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
 extern template CGOGN_IO_API void export_graph(UndirectedGraph& , const ExportOptions&);
 extern template CGOGN_IO_API void export_surface(CMap2& , const ExportOptions&);
 extern template CGOGN_IO_API void export_volume(CMap3& , const ExportOptions&);
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_MAP_EXPORT_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace io
 

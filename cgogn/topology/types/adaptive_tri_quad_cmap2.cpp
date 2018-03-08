@@ -105,6 +105,8 @@ bool AdaptiveTriQuadCMap2::is_simplifiable(Face f)
 			return res;
 			break;
 		}
+		default:
+			break;
 	}
 
 	return false; // should never reach
