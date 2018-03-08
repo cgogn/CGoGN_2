@@ -356,6 +356,11 @@ public:
 		return orbit_;
 	}
 
+	inline uint32 size() const
+	{
+		return this->chunk_array_cont_->size();
+	}
+
 protected:
 
 	const ChunkArrayContainer* chunk_array_cont_;
@@ -441,11 +446,6 @@ public:
 	inline Orbit orbit() const
 	{
 		return ORBIT;
-	}
-
-	inline uint32 size() const
-	{
-		return this->chunk_array_cont_->size();
 	}
 };
 
