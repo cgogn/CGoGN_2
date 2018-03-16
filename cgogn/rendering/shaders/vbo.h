@@ -41,7 +41,7 @@ class VBO
 {
 protected:
 
-	uint32 nb_vectors_;
+	std::size_t nb_vectors_;
 	uint32 vector_dimension_;
 	QOpenGLBuffer buffer_;
 	std::string name_;
@@ -92,12 +92,12 @@ public:
 	 * @param nb_vectors number of vectors
 	 * @param vector_dimension_ number of component of each vector
 	 */
-	inline void allocate(uint32 nb_vectors, uint32 vector_dimension)
+	inline void allocate(std::size_t nb_vectors, uint32 vector_dimension)
 	{
 		buffer_.bind();
-		uint32 total = nb_vectors * vector_dimension;
+		std::size_t total = nb_vectors * vector_dimension;
 		if (total != nb_vectors_ * vector_dimension_) // only allocate when > ?
-			buffer_.allocate(total * uint32(sizeof(float32)));
+			buffer_.allocate(uint32(total) * uint32(sizeof(float32)));
 		nb_vectors_ = nb_vectors;
 		if (vector_dimension != vector_dimension_)
 		{
@@ -131,9 +131,9 @@ public:
 	 * @param nb number of bytes to copy
 	 * @param src source pointer
 	 */
-	inline void copy_data(uint32 offset, uint32 nb, const void* src)
+	inline void copy_data(uint32 offset, std::size_t nb, const void* src)
 	{
-		buffer_.write(offset, src, nb);
+		buffer_.write(offset, src, int(nb));
 	}
 
 	/**
@@ -146,7 +146,7 @@ public:
 
 	uint32 size() const
 	{
-		return nb_vectors_;
+		return uint32(nb_vectors_);
 	}
 
 	GLuint id() const

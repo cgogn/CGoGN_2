@@ -258,8 +258,10 @@ DisplayListDrawer::Renderer::~Renderer()
 	param_ps_.reset();
 }
 
-void DisplayListDrawer::Renderer::draw(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33)
+void DisplayListDrawer::Renderer::draw(const QMatrix4x4& projection, const QMatrix4x4& modelview)
 {
+	QOpenGLFunctions_3_3_Core * ogl33 = QOpenGLContext::currentContext()->versionFunctions<QOpenGLFunctions_3_3_Core>();
+
 	//classic rendering
 	if (! drawer_data_->begins_point_.empty() || ! drawer_data_->begins_line_.empty() || ! drawer_data_->begins_face_.empty())
 	{

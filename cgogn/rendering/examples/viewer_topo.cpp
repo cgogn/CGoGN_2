@@ -183,7 +183,7 @@ void Viewer::draw()
 
 	if (topo_drawing_)
 	{
-		topo_drawer_rend_->draw(proj,view,this);
+		topo_drawer_rend_->draw(proj,view);
 	}
 }
 

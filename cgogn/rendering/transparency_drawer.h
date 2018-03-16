@@ -86,9 +86,8 @@ public:
 	 * @brief resize call_back need to be called when resize windows
 	 * @param w width of GL widget (do not forget to multiply by devicePixelRatio())
 	 * @param h height GL widget (do not forget to multiply by devicePixelRatio())
-	 * @param ogl33
 	 */
-	void resize(int w, int h, QOpenGLFunctions_3_3_Core* ogl33);
+	void resize(int w, int h);
 
 	/**
 	 * @brief draw the transparent object (can draw only one mesh)

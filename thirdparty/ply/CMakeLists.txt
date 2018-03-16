@@ -20,3 +20,5 @@ set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
 install(FILES "ply.h" DESTINATION "include/cgogn/thirdparty")
 
 cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}" "include/cgogn/thirdparty")
+
+set_target_properties(ply PROPERTIES FOLDER thirdparty)

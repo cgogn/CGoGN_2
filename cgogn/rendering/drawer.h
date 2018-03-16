@@ -124,9 +124,8 @@ public:
 		 * draw the compiled drawing list
 		 * @param projection projection matrix
 		 * @param modelview modelview matrix
-		 * @param a pointer compatible with QOpenGLFunctions_3_3_Core* (QOGLViewer)
 		 */
-		void draw(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33);
+		void draw(const QMatrix4x4& projection, const QMatrix4x4& modelview);
 	};
 
 	using Self = DisplayListDrawer;

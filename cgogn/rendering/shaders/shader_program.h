@@ -90,7 +90,7 @@ public:
 	void bind(const QMatrix4x4& proj, const QMatrix4x4& mv);
 
 	/**
-	 * @brief release vao adn shader
+	 * @brief release vao and shader
 	 */
 	void release();
 };

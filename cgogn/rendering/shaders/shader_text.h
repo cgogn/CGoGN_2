@@ -21,60 +21,78 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_GEOMETRY_FUNCTIONS_AREA_H_
-#define CGOGN_GEOMETRY_FUNCTIONS_AREA_H_
+#ifndef CGOGN_RENDERING_SHADERS_TEXT_H_
+#define CGOGN_RENDERING_SHADERS_TEXT_H_
 
-#include <cgogn/geometry/types/geometry_traits.h>
+#include <cgogn/rendering/shaders/shader_program.h>
+#include <cgogn/rendering/shaders/vbo.h>
+#include <cgogn/rendering/dll.h>
+#include <QOpenGLTexture>
+
+class QOpenGLTexture;
 
 namespace cgogn
 {
 
-namespace geometry
+namespace rendering
 {
 
-/**
- * area of the triangle formed by 3 points in 3D
- */
-template <typename VEC3a, typename VEC3b, typename VEC3c>
-inline auto area(const Eigen::MatrixBase<VEC3a>& p1, const Eigen::MatrixBase<VEC3b>& p2, const Eigen::MatrixBase<VEC3c>& p3)
--> typename std::enable_if <is_dim_of<VEC3a, 3>::value, ScalarOf<VEC3a>>::type
+class ShaderText;
+
+class CGOGN_RENDERING_API ShaderParamText : public ShaderParam
 {
-	static_assert(is_same_vector<VEC3a,VEC3b,VEC3c>::value, "parameters must have same type");
-	using Scalar = ScalarOf<VEC3a>;
-	return (Scalar(0.5) * ((p2 - p1).cross(p3 - p1)).norm());
-}
+protected:
 
+	void set_uniforms();
 
-/**
- * area of the triangle formed by 3 points in 2D
- */
-template <typename VEC2a, typename VEC2b, typename VEC2c>
-inline auto area(const Eigen::MatrixBase<VEC2a>& p1, const Eigen::MatrixBase<VEC2b>& p2, const Eigen::MatrixBase<VEC2c>& p3)
--> typename std::enable_if <is_dim_of<VEC2a, 2>::value, ScalarOf<VEC2a>>::type
+public:
+	using ShaderType = ShaderText;
+
+	QOpenGLTexture* texture_;
+
+	float32 italic_;
+
+	ShaderParamText(ShaderText* sh);
+
+	void set_vbo(VBO* vbo_pos, VBO* vbo_str, VBO* vbo_colsize);
+};
+
+class CGOGN_RENDERING_API ShaderText : public ShaderProgram
 {
-	static_assert(is_same_vector<VEC2a,VEC2b,VEC2c>::value, "parameters must have same type");
-	using Scalar = ScalarOf<VEC2a>;
-	auto v1 = p2 - p1;
-	auto v2 = p3 - p1;
-	return (Scalar(0.5) * (v1[0] * v2[1] - v1[1] * v2[0]));
-}
+	static const char* vertex_shader_source_;
+	static const char* fragment_shader_source_;
+	GLint unif_italic_;
 
+public:
 
+	enum
+	{
+		ATTRIB_POS = 0,
+		ATTRIB_CHAR,
+		ATTRIB_COLSZ
+	};
 
-/**
- * area of the triangle formed by 3 points (for not-Eigen parameters)
- */
-template <typename VEC>
-inline auto area(const VEC& p1, const VEC& p2, const VEC& p3)
--> typename std::enable_if <is_vec_non_eigen<VEC>::value, ScalarOf<VEC> >::type
-{
-	return area(eigenize(p1),eigenize(p2),eigenize(p3));
-}
+	using Param = ShaderParamText;
 
+	/**
+	 * @brief generate shader parameter object
+	 * @return pointer
+	 */
+	static std::unique_ptr<Param> generate_param();
 
+	/**
+	 * @brief set_italic
+	 * @param i %
+	 */
+	void set_italic(float32 i);
 
-} // namespace geometry
+protected:
+	ShaderText();
+	static ShaderText* instance_;
+};
+
+} // namespace rendering
 
 } // namespace cgogn
 
-#endif // CGOGN_GEOMETRY_FUNCTIONS_AREA_H_
+#endif // CGOGN_RENDERING_SHADERS_TEXTURE_H_

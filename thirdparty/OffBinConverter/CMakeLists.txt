@@ -9,3 +9,5 @@ if(NOT MSVC)
 		target_compile_options(off_ascii2bin PUBLIC "-std=c++17")
 	endif(CGOGN_CPP_STD STREQUAL "11")
 endif(NOT MSVC)
+
+set_target_properties(off_ascii2bin PROPERTIES FOLDER thirdparty)

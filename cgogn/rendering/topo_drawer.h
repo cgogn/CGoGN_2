@@ -109,10 +109,9 @@ public:
 		 * @brief draw
 		 * @param projection projection matrix
 		 * @param modelview model-view matrix
-		 * @param ogl33 OGLFunction (use "this" ptr if you inherit from QOpenGLWidget
 		 * @param with_blending
 		 */
-		void draw(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33, bool with_blending = true);
+		void draw(const QMatrix4x4& projection, const QMatrix4x4& modelview, bool with_blending = true);
 
 		void set_clipping_plane(const QVector4D& p);
 
