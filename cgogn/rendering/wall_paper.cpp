@@ -223,8 +223,10 @@ WallPaper::Renderer::Renderer(WallPaper* wp) :
 WallPaper::Renderer::~Renderer()
 {}
 
-void WallPaper::Renderer::draw(QOpenGLFunctions_3_3_Core* ogl33)
+void WallPaper::Renderer::draw()
 {
+	QOpenGLFunctions_3_3_Core * ogl33 = QOpenGLContext::currentContext()->versionFunctions<QOpenGLFunctions_3_3_Core>();
+
 	QMatrix4x4 id;
 	param_texture_->bind(id, id);
 	ogl33->glDrawArrays(GL_TRIANGLE_FAN, 0, 4);

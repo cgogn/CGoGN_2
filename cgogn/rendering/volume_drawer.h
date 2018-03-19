@@ -59,8 +59,8 @@ namespace rendering
  *
  * draw:
  *  volu_rend_->set_explode_volume(0.9);
- *  volu_rend_->draw_faces(proj, view, this);
- *  volu_rend_->draw_edges(proj, view, this);
+ *  volu_rend_->draw_faces(proj, view);
+ *  volu_rend_->draw_edges(proj, view);
  *
  */
 class CGOGN_RENDERING_API VolumeDrawerGen
@@ -100,8 +100,8 @@ public:
 	public:
 
 		~Renderer();
-		void draw_faces(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33);
-		void draw_edges(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33);
+		void draw_faces(const QMatrix4x4& projection, const QMatrix4x4& modelview);
+		void draw_edges(const QMatrix4x4& projection, const QMatrix4x4& modelview);
 		void set_explode_volume(float32 x);
 		void set_face_color(const QColor& rgb);
 		void set_edge_color(const QColor& rgb);

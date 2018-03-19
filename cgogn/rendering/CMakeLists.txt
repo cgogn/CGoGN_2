@@ -43,6 +43,7 @@ set(HEADER_SHADERS
 	shaders/shader_explode_volumes.h
 	shaders/shader_explode_volumes_line.h
 	shaders/shader_texture.h
+	shaders/shader_text.h
 )
 
 set(HEADER_FILES
@@ -53,6 +54,7 @@ set(HEADER_FILES
 	map_render.h
 	wall_paper.h
 	frame_manipulator.h
+	text_drawer.h
 	${HEADER_SHADERS}
 	${HEADER_TRANSP_SHADER}
 )
@@ -71,6 +73,7 @@ set(SOURCE_SHADERS
 	shaders/shader_explode_volumes.cpp
 	shaders/shader_explode_volumes_line.cpp
 	shaders/shader_texture.cpp
+	shaders/shader_text.cpp
 )
 
 set(SOURCE_FILES
@@ -80,11 +83,14 @@ set(SOURCE_FILES
 	map_render.cpp
 	wall_paper.cpp
 	frame_manipulator.cpp
+	text_drawer.cpp
 	${SOURCE_SHADERS}
 	${SOURCE_TRANSP_SHADER}
 )
 
-add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
+qt5_add_resources(RCC_FILES fonte.qrc)
+
+add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES} ${RCC_FILES})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
 target_compile_definitions(${PROJECT_NAME} PRIVATE "-DCGOGN_RENDERING_DLL_EXPORT")

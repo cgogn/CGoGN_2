@@ -309,11 +309,11 @@ void Viewer::draw()
 	camera()->getProjectionMatrix(proj);
 	camera()->getModelViewMatrix(view);
 
-	frame_manip_->draw(true,true,proj, view, this); // draw opaque first
+	frame_manip_->draw(true,true,proj, view); // draw opaque first
 
 	transp_drawer_->draw([&]() -> void
 	{
-		volume_drawer_rend_->draw_faces(proj, view, this);
+		volume_drawer_rend_->draw_faces(proj, view);
 	});
 	
 
@@ -369,7 +369,7 @@ void Viewer::init()
 
 void Viewer::resizeGL(int w ,int h)
 {
-	transp_drawer_->resize(this->devicePixelRatio()*w,this->devicePixelRatio()*h, this);
+	transp_drawer_->resize(this->devicePixelRatio()*w,this->devicePixelRatio()*h);
 	QOGLViewer::resizeGL(w,h);
 }
 

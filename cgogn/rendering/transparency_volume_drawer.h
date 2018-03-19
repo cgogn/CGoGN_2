@@ -65,7 +65,7 @@ public:
 	public:
 		~Renderer();
 
-		void draw_faces(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33);
+		void draw_faces(const QMatrix4x4& projection, const QMatrix4x4& modelview);
 
 		void set_explode_volume(float32 x);
 

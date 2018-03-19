@@ -66,8 +66,10 @@ SurfaceTransparencyDrawer::SurfaceTransparencyDrawer():
 
 }
 
-void SurfaceTransparencyDrawer::resize(int w, int h, QOpenGLFunctions_3_3_Core* ogl33)
+void SurfaceTransparencyDrawer::resize(int w, int h)
 {
+	QOpenGLFunctions_3_3_Core * ogl33 = QOpenGLContext::currentContext()->versionFunctions<QOpenGLFunctions_3_3_Core>();
+
 	width_ = w;
 	height_ = h;
 	ogl33_ = ogl33;

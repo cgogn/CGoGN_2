@@ -64,11 +64,12 @@ VolumeTransparencyDrawer::Renderer::Renderer(VolumeTransparencyDrawer* vr) :
 
 
 
-void VolumeTransparencyDrawer::Renderer::draw_faces(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33)
+void VolumeTransparencyDrawer::Renderer::draw_faces(const QMatrix4x4& projection, const QMatrix4x4& modelview)
 {
-		param_transp_vol_->bind(projection, modelview);
-		ogl33->glDrawArrays(GL_LINES_ADJACENCY, 0, volume_drawer_data_->vbo_pos_->size());
-		param_transp_vol_->release();
+	QOpenGLFunctions_3_3_Core * ogl33 = QOpenGLContext::currentContext()->versionFunctions<QOpenGLFunctions_3_3_Core>();
+	param_transp_vol_->bind(projection, modelview);
+	ogl33->glDrawArrays(GL_LINES_ADJACENCY, 0, volume_drawer_data_->vbo_pos_->size());
+	param_transp_vol_->release();
 }
 
 void VolumeTransparencyDrawer::Renderer::set_explode_volume(float32 x)

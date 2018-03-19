@@ -209,7 +209,7 @@ void ViewerTransparency::draw()
 	camera()->getProjectionMatrix(proj);
 	camera()->getModelViewMatrix(view);
 
-	wp_rend_->draw(this);
+	wp_rend_->draw();
 
 	if (draw_points_)
 	{
@@ -270,7 +270,7 @@ void ViewerTransparency::init()
 
 void ViewerTransparency::resizeGL(int w ,int h)
 {
-	transp_drawer_->resize(this->devicePixelRatio()*w,this->devicePixelRatio()*h,this);
+	transp_drawer_->resize(this->devicePixelRatio()*w,this->devicePixelRatio()*h);
 	QOGLViewer::resizeGL(w,h);
 }
 

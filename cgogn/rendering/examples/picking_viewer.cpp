@@ -140,7 +140,7 @@ void Viewer::draw()
 
 	glDisable(GL_POLYGON_OFFSET_FILL);
 
-	drawer_rend_->draw(proj_, view_, this);
+	drawer_rend_->draw(proj_, view_);
 }
 
 void Viewer::init()

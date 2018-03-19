@@ -169,7 +169,7 @@ void ViewerTransparency::draw()
 	render_->draw(cgogn::rendering::TRIANGLES);
 	param_flat_->release();
 
-	drawer_rend_->draw(proj,view,this);
+	drawer_rend_->draw(proj,view);
 
 	// the the transparents objects.
 
@@ -275,7 +275,7 @@ void ViewerTransparency::init()
 
 void ViewerTransparency::resizeGL(int w ,int h)
 {
-	transp_drawer_->resize(this->devicePixelRatio()*w,this->devicePixelRatio()*h,this);
+	transp_drawer_->resize(this->devicePixelRatio()*w,this->devicePixelRatio()*h);
 	QOGLViewer::resizeGL(w,h);
 }
 

@@ -85,8 +85,10 @@ VolumeDrawerGen::Renderer::Renderer(VolumeDrawerGen* vr) :
 VolumeDrawerGen::Renderer::~Renderer()
 {}
 
-void VolumeDrawerGen::Renderer::draw_faces(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33)
+void VolumeDrawerGen::Renderer::draw_faces(const QMatrix4x4& projection, const QMatrix4x4& modelview)
 {
+	QOpenGLFunctions_3_3_Core * ogl33 = QOpenGLContext::currentContext()->versionFunctions<QOpenGLFunctions_3_3_Core>();
+
 	if (param_expl_vol_col_)
 	{
 		param_expl_vol_col_->bind(projection, modelview);
@@ -101,8 +103,10 @@ void VolumeDrawerGen::Renderer::draw_faces(const QMatrix4x4& projection, const Q
 	}
 }
 
-void VolumeDrawerGen::Renderer::draw_edges(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33)
+void VolumeDrawerGen::Renderer::draw_edges(const QMatrix4x4& projection, const QMatrix4x4& modelview)
 {
+	QOpenGLFunctions_3_3_Core * ogl33 = QOpenGLContext::currentContext()->versionFunctions<QOpenGLFunctions_3_3_Core>();
+
 	param_expl_vol_line_->bind(projection,modelview);
 	ogl33->glDrawArrays(GL_TRIANGLES, 0, volume_drawer_data_->vbo_pos2_->size());
 	param_expl_vol_line_->release();

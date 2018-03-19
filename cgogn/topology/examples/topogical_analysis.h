@@ -151,8 +151,8 @@ public:
 
 		if(feature_points_rendering_)
 		{
-			features_renderer_->draw(proj, view, this);
-			lines_renderer_->draw(proj, view, this);
+			features_renderer_->draw(proj, view);
+			lines_renderer_->draw(proj, view);
 		}
 
 		glEnable(GL_POLYGON_OFFSET_FILL);

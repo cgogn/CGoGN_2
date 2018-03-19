@@ -183,8 +183,9 @@ float32 FrameManipulator::get_size()
 	return scale_rendering_;
 }
 
-void FrameManipulator::draw(bool frame, bool zplane, const QMatrix4x4& proj, const QMatrix4x4& view, QOpenGLFunctions_3_3_Core* ogl33)
+void FrameManipulator::draw(bool frame, bool zplane, const QMatrix4x4& proj, const QMatrix4x4& view)
 {
+	QOpenGLFunctions_3_3_Core * ogl33 = QOpenGLContext::currentContext()->versionFunctions<QOpenGLFunctions_3_3_Core>();
 
 	proj_mat_ = proj;
 	view_mat_ = view;
