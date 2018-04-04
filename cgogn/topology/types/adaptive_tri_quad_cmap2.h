@@ -66,7 +66,7 @@ public:
 
 		f.dart = oldest_dart(f);
 		uint8 fl = face_level(f);
-		uint8 fid = face_subd_id_[f];
+		uint32 fid = face_subd_id_[f];
 
 		// enforce neighbours level difference is not greater than 1
 		map_.foreach_adjacent_face_through_edge(f, [&] (Face af)
