@@ -60,7 +60,6 @@ inline ScalarOf<InsideTypeOf<VERTEX_ATTR>> angle(const MAP& map, const Cell<Orbi
 	return angle(v1, v2);
 }
 
-
 /**
  * @brief compute and return the angle formed by the normals of the two faces incident to the given edge
  * @param map
@@ -110,7 +109,6 @@ inline ScalarOf<InsideTypeOf<VERTEX_ATTR>> angle_between_face_normals(
 	return a;
 }
 
-
 /**
  * @brief compute angle between face normals incident to each edge of a part of the map
  * @param map
@@ -153,8 +151,6 @@ inline void compute_angle_between_face_normals(
 	compute_angle_between_face_normals(map, AllCellsFilter(), position, edge_angle);
 }
 
-
-
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_EXTERNAL_TEMPLATES_CPP_))
 extern template CGOGN_GEOMETRY_API float32 angle_between_face_normals(const CMap2&, const Cell<Orbit::PHI2>, const CMap2::VertexAttribute<Eigen::Vector3f>&);
 extern template CGOGN_GEOMETRY_API float64 angle_between_face_normals(const CMap2&, const Cell<Orbit::PHI2>, const CMap2::VertexAttribute<Eigen::Vector3d>&);
@@ -167,4 +163,3 @@ extern template CGOGN_GEOMETRY_API void compute_angle_between_face_normals(const
 } // namespace cgogn
 
 #endif // CGOGN_GEOMETRY_ALGOS_ANGLE_H_
-
