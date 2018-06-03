@@ -103,7 +103,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	$<INSTALL_INTERFACE:include/cgogn/thirdparty>
 )
 
-target_link_libraries(${PROJECT_NAME} cgogn_core cgogn_geometry ${Qt5Widgets_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} cgogn_core cgogn_geometry Qt5::Widgets)
 
 file(GLOB HEADERS "." "*.h")
 install(FILES ${HEADERS}
