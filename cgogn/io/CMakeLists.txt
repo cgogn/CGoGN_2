@@ -19,6 +19,7 @@ set(HEADER_FILES
 	dll.h
 	c_locale.h
 	mesh_io_gen.h
+        point_set_import.h
 	surface_export.h
 	volume_export.h
 	formats/2dm.h
@@ -30,6 +31,7 @@ set(HEADER_FILES
 	formats/nastran.h
 	formats/obj.h
 	formats/off.h
+        formats/plo.h
 	formats/ply.h
 	formats/ply_data.h
 	formats/skel.h

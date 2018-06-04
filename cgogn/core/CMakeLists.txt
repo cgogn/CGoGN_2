@@ -16,6 +16,7 @@ set(HEADER_CMAP
 	cmap/map_base_data.h
 	cmap/map_base.h
 	cmap/cmap0.h
+        cmap/cmap0_builder.h
 	cmap/cmap1.h
 	cmap/cmap2.h
 	cmap/cmap2_builder.h

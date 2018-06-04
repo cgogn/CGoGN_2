@@ -25,6 +25,7 @@
 
 #include <cgogn/io/map_export.h>
 #include <cgogn/io/map_import.h>
+#include <cgogn/io/point_set_import.h>
 #include <cgogn/io/surface_export.h>
 #include <cgogn/io/surface_import.h>
 #include <cgogn/io/volume_export.h>
@@ -41,6 +42,8 @@ template CGOGN_IO_API void export_graph(UndirectedGraph& , const ExportOptions&)
 template CGOGN_IO_API void export_surface(CMap2& , const ExportOptions&);
 template CGOGN_IO_API void export_volume(CMap3& , const ExportOptions&);
 
+template CGOGN_IO_API void import_point_set<Eigen::Vector3f>(CMap0&, const std::string&);
+template CGOGN_IO_API void import_point_set<Eigen::Vector3d>(CMap0&, const std::string&);
 template CGOGN_IO_API void import_graph<Eigen::Vector3f>(UndirectedGraph&, const std::string&);
 template CGOGN_IO_API void import_graph<Eigen::Vector3d>(UndirectedGraph&, const std::string&);
 template CGOGN_IO_API void import_surface<Eigen::Vector3f>(CMap2&, const std::string&);
@@ -49,7 +52,8 @@ template CGOGN_IO_API void import_volume<Eigen::Vector3f>(CMap3&, const std::str
 template CGOGN_IO_API void import_volume<Eigen::Vector3d>(CMap3&, const std::string&);
 
 
-
+template class CGOGN_IO_API PointSetImport<CMap0>;
+template class CGOGN_IO_API PointSetFileImport<CMap0>;
 
 template class CGOGN_IO_API SurfaceExport<CMap2>;
 
