@@ -29,6 +29,7 @@
 #include <cgogn/geometry/types/geometry_traits.h>
 
 #include <cgogn/io/point_set_import.h>
+#include <cgogn/io/point_set_export.h>
 
 namespace cgogn
 {
@@ -36,17 +37,18 @@ namespace cgogn
 namespace io
 {
 
-template <typename VEC3>
-class PlotPointSetImport : public PointSetFileImport
+template <typename MAP, typename VEC3>
+class PlotPointSetImport : public PointSetFileImport<MAP>
 {
 public:
-	using Self = PlotPointSetImport<VEC3>;
-	using Inherit = PointSetFileImport;
+
+	using Self = PlotPointSetImport<MAP, VEC3>;
+	using Inherit = PointSetFileImport<MAP>;
 	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
-	inline PlotPointSetImport() {}
+	inline PlotPointSetImport(MAP& map) : Inherit(map) {}
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(PlotPointSetImport);
 	virtual ~PlotPointSetImport() override {}
 
@@ -91,12 +93,42 @@ protected:
 };
 
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_IO_API PlotPointSetImport<Eigen::Vector3d>;
-extern template class CGOGN_IO_API PlotPointSetImport<Eigen::Vector3f>;
-extern template class CGOGN_IO_API PlotPointSetImport<geometry::Vec_T<std::array<float64,3>>>;
-extern template class CGOGN_IO_API PlotPointSetImport<geometry::Vec_T<std::array<float32,3>>>;
+template <typename MAP>
+class PloPointSetExport : public PointSetExport<MAP>
+{
+public:
+	using Inherit = PointSetExport<MAP>;
+	using Self = PloPointSetExport<MAP>;
+	using Map = typename Inherit::Map;
+	using Vertex = typename Inherit::Vertex;
 
+	using ChunkArrayGen = typename Inherit::ChunkArrayGen;
+	template <typename T>
+	using VertexAttribute = typename Inherit::template VertexAttribute<T>;
+	using ChunkArrayContainer = typename Inherit::ChunkArrayContainer;
+
+protected:
+	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& ) override
+	{
+		// Header
+		output << map.template nb_cells<Vertex::ORBIT>() << std::endl;
+
+		// Vertices
+		map.foreach_cell([&] (Vertex v)
+		{
+			output << this->position_attribute(Vertex::ORBIT)->export_element(map.embedding(v), output, false, false);
+			output << std::endl;
+		}, *(this->cell_cache_));
+	}
+};
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
+extern template class CGOGN_IO_API PlotPointSetImport<CMap0, Eigen::Vector3d>;
+extern template class CGOGN_IO_API PlotPointSetImport<CMap0, Eigen::Vector3f>;
+extern template class CGOGN_IO_API PlotPointSetImport<CMap0, geometry::Vec_T<std::array<float64,3>>>;
+extern template class CGOGN_IO_API PlotPointSetImport<CMap0, geometry::Vec_T<std::array<float32,3>>>;
+
+extern template class CGOGN_IO_API PlotPointSetExport<CMap0>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
 
 } //end namespace io

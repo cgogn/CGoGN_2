@@ -34,6 +34,7 @@
 #include <cgogn/io/formats/off.h>
 #include <cgogn/io/formats/obj.h>
 #include <cgogn/io/formats/stl.h>
+#include <cgogn/io/formats/plo.h>
 #include <cgogn/io/formats/ply.h>
 #include <cgogn/io/formats/cg.h>
 #include <cgogn/io/formats/cskel.h>
@@ -48,6 +49,18 @@ namespace cgogn
 
 namespace io
 {
+
+template <typename MAP>
+inline std::unique_ptr<PointSetExport<MAP>> new_point_set_export(const std::string& filename)
+{
+	const FileType ft = file_type(filename);
+	switch(ft) {
+		case FileType::FileType_PLO:		return make_unique<PloPointSetExport<MAP>>();
+		default:
+			cgogn_log_warning("new_point_set_export") << "PointSetExport does not handle files with extension \"" << extension(filename) << "\".";
+			return std::unique_ptr<PointSetExport<MAP>>();
+	}
+}
 
 template <typename MAP>
 inline std::unique_ptr<GraphExport<MAP>> new_graph_export(const std::string& filename)

@@ -43,6 +43,7 @@
 #include <cgogn/io/formats/off.h>
 #include <cgogn/io/formats/obj.h>
 #include <cgogn/io/formats/2dm.h>
+#include <cgogn/io/formats/plo.h>
 #include <cgogn/io/formats/ply.h>
 #include <cgogn/io/formats/meshb.h>
 #include <cgogn/io/formats/msh.h>

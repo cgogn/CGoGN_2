@@ -38,6 +38,7 @@ namespace io
 
 template class CGOGN_IO_API GraphExport<UndirectedGraph>;
 
+template CGOGN_IO_API void export_point_set(CMap0& , const ExportOptions&);
 template CGOGN_IO_API void export_graph(UndirectedGraph& , const ExportOptions&);
 template CGOGN_IO_API void export_surface(CMap2& , const ExportOptions&);
 template CGOGN_IO_API void export_volume(CMap3& , const ExportOptions&);
@@ -51,6 +52,7 @@ template CGOGN_IO_API void import_surface<Eigen::Vector3d>(CMap2&, const std::st
 template CGOGN_IO_API void import_volume<Eigen::Vector3f>(CMap3&, const std::string&);
 template CGOGN_IO_API void import_volume<Eigen::Vector3d>(CMap3&, const std::string&);
 
+template class CGOGN_IO_API PointSetExport<CMap0>;
 
 template class CGOGN_IO_API PointSetImport<CMap0>;
 template class CGOGN_IO_API PointSetFileImport<CMap0>;
@@ -139,6 +141,12 @@ template class CGOGN_IO_API OffSurfaceImport<CMap2, Eigen::Vector3f>;
 template class CGOGN_IO_API OffSurfaceImport<CMap2, geometry::Vec_T<std::array<float64,3>>>;
 template class CGOGN_IO_API OffSurfaceImport<CMap2, geometry::Vec_T<std::array<float32,3>>>;
 template class CGOGN_IO_API OffSurfaceExport<CMap2>;
+
+template class CGOGN_IO_API PlotPointSetImport<CMap0, Eigen::Vector3d>;
+template class CGOGN_IO_API PlotPointSetImport<CMap0, Eigen::Vector3f>;
+template class CGOGN_IO_API PlotPointSetImport<CMap0, geometry::Vec_T<std::array<float64,3>>>;
+template class CGOGN_IO_API PlotPointSetImport<CMap0, geometry::Vec_T<std::array<float32,3>>>;
+template class CGOGN_IO_API PlotPointSetExport<CMap0>;
 
 template class CGOGN_IO_API PlySurfaceImport<CMap2, Eigen::Vector3d>;
 template class CGOGN_IO_API PlySurfaceImport<CMap2, Eigen::Vector3f>;
