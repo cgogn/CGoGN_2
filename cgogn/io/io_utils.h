@@ -124,7 +124,8 @@ enum FileType
 	FileType_NASTRAN,
 	FileType_AIMATSHAPE,
 	FileType_TETMESH,
-	FileType_PLO
+	FileType_PLO,
+	FileType_TS,
 };
 
 enum DataType

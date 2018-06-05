@@ -53,6 +53,7 @@
 #include <cgogn/io/formats/skel.h>
 #include <cgogn/io/formats/stl.h>
 #include <cgogn/io/formats/tetmesh.h>
+#include <cgogn/io/formats/ts.h>
 #include <cgogn/io/formats/vtk.h>
 
 namespace cgogn
@@ -110,6 +111,7 @@ inline std::unique_ptr<SurfaceFileImport<MAP>> new_surface_import(MAP& map, cons
 		case FileType::FileType_STL: return make_unique<StlSurfaceImport<MAP, VEC3>>(map);
 		case FileType::FileType_MSH: return make_unique<MshSurfaceImport<MAP, VEC3>>(map);
 		case FileType::FileType_MESHB: return make_unique<MeshbSurfaceImport<MAP, VEC3>>(map);
+		case FileType::FileType_TS: return make_unique<TsSurfaceImport<MAP, VEC3>>(map);
 		default:
 			cgogn_log_warning("SurfaceImport") << "SurfaceImport does not handle files with extension \"" << extension(filename) << "\".";
 			return std::unique_ptr<SurfaceFileImport<MAP>>();

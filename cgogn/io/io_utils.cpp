@@ -314,7 +314,8 @@ CGOGN_IO_API FileType file_type(const std::string& filename)
 		{"cskel", FileType::FileType_CSKEL},
 		{"skc", FileType::FileType_CSKEL},
 		{"dot", FileType::FileType_DOT},
-		{"plo", FileType::FileType_PLO}
+		{"plo", FileType::FileType_PLO},
+		{"ts", FileType::FileType_TS}
 	};
 
 	const auto it = file_type_map.find(ext);
