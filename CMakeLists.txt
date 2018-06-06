@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.7.2 FATAL_ERROR)
 
 set(CGOGN_VERSION_MAJOR 2)
 set(CGOGN_VERSION_MINOR 0)

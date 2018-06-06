@@ -2,9 +2,9 @@ project(cgogn_rendering
 	LANGUAGES CXX
 )
 
-find_package(Qt5 5.4.0 COMPONENTS Widgets REQUIRED)
+find_package(Qt5 5.4.0 COMPONENTS Gui REQUIRED)
 
-if (Qt5Widgets_VERSION VERSION_GREATER 5.5.99)
+if (Qt5Gui_VERSION VERSION_GREATER 5.5.99)
 	set(HEADER_TRANSP_SHADER
 	transparency_shaders/shader_transparent_quad.h
 	transparency_shaders/shader_transparent_flat.h
@@ -103,7 +103,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	$<INSTALL_INTERFACE:include/cgogn/thirdparty>
 )
 
-target_link_libraries(${PROJECT_NAME} cgogn_core cgogn_geometry ${Qt5Widgets_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} cgogn_core cgogn_geometry Qt5::Gui QOGLViewer)
 
 file(GLOB HEADERS "." "*.h")
 install(FILES ${HEADERS}

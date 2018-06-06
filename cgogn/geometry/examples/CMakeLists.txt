@@ -19,7 +19,7 @@ add_definitions("-DCGOGN_TEST_MESHES_PATH=${CGOGN_TEST_MESHES_PATH}")
 
 
 add_executable(filtering filtering.cpp)
-target_link_libraries(filtering ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${cgogn_rendering_LIBRARIES} ${QOGLViewer_LIBRARIES})
+target_link_libraries(filtering ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${cgogn_rendering_LIBRARIES} )
 
 
 set_target_properties(filtering PROPERTIES FOLDER examples/geometry)
