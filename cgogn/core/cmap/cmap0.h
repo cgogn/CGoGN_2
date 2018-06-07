@@ -25,6 +25,7 @@
 #define CGOGN_CORE_CMAP_CMAP0_H_
 
 #include <cgogn/core/cmap/map_base.h>
+#include <cgogn/core/cmap/cmap0_builder.h>
 
 namespace cgogn
 {
@@ -42,10 +43,14 @@ public:
 	using Inherit = MapBase<MAP_TYPE>;
 	using Self = CMap0_T<MAP_TYPE>;
 
+	using Builder = CMap0Builder_T<Self>;
+
 	friend class MapBase<MAP_TYPE>;
+	friend class CMap0Builder_T<Self>;
 	friend class DartMarker_T<Self>;
 	friend class cgogn::DartMarkerStore<Self>;
 
+	using CDart  = Cell<Orbit::DART>;
 	using Vertex = Cell<Orbit::DART>;
 
 	using Boundary = Vertex;  // just for compilation

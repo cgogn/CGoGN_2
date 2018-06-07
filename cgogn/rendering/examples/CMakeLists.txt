@@ -43,8 +43,10 @@ target_link_libraries(mt_viewer ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${
 add_executable(text_drawing text_drawing.cpp)
 target_link_libraries(text_drawing ${cgogn_rendering_LIBRARIES} ${QOGLViewer_LIBRARIES})
 
+add_executable(point_set_drawing point_set_drawing.cpp)
+target_link_libraries(point_set_drawing ${cgogn_rendering_LIBRARIES} ${cgogn_io_LIBRARIES} ${QOGLViewer_LIBRARIES})
 
-set_target_properties(simple_viewer viewer_per_face viewer_topo drawing picking_viewer viewer_topo3 mt_viewer text_drawing
+set_target_properties(simple_viewer viewer_per_face viewer_topo drawing picking_viewer viewer_topo3 mt_viewer text_drawing point_set_drawing
 PROPERTIES FOLDER examples/rendering)
 
 

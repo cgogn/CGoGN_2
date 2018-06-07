@@ -38,19 +38,19 @@ namespace io
 {
 
 template <typename MAP, typename VEC3>
-class PlotPointSetImport : public PointSetFileImport<MAP>
+class PloPointSetImport : public PointSetFileImport<MAP>
 {
 public:
 
-	using Self = PlotPointSetImport<MAP, VEC3>;
+	using Self = PloPointSetImport<MAP, VEC3>;
 	using Inherit = PointSetFileImport<MAP>;
 	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
-	inline PlotPointSetImport(MAP& map) : Inherit(map) {}
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(PlotPointSetImport);
-	virtual ~PlotPointSetImport() override {}
+	inline PloPointSetImport(MAP& map) : Inherit(map) {}
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(PloPointSetImport);
+	virtual ~PloPointSetImport() override {}
 
 protected:
 	virtual bool import_file_impl(const std::string& filename) override
