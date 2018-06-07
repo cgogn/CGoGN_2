@@ -66,7 +66,7 @@ public:
 
 	using DataInputGen = cgogn::io::DataInputGen;
 
-	inline SurfaceImport(MAP& map) :
+	inline PointSetImport(MAP& map) :
 		map_(map),
 		mbuild_(map)
 	{

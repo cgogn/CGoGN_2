@@ -40,6 +40,7 @@ set(HEADER_FILES
 	formats/tet.h
 	formats/tetgen.h
 	formats/tetmesh.h
+        formats/ts.h
 	formats/vtk.h
 )
 

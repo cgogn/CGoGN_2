@@ -24,8 +24,6 @@
 #ifndef CGOGN_IO_FORMATS_TS_H_
 #define CGOGN_IO_FORMATS_TS_H_
 
-#include <cgogn/core/cmap/cmap2.h>
-
 #include <cgogn/geometry/types/eigen.h>
 #include <cgogn/geometry/types/vec.h>
 #include <cgogn/geometry/types/geometry_traits.h>
@@ -46,196 +44,228 @@ class TsSurfaceImport : public SurfaceFileImport<MAP>
 {
 public:
 
-    using Self = TsSurfaceImport<MAP, VEC3>;
-    using Inherit = SurfaceFileImport<MAP>;
-    using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
-    template <typename T>
-    using ChunkArray = typename Inherit::template ChunkArray<T>;
+	using Self = TsSurfaceImport<MAP, VEC3>;
+	using Inherit = SurfaceFileImport<MAP>;
+	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
+	template <typename T>
+	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
-    inline TsSurfaceImport(MAP& map) : Inherit(map) {}
-    CGOGN_NOT_COPYABLE_NOR_MOVABLE(TsSurfaceImport);
-    virtual ~TsSurfaceImport() override {}
+	inline TsSurfaceImport(MAP& map) : Inherit(map) {}
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(TsSurfaceImport);
+	virtual ~TsSurfaceImport() override {}
 
 protected:
 
-    virtual bool import_file_impl(const std::string& filename) override
-    {
-        std::ifstream fp(filename.c_str(), std::ios::in);
+	virtual bool import_file_impl(const std::string& filename) override
+	{
+		std::ifstream fp(filename.c_str(), std::ios::in);
 
-        std::string line, tag;
-        line.reserve(512);
+		ChunkArray<VEC3>* position = this->template add_vertex_attribute<VEC3>("position");
+		std::string line, tag;
+		line.reserve(512);
 
-        getline_safe(fp, line);
+		getline_safe(fp, line);
 
-        if(line.compare(0, 11, "GOCAD TSurf") != 0)
-            return false;
+		if(line.compare(0, 11, "GOCAD TSurf") != 0)
+			return false;
 
-        //read the header
-        {
-            getline_safe(fp, line);
+		std::cout << "import ts files" << std::endl;
 
-            //header block
-            if (line == "HEADER{")
-            {
-                getline_safe(fp,line);
-                while(line.compare(0, 1, "}") != 0)
-                {
-                    //todo handle properties
-                    getline_safe(fp,line);
-                }
+		//read the header
+		{
+			getline_safe(fp, line);
 
-            }
+			//header block
+			if (line.compare(0, 6, "HEADER") == 0)
+			{
+				getline_safe(fp,line);
+				while(line.compare(0, 1, "}") != 0)
+				{
+					//todo handle properties
+					getline_safe(fp,line);
+				}
+			}
 
-            //header lines
-            fp >> tag;
-            while(tag.compare("HDR") == 0)
-            {
-                //todo handle properties
-                getline_safe(fp,line);
-                fp >> tag;
-            }
-        }
+			//header lines
+			//            fp >> tag;
+			std::cout << tag << std::endl;
+			//            while(tag.compare("HDR") == 0)
+			//            {
+			//                //todo handle properties
+			//                getline_safe(fp,line);
+			//                fp >> tag;
+			//            }
+		}
 
-        //read the coordinate system
-        getline_safe(fp, line);
-        if(line == "GOCAD_ORIGINAL_COORDINATE_SYSTEM")
-        {
-            getline_safe(fp, line);
-            while(line != "END_ORIGINAL_COORDINATE_SYSTEM")
-            {
-                fp >> tag;
+		//        //read the coordinate system
+		//        getline_safe(fp, line);
+		//        if(line == "GOCAD_ORIGINAL_COORDINATE_SYSTEM")
+		//        {
+		//            getline_safe(fp, line);
+		//            while(line != "END_ORIGINAL_COORDINATE_SYSTEM")
+		//            {
+		//                fp >> tag;
 
-                if(tag == "NAME")
-                {
-                    std::cout <<"NAME: " << line << std::endl;
-                }
-                else if(tag == "AXIS_NAME")
-                {
-                    std::cout <<"AXIS_NAME: " << line << std::endl;
-                }
-                else if(tag == "AXIS_UNIT")
-                {
-                    std::cout <<"AXIS_UNIT: " << line << std::endl;
-                }
-                else if(tag == "ZPOSITIVE")
-                {
-                    std::cout <<"ZPOSITIVE: " << line << std::endl;
-                }
+		//                if(tag == "NAME")
+		//                {
+		//                    std::cout <<"NAME: " << line << std::endl;
+		//                }
+		//                else if(tag == "AXIS_NAME")
+		//                {
+		//                    std::cout <<"AXIS_NAME: " << line << std::endl;
+		//                }
+		//                else if(tag == "AXIS_UNIT")
+		//                {
+		//                    std::cout <<"AXIS_UNIT: " << line << std::endl;
+		//                }
+		//                else if(tag == "ZPOSITIVE")
+		//                {
+		//                    std::cout <<"ZPOSITIVE: " << line << std::endl;
+		//                }
 
-                getline_safe(fp, line);
-            }
-        }
+		//                getline_safe(fp, line);
+		//            }
+		//		}
 
-        //read the points
-        std::vector<uint32> vertices_id;
-        vertices_id.reserve(102400);
-        uint32 max_id = 0;
 
-        uint32 i = 0;
-        do
-        {
-            if (tag == std::string("VRTX") || tag == std::string("PVRTX"))
-            {
-                std::stringstream oss(line);
+		uint32 first_vtx = std::numeric_limits<uint32>::max();
 
-                float64 x, y, z;
-                oss >> x;
-                oss >> y;
-                oss >> z;
 
-                VEC3 pos{Scalar(x), Scalar(y), Scalar(z)};
+		//header lines
+		fp >> tag;
 
-                uint32 vertex_id = this->insert_line_vertex_container();
-                (*position)[vertex_id] = pos;
+		if(tag == "TFACE")
+		{
 
-                vertices_id.push_back(vertex_id);
+			//read the points
+			std::vector<uint32> vertices_id;
+			vertices_id.reserve(102400);
+			uint32 max_id = 0;
 
-                if (vertex_id > max_id)
-                    max_id = vertex_id;
-                i++;
-            }
+			uint32 i = 0;
+			do
+			{
+				if (tag == std::string("VRTX") || tag == std::string("PVRTX"))
+				{
+					std::stringstream oss(line);
 
-            fp >> tag;
-            getline_safe(fp, line);
-        } while (!fp.eof());
+					uint32 id;
+					float64 x, y, z;
+					oss >> id;
+					oss >> x;
+					oss >> y;
+					oss >> z;
 
-        //read the triangles
-        do
-        {
+					if (id < first_vtx) first_vtx = id;
 
-            if (tag == std::string("TRGL"))
-            {
-                std::istringstream iss(line);
+					VEC3 pos{Scalar(x), Scalar(y), Scalar(z)};
 
-                std::array<uint32,3> ids;
-                iss >> ids[0] >> ids[1] >> ids[2];
+					uint32 vertex_id = this->insert_line_vertex_container();
+					(*position)[vertex_id] = pos;
 
-                this->faces_nb_edges_.push_back(3);
-                for(uint32 j = 0; j < 3; j++)
-                {
-                    this->faces_vertex_indices_.push_back(ids[j]);
-                }
-            }
-            fp >> tag;
-            getline_safe(fp, line);
-        } while (!fp.eof());
+					vertices_id.push_back(vertex_id);
 
-        return true;
-    }
+					if (vertex_id > max_id)
+						max_id = vertex_id;
+					i++;
+				}
+
+				fp >> tag;
+				getline_safe(fp, line);
+			} while (!fp.eof());
+
+
+
+			fp.clear();
+			fp.seekg(0, std::ios::beg);
+
+			do
+			{
+				fp >> tag;
+				getline_safe(fp, line);
+			} while (tag != std::string("TRGL") && (!fp.eof()));
+
+
+			//read the triangles
+			if(tag == "TRGL")
+			{
+				do
+				{
+
+					if (tag == std::string("TRGL"))
+					{
+						std::stringstream oss(line);
+
+						uint32 id1, id2, id3 ;
+						oss >> id1;
+						oss >> id2;
+						oss >> id3;
+
+						this->add_triangle(id1-first_vtx, id2-first_vtx, id3-first_vtx);
+					}
+					fp >> tag;
+					getline_safe(fp, line);
+				} while (!fp.eof());
+			}
+		}
+
+		return true;
+	}
 };
 
 template <typename MAP>
 class TsSurfaceExport : public SurfaceExport<MAP>
 {
 public:
-    using Inherit = SurfaceExport<MAP>;
-    using Self = TsSurfaceExport<MAP>;
-    using Map = typename Inherit::Map;
-    using Vertex = typename Inherit::Vertex;
-    using Face = typename Inherit::Face;
-    using ChunkArrayGen = typename Inherit::ChunkArrayGen;
+	using Inherit = SurfaceExport<MAP>;
+	using Self = TsSurfaceExport<MAP>;
+	using Map = typename Inherit::Map;
+	using Vertex = typename Inherit::Vertex;
+	using Face = typename Inherit::Face;
+	using ChunkArrayGen = typename Inherit::ChunkArrayGen;
 
 protected:
 
-    virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& option) override
-    {
+	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& option) override
+	{
 
-        ChunkArrayGen const* position = this->position_attribute(Vertex::ORBIT);
+		ChunkArrayGen const* position = this->position_attribute(Vertex::ORBIT);
 
-        //Header
-        output << "GOCAD TSurf 1.0" << std::endl;
+		//Header
+		output << "GOCAD TSurf 1.0" << std::endl;
 
 
-        //Coordinate system
-        output << "GOCAD_ORIGINAL_COORDINATE_SYSTEM" << std::endl;
-        output << "END_ORIGINAL_COORDINATE_SYSTEM" << std::endl;
+		//Coordinate system
+		output << "GOCAD_ORIGINAL_COORDINATE_SYSTEM" << std::endl;
+		output << "END_ORIGINAL_COORDINATE_SYSTEM" << std::endl;
 
-        //vertices
-        uint32 vertices_counter = 1u;
-        map.foreach_cell([&](Vertex v)
-        {
-            output << "VRTX " << vertices_counter++ << " ";
-            position->export_element(map.embedding(v), output, false, false);
-            output << std::endl;
-        }, *(this->cell_cache_));
+		//vertices
+		uint32 vertices_counter = 1u;
+		map.foreach_cell([&](Vertex v)
+		{
+			output << "VRTX " << vertices_counter++ << " ";
+			position->export_element(map.embedding(v), output, false, false);
+			output << std::endl;
+		}, *(this->cell_cache_));
 
-        //faces
-        std::vector<uint32> vertices;
-        vertices.reserve(3u);
-        map.foreach_cell([&](Face f)
-        {
-            vertices.clear();
-            map.foreach_incident_vertex(f, [&] (Vertex v)
-            { vertices.push_back(this->vindices_[v] + 1u); });
+		//faces
+		std::vector<uint32> vertices;
+		vertices.reserve(3u);
+		map.foreach_cell([&](Face f)
+		{
+			vertices.clear();
+			map.foreach_incident_vertex(f, [&] (Vertex v)
+			{ vertices.push_back(this->vindices_[v] + 1u); });
 
-            for(uint32 i: prim)
-                output << "TRGL " << i;
-            output << std::end;
+			for(uint32 i: vertices)
+				output << "TRGL " << i;
 
-        }, *(this->cell_cache_));
+			output << std::endl;
 
-        output << "END" << std::endl;
-    }
+		}, *(this->cell_cache_));
+
+		output << "END" << std::endl;
+	}
 };
 
 } // end namespace io

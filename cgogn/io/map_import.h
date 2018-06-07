@@ -68,10 +68,10 @@ inline std::unique_ptr<PointSetFileImport<MAP>> new_point_set_import(MAP& map, c
 	const FileType ft = file_type(filename);
 	switch (ft)
 	{
-		case FileType::FileType_PLO:	return make_unique<PloPointSetImport<VEC3>();
+		case FileType::FileType_PLO:	return make_unique<PlotPointSetImport<MAP, VEC3>>();
 		default:
 			cgogn_log_warning("PointSetImport") << "PointSetImport does not handle files with extension \"" << extension(filename) << "\".";
-			return std::unique_ptr<PointSetImport> ();
+			return std::unique_ptr<PointSetImport<MAP>> ();
 	}
 }
 
