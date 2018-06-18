@@ -26,20 +26,20 @@ find_package(cgogn_rendering REQUIRED)
 find_package(QOGLViewer REQUIRED)
 
 add_executable(remeshing remeshing.cpp)
-target_link_libraries(remeshing ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${cgogn_geometry_LIBRARIES} ${cgogn_modeling_LIBRARIES} ${cgogn_rendering_LIBRARIES} ${QOGLViewer_LIBRARIES})
+target_link_libraries(remeshing ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${cgogn_geometry_LIBRARIES} ${cgogn_modeling_LIBRARIES} ${cgogn_rendering_LIBRARIES} )
 
 add_executable(decimation decimation.cpp)
-target_link_libraries(decimation ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${cgogn_geometry_LIBRARIES} ${cgogn_modeling_LIBRARIES} ${cgogn_rendering_LIBRARIES} ${QOGLViewer_LIBRARIES})
+target_link_libraries(decimation ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${cgogn_geometry_LIBRARIES} ${cgogn_modeling_LIBRARIES} ${cgogn_rendering_LIBRARIES} )
 
 add_executable(subdivision subdivision.cpp)
-target_link_libraries(subdivision ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${cgogn_geometry_LIBRARIES} ${cgogn_modeling_LIBRARIES} ${cgogn_rendering_LIBRARIES} ${QOGLViewer_LIBRARIES})
+target_link_libraries(subdivision ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${cgogn_geometry_LIBRARIES} ${cgogn_modeling_LIBRARIES} ${cgogn_rendering_LIBRARIES} )
 
 add_executable(dual dual.cpp)
-target_link_libraries(dual ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${cgogn_geometry_LIBRARIES} ${cgogn_modeling_LIBRARIES} ${cgogn_rendering_LIBRARIES} ${QOGLViewer_LIBRARIES})
+target_link_libraries(dual ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${cgogn_geometry_LIBRARIES} ${cgogn_modeling_LIBRARIES} ${cgogn_rendering_LIBRARIES} )
 
 if (Qt5Widgets_VERSION VERSION_GREATER 5.5.99)
   add_executable(curve curve.cpp)
-  target_link_libraries(curve ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${cgogn_geometry_LIBRARIES} ${cgogn_modeling_LIBRARIES} ${cgogn_rendering_LIBRARIES} ${QOGLViewer_LIBRARIES})
+  target_link_libraries(curve ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${cgogn_geometry_LIBRARIES} ${cgogn_modeling_LIBRARIES} ${cgogn_rendering_LIBRARIES} )
   set_target_properties(curve PROPERTIES FOLDER examples/modeling)
 endif()
 

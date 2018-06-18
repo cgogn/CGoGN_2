@@ -2,6 +2,7 @@
 
 find_package(cgogn_core REQUIRED)
 find_package(cgogn_geometry REQUIRED)
+find_package(QOGLViewer REQUIRED)
 
 set(cgogn_rendering_LIBRARIES "cgogn_rendering")
 set(cgogn_rendering_INCLUDE_DIRS "@PACKAGE_CGOGN_RENDERING_INCLUDE_DIRS@")
