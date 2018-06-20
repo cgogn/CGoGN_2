@@ -124,7 +124,7 @@ install(EXPORT ${PROJECT_NAME}Targets DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake
 
 ## <package_name>ConfigVersion.cmake
 write_basic_package_version_file(
-	"${DATAROOTDIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}ConfigVersion.cmake"
+	"${CMAKE_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}ConfigVersion.cmake"
 	VERSION ${CGOGN_VERSION_MAJOR}.${CGOGN_VERSION_MINOR}.${CGOGN_VERSION_PATCH}
 	COMPATIBILITY ExactVersion
 )
@@ -134,13 +134,13 @@ set(CURRENT_LIBRARY "${PROJECT_NAME}")
 configure_package_config_file(
 #	"${CGOGN_PATH}/cmake/ConfigFiles/${PROJECT_NAME}Config.cmake.in"
 	"${package_root_dir}/${PROJECT_NAME}Config.cmake.in"
-	"${DATAROOTDIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}InstallConfig.cmake"
+	"${CMAKE_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}InstallConfig.cmake"
 	PATH_VARS ${UPPER_NAME}_INCLUDE_DIRS
 	INSTALL_DESTINATION "lib/cmake/${PROJECT_NAME}"
 )
 
-install(FILES "${DATAROOTDIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}ConfigVersion.cmake" DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
-install(FILES "${DATAROOTDIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}InstallConfig.cmake" DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}" RENAME "${PROJECT_NAME}Config.cmake")
+install(FILES "${CMAKE_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}ConfigVersion.cmake" DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
+install(FILES "${CMAKE_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}InstallConfig.cmake" DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}" RENAME "${PROJECT_NAME}Config.cmake")
 
 endmacro()
 
