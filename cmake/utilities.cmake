@@ -112,24 +112,19 @@ write_basic_package_version_file(
 
 set(${UPPER_NAME}_INCLUDE_DIRS ${include_dirs_install_tree})
 
-
-if (WIN32)
-	set (INST_BIN_PATH bin/$<CONFIG>)
-else()
-	set (INST_BIN_PATH bin)
-endif()
+include(GNUInstallDirs)
 
 install(TARGETS ${PROJECT_NAME}
 	EXPORT ${PROJECT_NAME}Targets
-	RUNTIME DESTINATION ${INST_BIN_PATH}
-	LIBRARY DESTINATION lib
-	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
-install(EXPORT ${PROJECT_NAME}Targets DESTINATION "lib/cmake/${PROJECT_NAME}")
+install(EXPORT ${PROJECT_NAME}Targets DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
 
 ## <package_name>ConfigVersion.cmake
 write_basic_package_version_file(
-	"${CMAKE_BINARY_DIR}/share/cmake/${PROJECT_NAME}/${PROJECT_NAME}ConfigVersion.cmake"
+	"${DATAROOTDIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}ConfigVersion.cmake"
 	VERSION ${CGOGN_VERSION_MAJOR}.${CGOGN_VERSION_MINOR}.${CGOGN_VERSION_PATCH}
 	COMPATIBILITY ExactVersion
 )
@@ -139,13 +134,13 @@ set(CURRENT_LIBRARY "${PROJECT_NAME}")
 configure_package_config_file(
 #	"${CGOGN_PATH}/cmake/ConfigFiles/${PROJECT_NAME}Config.cmake.in"
 	"${package_root_dir}/${PROJECT_NAME}Config.cmake.in"
-	"${CMAKE_BINARY_DIR}/share/cmake/${PROJECT_NAME}/${PROJECT_NAME}InstallConfig.cmake"
+	"${DATAROOTDIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}InstallConfig.cmake"
 	PATH_VARS ${UPPER_NAME}_INCLUDE_DIRS
 	INSTALL_DESTINATION "lib/cmake/${PROJECT_NAME}"
 )
 
-install(FILES "${CMAKE_BINARY_DIR}/share/cmake/${PROJECT_NAME}/${PROJECT_NAME}ConfigVersion.cmake" DESTINATION "lib/cmake/${PROJECT_NAME}")
-install(FILES "${CMAKE_BINARY_DIR}/share/cmake/${PROJECT_NAME}/${PROJECT_NAME}InstallConfig.cmake" DESTINATION "lib/cmake/${PROJECT_NAME}" RENAME "${PROJECT_NAME}Config.cmake")
+install(FILES "${DATAROOTDIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}ConfigVersion.cmake" DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
+install(FILES "${DATAROOTDIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}InstallConfig.cmake" DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}" RENAME "${PROJECT_NAME}Config.cmake")
 
 endmacro()
 
