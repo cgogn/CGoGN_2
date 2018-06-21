@@ -55,11 +55,6 @@ enum DrawingType : uint8
 class CGOGN_RENDERING_API MapRender
 {
 protected:
-
-	// indices used for sorting
-	std::vector<std::array<uint32,3>> indices_tri_;
-	std::vector<uint32> indices_points_;
-
 	std::array<std::unique_ptr<QOpenGLBuffer>, SIZE_BUFFER>	indices_buffers_;
 	std::array<bool, SIZE_BUFFER>							indices_buffers_uptodate_;
 	std::array<uint32, SIZE_BUFFER>							nb_indices_;
@@ -235,12 +230,13 @@ public:
 	}
 
 	template <typename MAP, typename MASK, typename VERTEX_ATTR>
-	inline void init_primitives(
+	inline auto init_primitives(
 		const MAP& m,
 		const MASK& mask,
 		DrawingType prim,
 		const VERTEX_ATTR* position
 	)
+		-> typename std::enable_if<(MAP::DIMENSION == 2 || MAP::DIMENSION == 3) && !std::is_same<MASK, typename MAP::BoundaryCache>::value, void>::type
 	{
 		static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"attribute must be a vertex attribute");
 
@@ -252,7 +248,6 @@ public:
 		{
 			case POINTS:
 				init_points(m, mask, table_indices);
-				indices_points_.clear();
 				break;
 			case LINES:
 				init_lines(m, mask, table_indices);
@@ -262,10 +257,46 @@ public:
 					init_triangles_ear<VEC3>(m, mask, table_indices, position);
 				else
 					init_triangles(m, mask, table_indices);
-				indices_tri_.clear();
 				break;
 			case BOUNDARY:
 				init_boundaries(m, mask, table_indices);
+				break;
+			default:
+				break;
+		}
+
+		indices_buffers_uptodate_[prim] = true;
+		nb_indices_[prim] = uint32(table_indices.size());
+
+		if (table_indices.empty())
+			return;
+
+		if (!indices_buffers_[prim]->isCreated())
+			indices_buffers_[prim]->create();
+		indices_buffers_[prim]->bind();
+		indices_buffers_[prim]->allocate(&(table_indices[0]), nb_indices_[prim] * sizeof(uint32));
+		indices_buffers_[prim]->release();
+	}
+
+	template <typename MAP, typename MASK, typename VERTEX_ATTR>
+	inline auto init_primitives(
+		const MAP& m,
+		const MASK& mask,
+		DrawingType prim,
+		const VERTEX_ATTR* position
+	)
+		-> typename std::enable_if<MAP::DIMENSION == 0 && !std::is_same<MASK, typename MAP::BoundaryCache>::value, void>::type
+	{
+		static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"attribute must be a vertex attribute");
+
+		using VEC3 = InsideTypeOf<VERTEX_ATTR>;
+
+		std::vector<uint32> table_indices;
+
+		switch (prim)
+		{
+			case POINTS:
+				init_points(m, mask, table_indices);
 				break;
 			default:
 				break;
@@ -295,11 +326,12 @@ public:
 	}
 
 	template <typename MAP, typename MASK>
-	inline void init_primitives(
+	inline auto init_primitives(
 		const MAP& m,
 		const MASK& mask,
 		DrawingType prim
 	)
+		-> typename std::enable_if<(MAP::DIMENSION == 2 || MAP::DIMENSION == 3) && !std::is_same<MASK, typename MAP::BoundaryCache>::value, void>::type
 	{
 		std::vector<uint32> table_indices;
 
@@ -307,17 +339,47 @@ public:
 		{
 			case POINTS:
 				init_points(m, mask, table_indices);
-				indices_points_.clear();
 				break;
 			case LINES:
 				init_lines(m, mask, table_indices);
 				break;
 			case TRIANGLES:
 				init_triangles(m, mask, table_indices);
-				indices_tri_.clear();
 				break;
 			case BOUNDARY:
 				init_boundaries(m, mask, table_indices);
+				break;
+			default:
+				break;
+		}
+
+		indices_buffers_uptodate_[prim] = true;
+		nb_indices_[prim] = uint32(table_indices.size());
+
+		if (table_indices.empty())
+			return;
+
+		if (!indices_buffers_[prim]->isCreated())
+			indices_buffers_[prim]->create();
+		indices_buffers_[prim]->bind();
+		indices_buffers_[prim]->allocate(&(table_indices[0]), nb_indices_[prim] * sizeof(uint32));
+		indices_buffers_[prim]->release();
+	}
+
+	template <typename MAP, typename MASK>
+	inline auto init_primitives(
+		const MAP& m,
+		const MASK& mask,
+		DrawingType prim
+	)
+		-> typename std::enable_if<MAP::DIMENSION == 0 && !std::is_same<MASK, typename MAP::BoundaryCache>::value, void>::type
+	{
+		std::vector<uint32> table_indices;
+
+		switch (prim)
+		{
+			case POINTS:
+				init_points(m, mask, table_indices);
 				break;
 			default:
 				break;
