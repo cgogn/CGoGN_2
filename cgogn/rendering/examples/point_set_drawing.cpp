@@ -73,11 +73,17 @@ private:
 
 	cgogn::geometry::AABB<Vec3> bb_;
 
-	std::unique_ptr<cgogn::rendering::DisplayListDrawer> drawer_points_;
-	std::unique_ptr<cgogn::rendering::DisplayListDrawer::Renderer> drawer_points_rend_;
+	std::unique_ptr<cgogn::rendering::MapRender> render_;
+	std::unique_ptr<cgogn::rendering::VBO> vbo_pos_;
+	std::unique_ptr<cgogn::rendering::VBO> vbo_color_;
+	std::unique_ptr<cgogn::rendering::VBO> vbo_sphere_sz_;
+	std::unique_ptr<cgogn::rendering::ShaderPointSpriteColorSize::Param> param_point_sprite_;
 
 	std::unique_ptr<cgogn::rendering::DisplayListDrawer> drawer_;
 	std::unique_ptr<cgogn::rendering::DisplayListDrawer::Renderer> drawer_rend_;
+
+
+
 
 	bool vertices_rendering_;
 	bool bb_rendering_;
@@ -111,10 +117,14 @@ Viewer::~Viewer()
 
 void Viewer::closeEvent(QCloseEvent*)
 {
-	drawer_points_.reset();
-	drawer_points_rend_.reset();
+	render_.reset();
+	vbo_pos_.reset();
+	vbo_color_.reset();
+	vbo_sphere_sz_.reset();
+	param_point_sprite_.reset();
 	drawer_.reset();
 	drawer_rend_.reset();
+
 	cgogn::rendering::ShaderProgram::clean_all();
 
 }
@@ -123,8 +133,11 @@ Viewer::Viewer() :
 	map_(),
 	vertex_position_(),
 	bb_(),
-	drawer_points_(nullptr),
-	drawer_points_rend_(nullptr),
+	render_(nullptr),
+	vbo_pos_(nullptr),
+	vbo_color_(nullptr),
+	vbo_sphere_sz_(nullptr),
+	param_point_sprite_(nullptr),
 	drawer_(nullptr),
 	drawer_rend_(nullptr),
 	vertices_rendering_(true),
@@ -157,9 +170,12 @@ void Viewer::draw()
 	camera()->getProjectionMatrix(proj);
 	camera()->getModelViewMatrix(view);
 
-
 	if (vertices_rendering_)
-		drawer_points_rend_->draw(proj,view);
+	{
+		param_point_sprite_->bind(proj,view);
+		render_->draw(cgogn::rendering::POINTS);
+		param_point_sprite_->release();
+	}
 
 	if (bb_rendering_)
 		drawer_rend_->draw(proj,view);
@@ -169,17 +185,29 @@ void Viewer::init()
 {
 	glClearColor(0.1f,0.1f,0.3f,0.0f);
 
-	drawer_points_ = cgogn::make_unique<cgogn::rendering::DisplayListDrawer>();
-	drawer_points_rend_= drawer_points_->generate_renderer();
-	drawer_points_->new_list();
-	drawer_points_->ball_size(20.0);
-	drawer_points_->begin(GL_POINTS);
-	map_.foreach_cell([&](Map0::Vertex v)
+	// create and fill VBO for positions
+	vbo_pos_ = cgogn::make_unique<cgogn::rendering::VBO>(3);
+	cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
+
+	// fill a color vbo with abs of normals
+	vbo_color_ = cgogn::make_unique<cgogn::rendering::VBO>(3);
+	cgogn::rendering::update_vbo(vertex_position_, vbo_color_.get(), [] (const Vec3& n) -> std::array<float,3>
 	{
-		drawer_points_->vertex3fv(vertex_position_[v]);
+		return {float(1.0), float(1.0), float(0.0)};
 	});
-	drawer_points_->end();
-	drawer_points_->end_list();
+
+	// fill a sphere size vbo
+	vbo_sphere_sz_ = cgogn::make_unique<cgogn::rendering::VBO>(1);
+	cgogn::rendering::update_vbo(vertex_position_, vbo_sphere_sz_.get(), [&] (const Vec3& n) -> float
+	{
+		return bb_.diag_size()/1000.0;// * (1.0 + 2.0*std::abs(n[2]));
+	});
+
+	render_ = cgogn::make_unique<cgogn::rendering::MapRender>();
+	render_->init_primitives(map_, cgogn::rendering::POINTS);
+	param_point_sprite_ = cgogn::rendering::ShaderPointSpriteColorSize::generate_param();
+	// set vbo param (see param::set_vbo signature)
+	param_point_sprite_->set_all_vbos(vbo_pos_.get(), vbo_color_.get(), vbo_sphere_sz_.get());
 
 	// drawer for simple old-school g1 rendering
 	drawer_ = cgogn::make_unique<cgogn::rendering::DisplayListDrawer>();
@@ -217,8 +245,7 @@ int main(int argc, char** argv)
 	if (argc < 2)
 	{
 		cgogn_log_info("simple_viewer") << "USAGE: " << argv[0] << " [filename]";
-		surface_mesh = std::string(DEFAULT_MESH_PATH) + std::string("off/aneurysm_3D.off");
-		cgogn_log_info("simple_viewer") << "Using default mesh \"" << surface_mesh << "\".";
+		return 1;
 	}
 	else
 		surface_mesh = std::string(argv[1]);
