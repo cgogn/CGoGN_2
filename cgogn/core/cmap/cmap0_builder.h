@@ -32,64 +32,64 @@ namespace cgogn
 template <typename MAP0>
 class CMap0Builder_T
 {
-    static_assert(MAP0::DIMENSION == 0, "CMap0Builder_T works only with 0D Maps.");
+	static_assert(MAP0::DIMENSION == 0, "CMap0Builder_T works only with 0D Maps.");
 
 public:
 
-    using Self = CMap0Builder_T<MAP0>;
-    using Map0 = MAP0;
-    using CDart = typename Map0::CDart;
-    using Vertex = typename Map0::Vertex;
+	using Self = CMap0Builder_T<MAP0>;
+	using Map0 = MAP0;
+	using CDart = typename Map0::CDart;
+	using Vertex = typename Map0::Vertex;
 
-    template <typename T>
-    using ChunkArrayContainer = typename Map0::template ChunkArrayContainer<T>;
+	template <typename T>
+	using ChunkArrayContainer = typename Map0::template ChunkArrayContainer<T>;
 
-    template <typename T>
-    using ChunkArray = typename Map0::template ChunkArray<T>;
+	template <typename T>
+	using ChunkArray = typename Map0::template ChunkArray<T>;
 
-    inline CMap0Builder_T(Map0& map) : map_(map) {}
-    CGOGN_NOT_COPYABLE_NOR_MOVABLE(CMap0Builder_T);
-    inline ~CMap0Builder_T() {}
+	inline CMap0Builder_T(Map0& map) : map_(map) {}
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CMap0Builder_T);
+	inline ~CMap0Builder_T() {}
 
 public:
-    template <Orbit ORBIT>
-    inline void create_embedding()
-    {
-        map_.template create_embedding<ORBIT>();
-    }
+	template <Orbit ORBIT>
+	inline void create_embedding()
+	{
+		map_.template create_embedding<ORBIT>();
+	}
 
-    template <Orbit ORBIT>
-    inline ChunkArrayContainer<uint32>& attribute_container()
-    {
-        return map_.template non_const_attribute_container<ORBIT>();
-    }
+	template <Orbit ORBIT>
+	inline ChunkArrayContainer<uint32>& attribute_container()
+	{
+		return map_.template non_const_attribute_container<ORBIT>();
+	}
 
-    template <class CellType>
-    inline void set_embedding(Dart d, uint32 emb)
-    {
-        map_.template set_embedding<CellType>(d, emb);
-    }
+	template <class CellType>
+	inline void set_embedding(Dart d, uint32 emb)
+	{
+		map_.template set_embedding<CellType>(d, emb);
+	}
 
-    template <class CellType, Orbit ORBIT>
-    inline void set_orbit_embedding(Cell<ORBIT> c, uint32 emb)
-    {
-        map_.template set_orbit_embedding<CellType>(c, emb);
-    }
+	template <class CellType, Orbit ORBIT>
+	inline void set_orbit_embedding(Cell<ORBIT> c, uint32 emb)
+	{
+		map_.template set_orbit_embedding<CellType>(c, emb);
+	}
 
-    template <class CellType>
-    inline uint32 new_orbit_embedding(CellType c)
-    {
-        return map_.new_orbit_embedding(c);
-    }
+	template <class CellType>
+	inline uint32 new_orbit_embedding(CellType c)
+	{
+		return map_.new_orbit_embedding(c);
+	}
 
-    inline Dart add_topology_element()
-    {
-            return map_.add_topology_element();
-    }
+	inline Dart add_topology_element()
+	{
+		return map_.add_topology_element();
+	}
 
 private:
 
-    Map0& map_;
+	Map0& map_;
 };
 
 } //end namespace cgogn
