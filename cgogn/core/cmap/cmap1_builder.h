@@ -115,6 +115,11 @@ public:
 		map_.boundary_unmark(c);
 	}
 
+	inline uint32 close_map()
+	{
+//		return map_.close_map();
+	}
+
 	inline Dart add_topology_element()
 	{
 		return map_.add_topology_element();

@@ -25,6 +25,7 @@
 #define CGOGN_CORE_CMAP_CMAP1_H_
 
 #include <cgogn/core/cmap/cmap0.h>
+#include <cgogn/core/cmap/cmap1_builder.h>
 
 namespace cgogn
 {
@@ -42,7 +43,10 @@ public:
 	using Inherit = CMap0_T<MAP_TYPE>;
 	using Self = CMap1_T<MAP_TYPE>;
 
+	using Builder = CMap1Builder_T<Self>;
+
 	friend class MapBase<MAP_TYPE>;
+	friend class CMap1Builder_T<Self>;
 	friend class DartMarker_T<Self>;
 	friend class cgogn::DartMarkerStore<Self>;
 
@@ -524,6 +528,11 @@ public:
 	{
 		static_assert(is_func_parameter_same<FUNC, Vertex>::value, "Wrong function cell parameter type");
 		foreach_dart_of_orbit(f, [&func] (Dart v) { return internal::void_to_true_binder(func, Vertex(v)); });
+	}
+
+	inline std::pair<Vertex,Vertex> vertices(Edge e) const
+	{
+		return std::pair<Vertex, Vertex>(Vertex(e.dart), Vertex(this->phi1(e.dart)));
 	}
 
 protected:
