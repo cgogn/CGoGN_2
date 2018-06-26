@@ -154,6 +154,32 @@ protected:
 
 	template <typename MAP, typename MASK>
 	inline auto init_boundaries(const MAP& m, const MASK& mask, std::vector<uint32>& table_indices)
+		-> typename std::enable_if<MAP::DIMENSION == 1 && std::is_same<MASK, typename MAP::BoundaryCache>::value, void>::type
+	{
+		using Vertex = typename MAP::Vertex;
+		using Edge = typename MAP::Edge;
+
+		m.foreach_cell([&] (Edge e)
+		{
+			table_indices.push_back(m.embedding(Vertex(e.dart)));
+			table_indices.push_back(m.embedding(Vertex(m.phi1(e.dart))));
+		},
+		mask);
+
+		boundary_dimension_ = 1;
+	}
+
+	template <typename MAP, typename MASK>
+	inline auto init_boundaries(const MAP& m, const MASK& /*mask*/, std::vector<uint32>& table_indices)
+		-> typename std::enable_if<MAP::DIMENSION == 1 && !std::is_same<MASK, typename MAP::BoundaryCache>::value, void>::type
+	{
+		// if the given MASK is not a BoundaryCache, build a BoundaryCache and use it
+		typename MAP::BoundaryCache bcache(m);
+		init_boundaries(m, bcache, table_indices);
+	}
+
+	template <typename MAP, typename MASK>
+	inline auto init_boundaries(const MAP& m, const MASK& mask, std::vector<uint32>& table_indices)
 		-> typename std::enable_if<MAP::DIMENSION == 2 && std::is_same<MASK, typename MAP::BoundaryCache>::value, void>::type
 	{
 		using Vertex = typename MAP::Vertex;
@@ -283,7 +309,7 @@ public:
 		const MAP& m,
 		const MASK& mask,
 		DrawingType prim,
-		const VERTEX_ATTR* position
+		const VERTEX_ATTR* /*position*/
 	)
 		-> typename std::enable_if<MAP::DIMENSION == 0 && !std::is_same<MASK, typename MAP::BoundaryCache>::value, void>::type
 	{
@@ -314,6 +340,50 @@ public:
 		indices_buffers_[prim]->allocate(&(table_indices[0]), nb_indices_[prim] * sizeof(uint32));
 		indices_buffers_[prim]->release();
 	}
+
+	template <typename MAP, typename MASK, typename VERTEX_ATTR>
+	inline auto init_primitives(
+		const MAP& m,
+		const MASK& mask,
+		DrawingType prim,
+		const VERTEX_ATTR* /*position*/
+	)
+		-> typename std::enable_if<MAP::DIMENSION == 1 && !std::is_same<MASK, typename MAP::BoundaryCache>::value, void>::type
+	{
+		static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"attribute must be a vertex attribute");
+
+		using VEC3 = InsideTypeOf<VERTEX_ATTR>;
+
+		std::vector<uint32> table_indices;
+
+		switch (prim)
+		{
+			case POINTS:
+				init_points(m, mask, table_indices);
+				break;
+			case LINES:
+				init_lines(m, mask, table_indices);
+				break;
+			case BOUNDARY:
+				init_boundaries(m, mask, table_indices);
+				break;
+			default:
+				break;
+		}
+
+		indices_buffers_uptodate_[prim] = true;
+		nb_indices_[prim] = uint32(table_indices.size());
+
+		if (table_indices.empty())
+			return;
+
+		if (!indices_buffers_[prim]->isCreated())
+			indices_buffers_[prim]->create();
+		indices_buffers_[prim]->bind();
+		indices_buffers_[prim]->allocate(&(table_indices[0]), nb_indices_[prim] * sizeof(uint32));
+		indices_buffers_[prim]->release();
+	}
+
 
 	template <typename MAP, typename VERTEX_ATTR>
 	inline void init_primitives(
@@ -380,6 +450,44 @@ public:
 		{
 			case POINTS:
 				init_points(m, mask, table_indices);
+				break;
+			default:
+				break;
+		}
+
+		indices_buffers_uptodate_[prim] = true;
+		nb_indices_[prim] = uint32(table_indices.size());
+
+		if (table_indices.empty())
+			return;
+
+		if (!indices_buffers_[prim]->isCreated())
+			indices_buffers_[prim]->create();
+		indices_buffers_[prim]->bind();
+		indices_buffers_[prim]->allocate(&(table_indices[0]), nb_indices_[prim] * sizeof(uint32));
+		indices_buffers_[prim]->release();
+	}
+
+	template <typename MAP, typename MASK>
+	inline auto init_primitives(
+		const MAP& m,
+		const MASK& mask,
+		DrawingType prim
+	)
+		-> typename std::enable_if<MAP::DIMENSION == 1 && !std::is_same<MASK, typename MAP::BoundaryCache>::value, void>::type
+	{
+		std::vector<uint32> table_indices;
+
+		switch (prim)
+		{
+			case POINTS:
+				init_points(m, mask, table_indices);
+				break;
+			case LINES:
+				init_lines(m, mask, table_indices);
+				break;
+			case BOUNDARY:
+				init_boundaries(m, mask, table_indices);
 				break;
 			default:
 				break;
