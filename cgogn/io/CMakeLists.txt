@@ -21,6 +21,7 @@ set(HEADER_FILES
 	c_locale.h
 	mesh_io_gen.h
         point_set_export.h
+        polyline_import.h
 	surface_export.h
 	volume_export.h
 	formats/2dm.h
@@ -30,6 +31,7 @@ set(HEADER_FILES
 	formats/meshb.h
 	formats/msh.h
 	formats/nastran.h
+        formats/lin.h
 	formats/obj.h
 	formats/off.h
         formats/plo.h

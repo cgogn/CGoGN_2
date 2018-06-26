@@ -126,6 +126,7 @@ enum FileType
 	FileType_TETMESH,
 	FileType_PLO,
 	FileType_TS,
+	FileType_LIN,
 };
 
 enum DataType

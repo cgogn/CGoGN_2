@@ -33,6 +33,7 @@
 #include <cgogn/core/graph/undirected_graph.h>
 
 #include <cgogn/io/point_set_import.h>
+#include <cgogn/io/polyline_import.h>
 #include <cgogn/io/surface_import.h>
 #include <cgogn/io/volume_import.h>
 #include <cgogn/io/graph_import.h>
@@ -40,6 +41,7 @@
 #include <cgogn/io/formats/cg.h>
 #include <cgogn/io/formats/cskel.h>
 #include <cgogn/io/formats/dot.h>
+#include <cgogn/io/formats/lin.h>
 #include <cgogn/io/formats/off.h>
 #include <cgogn/io/formats/obj.h>
 #include <cgogn/io/formats/2dm.h>
@@ -72,6 +74,20 @@ inline std::unique_ptr<PointSetFileImport<MAP>> new_point_set_import(MAP& map, c
 		default:
 			cgogn_log_warning("PointSetImport") << "PointSetImport does not handle files with extension \"" << extension(filename) << "\".";
 			return std::unique_ptr<PointSetFileImport<MAP>> ();
+	}
+}
+
+template <typename VEC3, typename MAP>
+inline std::unique_ptr<PolylineFileImport<MAP>> new_polyline_import(MAP& map, const std::string& filename)
+{
+	const FileType ft = file_type(filename);
+	switch (ft)
+	{
+//		case FileType::FileType_OBJ:	return make_unique<ObjPolylineImport<MAP, VEC3>>(map);
+		case FileType::FileType_LIN:	return make_unique<LinPolylineImport<MAP, VEC3>>(map);
+		default:
+			cgogn_log_warning("PolylineImport") << "PolylineImport does not handle files with extension \"" << extension(filename) << "\".";
+			return std::unique_ptr<PolylineFileImport<MAP>> ();
 	}
 }
 
@@ -142,6 +158,15 @@ template <typename VEC3, typename MAP>
 inline void import_point_set(MAP& map, const std::string& filename)
 {
 	auto si = new_point_set_import<VEC3>(map, filename);
+	if (si)
+		if (si->import_file(filename))
+			si->create_map();
+}
+
+template <typename VEC3, typename MAP>
+inline void import_polyline(MAP& map, const std::string& filename)
+{
+	auto si = new_polyline_import<VEC3>(map, filename);
 	if (si)
 		if (si->import_file(filename))
 			si->create_map();
