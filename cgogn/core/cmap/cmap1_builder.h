@@ -117,7 +117,7 @@ public:
 
 	inline uint32 close_map()
 	{
-//		return map_.close_map();
+		return map_.close_map();
 	}
 
 	inline Dart add_topology_element()

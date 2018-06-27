@@ -222,6 +222,7 @@ void Viewer::init()
 
         render_ = cgogn::make_unique<cgogn::rendering::MapRender>();
         render_->init_primitives(map_, cgogn::rendering::POINTS);
+		render_->init_primitives(map_, cgogn::rendering::LINES);
         param_point_sprite_ = cgogn::rendering::ShaderPointSpriteColorSize::generate_param();
         // set vbo param (see param::set_vbo signature)
         param_point_sprite_->set_all_vbos(vbo_pos_.get(), vbo_color_.get(), vbo_sphere_sz_.get());

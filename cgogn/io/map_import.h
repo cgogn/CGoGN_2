@@ -83,7 +83,7 @@ inline std::unique_ptr<PolylineFileImport<MAP>> new_polyline_import(MAP& map, co
 	const FileType ft = file_type(filename);
 	switch (ft)
 	{
-//		case FileType::FileType_OBJ:	return make_unique<ObjPolylineImport<MAP, VEC3>>(map);
+		case FileType::FileType_OBJ:	return make_unique<ObjPolylineImport<MAP, VEC3>>(map);
 		case FileType::FileType_LIN:	return make_unique<LinPolylineImport<MAP, VEC3>>(map);
 		default:
 			cgogn_log_warning("PolylineImport") << "PolylineImport does not handle files with extension \"" << extension(filename) << "\".";

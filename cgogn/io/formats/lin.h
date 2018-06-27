@@ -61,54 +61,77 @@ protected:
 
         std::string line, tag;
 
-		//todo hypthese sur l'ordre de lecture
-        while(!fp.eof())
-        {
-            getline_safe(fp, line);
-			fp >> tag ;
+		do
+		{
+			fp >> tag;
+			getline_safe(fp, line);
+		} while (tag != std::string("v") && (!fp.eof()));
 
-            if(tag == "v")
-            {
-                std::stringstream oss(line);
+		// lecture des sommets
+		std::vector<uint32> vertices_id;
+		vertices_id.reserve(102400);
+		uint32 max_id = 0;
 
-                float64 x, y, z;
-                oss >> x;
-                oss >> y;
-                oss >> z;
-                VEC3 pos{Scalar(x), Scalar(y), Scalar(z)};
+		uint32 i = 0;
+		do
+		{
+			if (tag == std::string("v"))
+			{
+				std::stringstream oss(line);
 
-                uint32 vertex_id = this->insert_line_vertex_container();
-                (*position)[vertex_id] = pos;
-            }
-			else if(tag == "s")
-            {
-                std::stringstream oss(line);
+				float64 x, y, z;
+				oss >> x;
+				oss >> y;
+				oss >> z;
 
-                uint32 p1, p2;
-                oss >> p1 >> p2 ;
-                p1--;
-                p2--;
+				VEC3 pos{Scalar(x), Scalar(y), Scalar(z)};
 
-                bool ok = true ;
-//				if(p1 < 0 || p1 >= nb_vertices)
-//                {
-//                    cgogn_log_warning("Lin import") << p1 << " index out of bounds";
-//                    ok = false ;
-//                }
-//				if(p2 < 0 || p2 >= nb_vertices)
-//                {
-//                    cgogn_log_warning("Lin import") << p2 << " index out of bounds";
-//                    ok = false ;
-//                }
+				uint32 vertex_id = this->insert_line_vertex_container();
+				(*position)[vertex_id] = pos;
 
-                if(ok)
-                {
-                    this->edges_vertex_indices_.push_back(p1);
-                    this->edges_vertex_indices_.push_back(p2);
-                }
-            }
-        }
-    }
+				vertices_id.push_back(vertex_id);
+
+				if (vertex_id > max_id)
+					max_id = vertex_id;
+				i++;
+			}
+
+			fp >> tag;
+			getline_safe(fp, line);
+		} while (!fp.eof());
+
+
+		fp.clear();
+		fp.seekg(0, std::ios::beg);
+
+		do
+		{
+			fp >> tag;
+			getline_safe(fp, line);
+		} while (tag != std::string("s"));
+
+		do
+		{
+			if (tag == std::string("s"))
+			{
+				std::stringstream oss(line);
+
+				uint32 p1, p2;
+				oss >> p1;
+				oss >> p2 ;
+				p1--;
+				p2--;
+
+				this->edges_vertex_indices_.push_back(p1);
+				this->edges_vertex_indices_.push_back(p2);
+			}
+
+			fp >> tag;
+			getline_safe(fp, line);
+		} while (!fp.eof());
+
+		return true;
+	}
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))

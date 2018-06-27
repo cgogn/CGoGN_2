@@ -9,8 +9,9 @@ find_package(Zlib REQUIRED NO_CMAKE_ENVIRONMENT_PATH)
 
 set(HEADER_FILES
 	data_io.h
+        polyline_import.h
         point_set_import.h
-	surface_import.h
+        surface_import.h
 	volume_import.h
 	map_import.h
 	map_export.h
@@ -20,6 +21,7 @@ set(HEADER_FILES
 	dll.h
 	c_locale.h
 	mesh_io_gen.h
+        polyline_export.h
         point_set_export.h
         polyline_import.h
 	surface_export.h
