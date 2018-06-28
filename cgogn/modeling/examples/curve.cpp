@@ -163,6 +163,7 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			break;
 		case Qt::Key_0:
 		{
+			changed = true;
 			map_.clear_and_remove_attributes();
 			vertex_position_ = map_.add_attribute<Vec3, Vertex>("position");
 
@@ -308,7 +309,6 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 
 	if(changed)
 	{
-
 		cgogn::geometry::compute_AABB(vertex_position_, bb_);
 
 		cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
