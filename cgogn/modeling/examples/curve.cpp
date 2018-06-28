@@ -135,6 +135,7 @@ void Viewer::closeEvent(QCloseEvent*)
 
 void Viewer::keyPressEvent(QKeyEvent *ev)
 {
+	bool changed = false;
 	switch (ev->key())
 	{
 		case Qt::Key_O:
@@ -152,197 +153,211 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			break;
 		}
 		case Qt::Key_V:
-				vertices_rendering_ = !vertices_rendering_;
-				break;
+			vertices_rendering_ = !vertices_rendering_;
+			break;
 		case Qt::Key_E:
-				edge_rendering_ = !edge_rendering_;
-				break;
+			edge_rendering_ = !edge_rendering_;
+			break;
 		case Qt::Key_B:
-				bb_rendering_ = !bb_rendering_;
-				break;
+			bb_rendering_ = !bb_rendering_;
+			break;
 		case Qt::Key_0:
 		{
 			map_.clear_and_remove_attributes();
 			vertex_position_ = map_.add_attribute<Vec3, Vertex>("position");
 
 			v0 = cgogn::modeling::generate_curve<Vec3>(map_,
-											 vertex_position_,
-											 200,
-											 0,
-											 float32(10*M_PI),
-											 [&](float32 t){return Vec3(t*std::cos(t),t*std::sin(t),t); });
+													   vertex_position_,
+													   200,
+													   0,
+													   float32(10*M_PI),
+													   [&](float32 t){return Vec3(t*std::cos(t),t*std::sin(t),t); });
 		}
 			break;
 		case Qt::Key_1:
 		{
+			changed = true;
 			map_.clear_and_remove_attributes();
 			vertex_position_ = map_.add_attribute<Vec3, Vertex>("position");
 
 			v0 = cgogn::modeling::generate_curve<Vec3>(map_,
-											 vertex_position_,
-											 200,
-											 0,
-											 float32(4*M_PI),
-											 [&](float32 t){return Vec3(std::sin(2*t),std::cos(t),t); });
+													   vertex_position_,
+													   200,
+													   0,
+													   float32(4*M_PI),
+													   [&](float32 t){return Vec3(std::sin(2*t),std::cos(t),t); });
 		}
 			break;
 		case Qt::Key_2:
 		{
+			changed = true;
 			map_.clear_and_remove_attributes();
 			vertex_position_ = map_.add_attribute<Vec3, Vertex>("position");
 
 			v0 = cgogn::modeling::generate_curve<Vec3>(map_,
-											 vertex_position_,
-											 200,
-											 0,
-											 float32(10*M_PI),
-											 [&](float32 t){return Vec3(std::cos(t),std::sin(t),t); });
+													   vertex_position_,
+													   200,
+													   0,
+													   float32(10*M_PI),
+													   [&](float32 t){return Vec3(std::cos(t),std::sin(t),t); });
 		}
 			break;
 		case Qt::Key_3:
 		{
+			changed = true;
 			map_.clear_and_remove_attributes();
 			vertex_position_ = map_.add_attribute<Vec3, Vertex>("position");
 
 			v0 = cgogn::modeling::generate_curve<Vec3>(map_,
-											 vertex_position_,
-											 200,
-											 -1.,
-											 1,
-											 [&](float32 t){return Vec3(t,0,t); });
+													   vertex_position_,
+													   200,
+													   -1.,
+													   1,
+													   [&](float32 t){return Vec3(t,0,t); });
 		}
 			break;
 		case Qt::Key_4:
 		{
+			changed = true;
 			map_.clear_and_remove_attributes();
 			vertex_position_ = map_.add_attribute<Vec3, Vertex>("position");
 
 			v0 = cgogn::modeling::generate_curve<Vec3>(map_,
-											 vertex_position_,
-											 200,
-											 0,
-											 float32(10*M_PI),
-											 [&](float32 t){return Vec3(t,t*std::cos(t),t*std::sin(t)); });
+													   vertex_position_,
+													   200,
+													   0,
+													   float32(10*M_PI),
+													   [&](float32 t){return Vec3(t,t*std::cos(t),t*std::sin(t)); });
 		}
 			break;
 		case Qt::Key_5:
 		{
+			changed = true;
 			map_.clear_and_remove_attributes();
 			vertex_position_ = map_.add_attribute<Vec3, Vertex>("position");
 
 			v0 = cgogn::modeling::generate_curve<Vec3>(map_,
-											 vertex_position_,
-											 200,
-											 0,
-											 float32(2*M_PI),
-											 [&](float32 t){return Vec3(3.*std::cos(t)+std::cos(10.*t)*std::cos(t),
-																		3.*std::sin(t)+std::cos(10.*t)*std::sin(t),
-																		std::sin(10.*t)); });
+													   vertex_position_,
+													   200,
+													   0,
+													   float32(2*M_PI),
+													   [&](float32 t){return Vec3(3.*std::cos(t)+std::cos(10.*t)*std::cos(t),
+																				  3.*std::sin(t)+std::cos(10.*t)*std::sin(t),
+																				  std::sin(10.*t)); });
 		}
 			break;
 		case Qt::Key_6:
 		{
+			changed = true;
 			map_.clear_and_remove_attributes();
 			vertex_position_ = map_.add_attribute<Vec3, Vertex>("position");
 
 			v0 = cgogn::modeling::generate_curve<Vec3>(map_,
-											 vertex_position_,
-											 200,
-											 0,
-											 float32(2*M_PI),
-											 [&](float32 t){return Vec3(t*std::cos(t), t, t*std::cos(t)); });
+													   vertex_position_,
+													   200,
+													   0,
+													   float32(2*M_PI),
+													   [&](float32 t){return Vec3(t*std::cos(t), t, t*std::cos(t)); });
 		}
 			break;
 		case Qt::Key_7:
 		{
+			changed = true;
 			map_.clear_and_remove_attributes();
 			vertex_position_ = map_.add_attribute<Vec3, Vertex>("position");
 
 			v0 = cgogn::modeling::generate_curve<Vec3>(map_,
-											 vertex_position_,
-											 200,
-											 0,
-											 float32(2*M_PI),
-											 [&](float32 t){return Vec3(5.*std::cos(t)-std::cos(5.*t), 5.*std::sin(t)-std::sin(5.*t), t); });
+													   vertex_position_,
+													   200,
+													   0,
+													   float32(2*M_PI),
+													   [&](float32 t){return Vec3(5.*std::cos(t)-std::cos(5.*t), 5.*std::sin(t)-std::sin(5.*t), t); });
 		}
 			break;
 		case Qt::Key_8:
 		{
+			changed = true;
 			map_.clear_and_remove_attributes();
 			vertex_position_ = map_.add_attribute<Vec3, Vertex>("position");
 
 			v0 = cgogn::modeling::generate_curve<Vec3>(map_,
-											 vertex_position_,
-											 200,
-											 0,
-											 float32(2*M_PI),
-											 [&](float32 t){return Vec3(2.*std::sin(3.*t)*std::cos(t), 2.*std::sin(3.*t)*std::sin(t), 0); });
+													   vertex_position_,
+													   200,
+													   0,
+													   float32(2*M_PI),
+													   [&](float32 t){return Vec3(2.*std::sin(3.*t)*std::cos(t), 2.*std::sin(3.*t)*std::sin(t), 0); });
 		}
 			break;
 		case Qt::Key_9:
 		{
+			changed = true;
 			map_.clear_and_remove_attributes();
 			vertex_position_ = map_.add_attribute<Vec3, Vertex>("position");
 
 			v0 = cgogn::modeling::generate_curve<Vec3>(map_,
-											 vertex_position_,
-											 200,
-											 0,
-											 float32(2*M_PI),
-											 [&](float32 t){return Vec3(2.*std::sin(3.*t)*std::cos(t), 2.*std::sin(3.*t)*std::sin(t), std::sin(3.*t)); });
+													   vertex_position_,
+													   200,
+													   0,
+													   float32(2*M_PI),
+													   [&](float32 t){return Vec3(2.*std::sin(3.*t)*std::cos(t), 2.*std::sin(3.*t)*std::sin(t), std::sin(3.*t)); });
 		}
 			break;
 		default:
 			break;
 	}
 
-	cgogn::geometry::compute_AABB(vertex_position_, bb_);
-
-	cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
-
-	cgogn::rendering::update_vbo(vertex_position_, vbo_color_.get(), [] (const Vec3& n) -> std::array<float,3>
+	if(changed)
 	{
-		return {float(1.0), float(0.0), float(0.0)};
-	});
 
-	cgogn::rendering::update_vbo(vertex_position_, vbo_sphere_sz_.get(), [&] (const Vec3& n) -> float
-	{
-		return bb_.diag_size()/1000.0;
-	});
+		cgogn::geometry::compute_AABB(vertex_position_, bb_);
 
-	render_->init_primitives(map_, cgogn::rendering::POINTS);
-	render_->init_primitives(map_, cgogn::rendering::LINES);
+		cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
 
-	drawer_->new_list();
-	drawer_->line_width_aa(2.0);
-	drawer_->begin(GL_LINE_LOOP);
-			drawer_->color3f(1.0,1.0,1.0);
-			drawer_->vertex3f(bb_.min()[0],bb_.min()[1],bb_.min()[2]);
-			drawer_->vertex3f(bb_.max()[0],bb_.min()[1],bb_.min()[2]);
-			drawer_->vertex3f(bb_.max()[0],bb_.max()[1],bb_.min()[2]);
-			drawer_->vertex3f(bb_.min()[0],bb_.max()[1],bb_.min()[2]);
-			drawer_->vertex3f(bb_.min()[0],bb_.max()[1],bb_.max()[2]);
-			drawer_->vertex3f(bb_.max()[0],bb_.max()[1],bb_.max()[2]);
-			drawer_->vertex3f(bb_.max()[0],bb_.min()[1],bb_.max()[2]);
-			drawer_->vertex3f(bb_.min()[0],bb_.min()[1],bb_.max()[2]);
-	drawer_->end();
-	drawer_->begin(GL_LINES);
-	drawer_->color3f(1.0,1.0,1.0);
-			drawer_->vertex3f(bb_.min()[0],bb_.min()[1],bb_.min()[2]);
-			drawer_->vertex3f(bb_.min()[0],bb_.max()[1],bb_.min()[2]);
-			drawer_->vertex3f(bb_.min()[0],bb_.min()[1],bb_.max()[2]);
-			drawer_->vertex3f(bb_.min()[0],bb_.max()[1],bb_.max()[2]);
-			drawer_->vertex3f(bb_.max()[0],bb_.min()[1],bb_.min()[2]);
-			drawer_->vertex3f(bb_.max()[0],bb_.min()[1],bb_.max()[2]);
-			drawer_->vertex3f(bb_.max()[0],bb_.max()[1],bb_.min()[2]);
-			drawer_->vertex3f(bb_.max()[0],bb_.max()[1],bb_.max()[2]);
-	drawer_->end();
-	drawer_->end_list();
+		cgogn::rendering::update_vbo(vertex_position_, vbo_color_.get(), [] (const Vec3& n) -> std::array<float,3>
+		{
+			return {float(1.0), float(0.0), float(0.0)};
+		});
+
+		cgogn::rendering::update_vbo(vertex_position_, vbo_sphere_sz_.get(), [&] (const Vec3& n) -> float
+		{
+			return bb_.diag_size()/1000.0;
+		});
+
+		render_->init_primitives(map_, cgogn::rendering::POINTS);
+		render_->init_primitives(map_, cgogn::rendering::LINES);
+
+		drawer_->new_list();
+		drawer_->line_width_aa(2.0);
+		drawer_->begin(GL_LINE_LOOP);
+		drawer_->color3f(1.0,1.0,1.0);
+		drawer_->vertex3f(bb_.min()[0],bb_.min()[1],bb_.min()[2]);
+		drawer_->vertex3f(bb_.max()[0],bb_.min()[1],bb_.min()[2]);
+		drawer_->vertex3f(bb_.max()[0],bb_.max()[1],bb_.min()[2]);
+		drawer_->vertex3f(bb_.min()[0],bb_.max()[1],bb_.min()[2]);
+		drawer_->vertex3f(bb_.min()[0],bb_.max()[1],bb_.max()[2]);
+		drawer_->vertex3f(bb_.max()[0],bb_.max()[1],bb_.max()[2]);
+		drawer_->vertex3f(bb_.max()[0],bb_.min()[1],bb_.max()[2]);
+		drawer_->vertex3f(bb_.min()[0],bb_.min()[1],bb_.max()[2]);
+		drawer_->end();
+		drawer_->begin(GL_LINES);
+		drawer_->color3f(1.0,1.0,1.0);
+		drawer_->vertex3f(bb_.min()[0],bb_.min()[1],bb_.min()[2]);
+		drawer_->vertex3f(bb_.min()[0],bb_.max()[1],bb_.min()[2]);
+		drawer_->vertex3f(bb_.min()[0],bb_.min()[1],bb_.max()[2]);
+		drawer_->vertex3f(bb_.min()[0],bb_.max()[1],bb_.max()[2]);
+		drawer_->vertex3f(bb_.max()[0],bb_.min()[1],bb_.min()[2]);
+		drawer_->vertex3f(bb_.max()[0],bb_.min()[1],bb_.max()[2]);
+		drawer_->vertex3f(bb_.max()[0],bb_.max()[1],bb_.min()[2]);
+		drawer_->vertex3f(bb_.max()[0],bb_.max()[1],bb_.max()[2]);
+		drawer_->end();
+		drawer_->end_list();
 
 
-	setSceneRadius(bb_.diag_size()/2.0);
-	Vec3 center = bb_.center();
-	setSceneCenter(qoglviewer::Vec(center[0], center[1], center[2]));
+		setSceneRadius(bb_.diag_size()/2.0);
+		Vec3 center = bb_.center();
+		setSceneCenter(qoglviewer::Vec(center[0], center[1], center[2]));
+
+	}
 
 	// enable QGLViewer keys
 	QOGLViewer::keyPressEvent(ev);
@@ -359,23 +374,23 @@ void Viewer::draw()
 
 	if (vertices_rendering_)
 	{
-			param_point_sprite_->bind(proj,view);
-			render_->draw(cgogn::rendering::POINTS);
-			param_point_sprite_->release();
+		param_point_sprite_->bind(proj,view);
+		render_->draw(cgogn::rendering::POINTS);
+		param_point_sprite_->release();
 	}
 
 	if (edge_rendering_)
 	{
-			param_edge_->bind(proj,view);
-			glEnable(GL_BLEND);
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			render_->draw(cgogn::rendering::LINES);
-			glDisable(GL_BLEND);
-			param_edge_->release();
+		param_edge_->bind(proj,view);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		render_->draw(cgogn::rendering::LINES);
+		glDisable(GL_BLEND);
+		param_edge_->release();
 	}
 
 	if (bb_rendering_)
-			drawer_rend_->draw(proj,view);
+		drawer_rend_->draw(proj,view);
 }
 
 void Viewer::init()
@@ -421,7 +436,7 @@ void Viewer::resizeGL(int w ,int h)
 
 void Viewer::import(const std::string& filename)
 {
-//	cgogn::io::import_graph<Vec3>(map_, filename);
+	//	cgogn::io::import_graph<Vec3>(map_, filename);
 
 	if (!map_.check_map_integrity())
 	{
