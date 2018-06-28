@@ -174,10 +174,16 @@ protected:
 			output << std::endl;
 		}, *(this->cell_cache_));
 
+		std::cout << "obj export" << std::endl;
 		map.foreach_cell([&] (Edge e)
 		{
+			std::cout << e.dart;
+
 			std::pair<Vertex, Vertex> vs = map.vertices(e);
-			output << "l " << (this->vindices_[vs.first]+1u) << " " << (this->vindices_[vs.second]+1u) << std::endl;
+
+			//todo erase this trick
+			if(this->vindices_[vs.first] != this->vindices_[vs.second])
+				output << "l " << (this->vindices_[vs.first]+1u) << " " << (this->vindices_[vs.second]+1u) << std::endl;
 		}, *(this->cell_cache_));
 	}
 };

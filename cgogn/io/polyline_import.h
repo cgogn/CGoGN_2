@@ -131,6 +131,7 @@ public:
 			uint32 idx = edges_vertex_indices_[i];
 			uint32 idx2 = edges_vertex_indices_[i+1];
 			mbuild_.template set_orbit_embedding<Vertex>(Vertex(d), idx);
+			std::cout << idx << " " << idx2 << std::endl;
 			darts_out_vertex[idx2] = d;
 		}
 
@@ -151,7 +152,7 @@ public:
 				if(prev_vertex_darts.is_nil())
 					++nb_boundary_vertex;
 				else
-					mbuild_.phi1_sew(prev_vertex_darts, d);
+					mbuild_.phi1_sew(d, prev_vertex_darts);
 			}
 		});
 
