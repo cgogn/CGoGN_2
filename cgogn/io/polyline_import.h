@@ -123,18 +123,21 @@ public:
 
 		auto darts_out_vertex = map_.template add_attribute<Dart, Vertex>("darts_out_vertex");
 
-		std::cout << "nb_vertices()-1 = " << nb_vertices()-1 << std::endl;
-
-		for (uint32 i = 0, end = edges_vertex_indices_.size()-1; i < end; i=i+2)
+		Dart first;
+		for (uint32 i = 0, end = edges_vertex_indices_.size(); i < end; i=i+2)
 		{
 			Dart d = mbuild_.add_topology_element();
+			first = d;
 			uint32 idx = edges_vertex_indices_[i];
 			uint32 idx2 = edges_vertex_indices_[i+1];
 			mbuild_.template set_orbit_embedding<Vertex>(Vertex(d), idx);
 			darts_out_vertex[idx2] = d;
-			std::cout << idx << ", " << idx2;
-			std::cout << " / d = " << darts_out_vertex[idx2] << std::endl;
 		}
+
+		Dart last = mbuild_.add_topology_element();
+		uint32 idx = edges_vertex_indices_[edges_vertex_indices_.size()-1];
+		mbuild_.template set_orbit_embedding<Vertex>(Vertex(last), idx);
+		darts_out_vertex[idx] = first;
 
 		uint32 nb_boundary_vertex = 0;
 
@@ -143,26 +146,20 @@ public:
 			if (map_.phi1(d) == d)
 			{
 				uint32 vertex_index = map_.embedding(Vertex(d));
-				std::cout << "vertex_index = " << vertex_index << std::endl;
 				Dart prev_vertex_darts = darts_out_vertex[vertex_index];
-
-				std::cout << prev_vertex_darts << std::endl;
 
 				if(prev_vertex_darts.is_nil())
 					++nb_boundary_vertex;
 				else
-					mbuild_.phi1_sew(d, prev_vertex_darts);
+					mbuild_.phi1_sew(prev_vertex_darts, d);
 			}
 		});
 
-		std::cout << "nbdarts = " << map_.nb_darts() << std::endl;
-
-		std::cout << "nb_boundary_vertex = " << nb_boundary_vertex << std::endl;
+		mbuild_.boundary_mark(Vertex(last));
 
 		if(nb_boundary_vertex > 0)
 		{
-			uint32 nb_holes = mbuild_.close_map();
-			cgogn_log_info("create_map") << nb_holes << " hole(s) have been closed";
+			cgogn_log_info("create_map") << nb_boundary_vertex << " hole(s) have been closed";
 		}
 
 		map_.remove_attribute(darts_out_vertex);

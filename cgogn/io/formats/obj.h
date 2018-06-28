@@ -108,8 +108,6 @@ protected:
 
 		this->nb_vertices_ = vertices_id.size();
 
-//		this->edges_nb_vertices_.reserve(vertices_id.size() * 2);
-
 		do
 		{
 			fp >> tag;
@@ -126,9 +124,14 @@ protected:
 				oss >> a;
 				oss >> b;
 
-//				this->edges_nb_vertices_.push_back(2);
-				this->edges_vertex_indices_.push_back(a-1);
-				this->edges_vertex_indices_.push_back(b-1);
+				uint32 min = b - 1;
+				uint32 max = a - 1;
+
+				if(min > max)
+					std::swap(min, max);
+
+				this->edges_vertex_indices_.push_back(vertices_id[min]);
+				this->edges_vertex_indices_.push_back(vertices_id[max]);
 
 				std::cout << a << " - " << b << std::endl;
 			}
