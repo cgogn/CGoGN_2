@@ -157,16 +157,14 @@ protected:
 		-> typename std::enable_if<MAP::DIMENSION == 1 && std::is_same<MASK, typename MAP::BoundaryCache>::value, void>::type
 	{
 		using Vertex = typename MAP::Vertex;
-		using Edge = typename MAP::Edge;
 
-		m.foreach_cell([&] (Edge e)
+		m.foreach_cell([&] (Vertex v)
 		{
-			table_indices.push_back(m.embedding(Vertex(e.dart)));
-			table_indices.push_back(m.embedding(Vertex(m.phi1(e.dart))));
+			table_indices.push_back(m.embedding(v));
 		},
 		mask);
 
-		boundary_dimension_ = 1;
+		boundary_dimension_ = 0;
 	}
 
 	template <typename MAP, typename MASK>
