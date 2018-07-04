@@ -25,7 +25,7 @@
 #define CGOGN_MODELING_ALGOS_CURVES_H_
 
 #include <cgogn/modeling/dll.h>
-#include <cgogn/core/graph/undirected_graph.h>
+#include <cgogn/core/cmap/cmap1.h>
 
 namespace cgogn
 {
@@ -40,14 +40,14 @@ namespace modeling
 /// \param[in] tmin minimum range of parameter t (must be a multiple of PI)
 /// \param[in] tmax maximum range of parameter t (must be a multiple of PI)
 template <typename VEC3, typename FUNC>
-UndirectedGraph::Vertex generate_curve(UndirectedGraph& map,
-					UndirectedGraph::VertexAttribute<VEC3>& position,
+CMap1::Vertex generate_curve(CMap1& map,
+					CMap1::VertexAttribute<VEC3>& position,
                     uint32 nb_samples,
                     float32 tmin,
                     float32 tmax,
                     const FUNC& f)
 {
-	using Vertex = UndirectedGraph::Vertex;
+	using Vertex = CMap1::Vertex;
     const float32 dt = (tmax - tmin) / float32(nb_samples);
     float32 it = tmin;
 
@@ -59,7 +59,7 @@ UndirectedGraph::Vertex generate_curve(UndirectedGraph& map,
 	{
 		VEC3 p = f(it);
 		position[vit] = p;
-        vit = Vertex(map.alpha1(map.alpha0(vit.dart)));
+		vit = Vertex(map.phi1(vit.dart));
 		it += dt;
     }
 

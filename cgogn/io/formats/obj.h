@@ -28,6 +28,9 @@
 #include <cgogn/geometry/types/vec.h>
 #include <cgogn/geometry/types/geometry_traits.h>
 
+#include <cgogn/io/polyline_import.h>
+#include <cgogn/io/polyline_export.h>
+
 #include <cgogn/io/surface_import.h>
 #include <cgogn/io/surface_export.h>
 
@@ -41,6 +44,149 @@ namespace cgogn
 
 namespace io
 {
+
+template <typename MAP, typename VEC3>
+class ObjPolylineImport : public PolylineFileImport<MAP>
+{
+
+public:
+	using Self = ObjPolylineImport<MAP, VEC3>;
+	using Inherit = PolylineFileImport<MAP>;
+	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
+	template <typename T>
+	using ChunkArray = typename Inherit::template ChunkArray<T>;
+
+	inline ObjPolylineImport(MAP& map) : Inherit(map) {}
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ObjPolylineImport);
+	virtual ~ObjPolylineImport() override {}
+
+protected:
+	virtual bool import_file_impl(const std::string& filename) override
+	{
+		std::ifstream fp(filename.c_str(), std::ios::in);
+
+		ChunkArray<VEC3>* position = this->template add_vertex_attribute<VEC3>("position");
+		std::string line, tag;
+
+		do
+		{
+			fp >> tag;
+			getline_safe(fp, line);
+		} while (tag != std::string("v"));
+
+		// lecture des sommets
+		std::vector<uint32> vertices_id;
+		vertices_id.reserve(102400);
+
+		uint32 i = 0;
+		do
+		{
+			if (tag == std::string("v"))
+			{
+				std::stringstream oss(line);
+
+				float64 x, y, z;
+				oss >> x;
+				oss >> y;
+				oss >> z;
+
+				VEC3 pos{Scalar(x), Scalar(y), Scalar(z)};
+
+				uint32 vertex_id = this->insert_line_vertex_container();
+				(*position)[vertex_id] = pos;
+
+				vertices_id.push_back(vertex_id);
+				i++;
+			}
+
+			fp >> tag;
+			getline_safe(fp, line);
+		} while (!fp.eof());
+
+		fp.clear();
+		fp.seekg(0, std::ios::beg);
+
+		this->nb_vertices_ = vertices_id.size();
+
+		do
+		{
+			fp >> tag;
+			getline_safe(fp, line);
+		} while (tag != std::string("l"));
+
+		do
+		{
+			if (tag == std::string("l"))
+			{
+				std::stringstream oss(line);
+
+				uint32  a, b;
+				oss >> a;
+				oss >> b;
+
+				uint32 min = b - 1;
+				uint32 max = a - 1;
+
+				if(min > max)
+					std::swap(min, max);
+
+				this->edges_vertex_indices_.push_back(vertices_id[min]);
+				this->edges_vertex_indices_.push_back(vertices_id[max]);
+
+				std::cout << a << " - " << b << std::endl;
+			}
+
+			fp >> tag;
+			getline_safe(fp, line);
+		} while (!fp.eof());
+
+		return true;
+	}
+};
+
+template <typename MAP>
+class ObjPolylineExport : public PolylineExport<MAP>
+{
+public:
+	using Inherit = PolylineExport<MAP>;
+	using Self = ObjPolylineExport<MAP>;
+
+	using Map = typename Inherit::Map;
+
+	using Vertex = typename Inherit::Vertex;
+	using Edge = typename Inherit::Edge;
+
+	using ChunkArrayGen = typename Inherit::ChunkArrayGen;
+	template <typename T>
+	using VertexAttribute = typename Inherit::template VertexAttribute<T>;
+	using ChunkArrayContainer = typename Inherit::ChunkArrayContainer;
+
+protected:
+	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& ) override
+	{
+		// set precision for float output
+		output << std::setprecision(12);
+
+		map.foreach_cell([&] (Vertex v)
+		{
+			output << "v ";
+			this->position_attribute(Vertex::ORBIT)->export_element(map.embedding(v), output, false, false);
+			output << std::endl;
+		}, *(this->cell_cache_));
+
+		std::cout << "obj export" << std::endl;
+		map.foreach_cell([&] (Edge e)
+		{
+			std::cout << e.dart;
+
+			std::pair<Vertex, Vertex> vs = map.vertices(e);
+
+			//todo erase this trick
+			if(this->vindices_[vs.first] != this->vindices_[vs.second])
+				output << "l " << (this->vindices_[vs.first]+1u) << " " << (this->vindices_[vs.second]+1u) << std::endl;
+		}, *(this->cell_cache_));
+	}
+};
 
 template <typename MAP, typename VEC3>
 class ObjSurfaceImport : public SurfaceFileImport<MAP>
