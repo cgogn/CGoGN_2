@@ -259,7 +259,7 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			break;
 		case Qt::Key_L:
 			cgogn::geometry::filter_laplacian(map_, cell_cache_, vertex_position_, vertex_position2_);
-			map_.swap_attributes(vertex_position_, vertex_position2_);
+//			map_.swap_attributes(vertex_position_, vertex_position2_);
 			cgogn::geometry::compute_normal(map_, vertex_position_, vertex_normal_);
 			cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
 			cgogn::rendering::update_vbo(vertex_normal_, vbo_norm_.get());

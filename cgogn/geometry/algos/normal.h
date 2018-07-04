@@ -47,7 +47,7 @@ InsideTypeOf<VERTEX_ATTR> normal(
 	const VERTEX_ATTR& position
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, "position must be a vertex attribute");
 
 	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 	using Scalar = ScalarOf<VEC3>;
@@ -79,7 +79,6 @@ InsideTypeOf<VERTEX_ATTR> normal(
 	}
 }
 
-
 template <typename MAP, typename VERTEX_ATTR>
 inline InsideTypeOf<VERTEX_ATTR> normal(
 	const MAP& map,
@@ -87,7 +86,7 @@ inline InsideTypeOf<VERTEX_ATTR> normal(
 	const VERTEX_ATTR& position
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, "position must be a vertex attribute");
 
 	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 	using Scalar = ScalarOf<VEC3>;
@@ -117,7 +116,7 @@ inline InsideTypeOf<VERTEX_ATTR> normal(
 	const Attribute<InsideTypeOf<VERTEX_ATTR>, Orbit::PHI1>& face_normal
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, "position must be a vertex attribute");
 
 	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 	using Scalar = ScalarOf<VEC3>;
@@ -139,7 +138,6 @@ inline InsideTypeOf<VERTEX_ATTR> normal(
 	return n;
 }
 
-
 template <typename MAP, typename VERTEX_ATTR, typename MASK>
 inline void compute_normal(
 	const MAP& map,
@@ -148,7 +146,7 @@ inline void compute_normal(
 	Attribute<InsideTypeOf<VERTEX_ATTR>, Orbit::PHI1>& face_normal
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, "position must be a vertex attribute");
 
 	map.parallel_foreach_cell([&] (Cell<Orbit::PHI1> f)
 	{
@@ -157,7 +155,6 @@ inline void compute_normal(
 	mask);
 }
 
-
 template <typename MAP, typename VERTEX_ATTR>
 inline void compute_normal(
 	const MAP& map,
@@ -165,7 +162,7 @@ inline void compute_normal(
 	Attribute<InsideTypeOf<VERTEX_ATTR>, Orbit::PHI1>& face_normal
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, "position must be a vertex attribute");
 
 	compute_normal(map, AllCellsFilter(), position, face_normal);
 }
@@ -178,7 +175,7 @@ inline void compute_normal(
 	Attribute<InsideTypeOf<VERTEX_ATTR>, Orbit::PHI21>& vertex_normal
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, "position must be a vertex attribute");
 
 	map.parallel_foreach_cell([&] (Cell<Orbit::PHI21> v)
 	{
@@ -187,7 +184,6 @@ inline void compute_normal(
 	mask);
 }
 
-
 template <typename MAP, typename VERTEX_ATTR>
 inline void compute_normal(
 	const MAP& map,
@@ -195,11 +191,10 @@ inline void compute_normal(
 	Attribute<InsideTypeOf<VERTEX_ATTR>, Orbit::PHI21>& vertex_normal
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, "position must be a vertex attribute");
 
 	compute_normal(map, AllCellsFilter(), position, vertex_normal);
 }
-
 
 template <typename MAP, typename VERTEX_ATTR, typename MASK>
 inline void compute_normal(
@@ -210,7 +205,7 @@ inline void compute_normal(
 	Attribute<InsideTypeOf<VERTEX_ATTR>, Orbit::PHI21>& vertex_normal
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, "position must be a vertex attribute");
 
 	map.parallel_foreach_cell([&] (Cell<Orbit::PHI21> v)
 	{
@@ -218,7 +213,6 @@ inline void compute_normal(
 	},
 	mask);
 }
-
 
 template <typename MAP, typename VERTEX_ATTR>
 inline void compute_normal(
@@ -228,7 +222,7 @@ inline void compute_normal(
 	Attribute<InsideTypeOf<VERTEX_ATTR>, Orbit::PHI21>& vertex_normal
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, "position must be a vertex attribute");
 
 	compute_normal(map, AllCellsFilter(), position, face_normal, vertex_normal);
 }
