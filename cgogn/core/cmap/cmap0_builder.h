@@ -21,67 +21,77 @@
 *                                                                              *
 *******************************************************************************/
 
+#ifndef CGOGN_CORE_CMAP_CMAP0_BUILDER_H_
+#define CGOGN_CORE_CMAP_CMAP0_BUILDER_H_
 
-#include <cgogn/rendering/map_render.h>
+#include <cgogn/core/cmap/map_base.h>
 
 namespace cgogn
 {
 
-namespace rendering
+template <typename MAP0>
+class CMap0Builder_T
 {
+	static_assert(MAP0::DIMENSION == 0, "CMap0Builder_T works only with 0D Maps.");
 
-MapRender::MapRender() : boundary_dimension_(1)
-{
-	for (uint32 i = 0u; i < SIZE_BUFFER; ++i)
+public:
+
+	using Self = CMap0Builder_T<MAP0>;
+	using Map0 = MAP0;
+	using CDart = typename Map0::CDart;
+	using Vertex = typename Map0::Vertex;
+
+	template <typename T>
+	using ChunkArrayContainer = typename Map0::template ChunkArrayContainer<T>;
+
+	template <typename T>
+	using ChunkArray = typename Map0::template ChunkArray<T>;
+
+	inline CMap0Builder_T(Map0& map) : map_(map) {}
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CMap0Builder_T);
+	inline ~CMap0Builder_T() {}
+
+public:
+	template <Orbit ORBIT>
+	inline void create_embedding()
 	{
-		indices_buffers_[i] = make_unique<QOpenGLBuffer>(QOpenGLBuffer::IndexBuffer);
-		indices_buffers_[i]->setUsagePattern(QOpenGLBuffer::StaticDraw);
-		indices_buffers_uptodate_[i] = false;
+		map_.template create_embedding<ORBIT>();
 	}
-}
 
-MapRender::~MapRender()
-{}
-
-void MapRender::draw(DrawingType prim)
-{
-	if (nb_indices_[prim] == 0)
-		return;
-
-	QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-
-	indices_buffers_[prim]->bind();
-	switch (prim)
+	template <Orbit ORBIT>
+	inline ChunkArrayContainer<uint32>& attribute_container()
 	{
-		case POINTS:
-			ogl->glDrawElements(GL_POINTS, nb_indices_[POINTS], GL_UNSIGNED_INT, 0);
-			break;
-		case LINES:
-			ogl->glDrawElements(GL_LINES, nb_indices_[LINES], GL_UNSIGNED_INT, 0);
-			break;
-		case TRIANGLES:
-			ogl->glDrawElements(GL_TRIANGLES, nb_indices_[TRIANGLES], GL_UNSIGNED_INT, 0);
-			break;
-		case BOUNDARY:
-			switch (boundary_dimension_)
-			{
-				case 0:
-					ogl->glDrawElements(GL_POINTS, nb_indices_[BOUNDARY], GL_UNSIGNED_INT, 0);
-					break;
-				case 1:
-					ogl->glDrawElements(GL_LINES, nb_indices_[BOUNDARY], GL_UNSIGNED_INT, 0);
-					break;
-				case 2:
-					ogl->glDrawElements(GL_TRIANGLES, nb_indices_[BOUNDARY], GL_UNSIGNED_INT, 0);
-					break;
-			}
-			break;
-		default:
-			break;
+		return map_.template non_const_attribute_container<ORBIT>();
 	}
-	indices_buffers_[prim]->release();
-}
 
-} // namespace rendering
+	template <class CellType>
+	inline void set_embedding(Dart d, uint32 emb)
+	{
+		map_.template set_embedding<CellType>(d, emb);
+	}
 
-} // namespace cgogn
+	template <class CellType, Orbit ORBIT>
+	inline void set_orbit_embedding(Cell<ORBIT> c, uint32 emb)
+	{
+		map_.template set_orbit_embedding<CellType>(c, emb);
+	}
+
+	template <class CellType>
+	inline uint32 new_orbit_embedding(CellType c)
+	{
+		return map_.new_orbit_embedding(c);
+	}
+
+	inline Dart add_topology_element()
+	{
+		return map_.add_topology_element();
+	}
+
+private:
+
+	Map0& map_;
+};
+
+} //end namespace cgogn
+
+#endif // CGOGN_CORE_CMAP_CMAP0_BUILDER_H_

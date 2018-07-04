@@ -9,7 +9,9 @@ find_package(Zlib REQUIRED NO_CMAKE_ENVIRONMENT_PATH)
 
 set(HEADER_FILES
 	data_io.h
-	surface_import.h
+        polyline_import.h
+        point_set_import.h
+        surface_import.h
 	volume_import.h
 	map_import.h
 	map_export.h
@@ -19,6 +21,9 @@ set(HEADER_FILES
 	dll.h
 	c_locale.h
 	mesh_io_gen.h
+        polyline_export.h
+        point_set_export.h
+        polyline_import.h
 	surface_export.h
 	volume_export.h
 	formats/2dm.h
@@ -28,8 +33,10 @@ set(HEADER_FILES
 	formats/meshb.h
 	formats/msh.h
 	formats/nastran.h
+        formats/lin.h
 	formats/obj.h
 	formats/off.h
+        formats/plo.h
 	formats/ply.h
 	formats/ply_data.h
 	formats/skel.h
@@ -37,6 +44,7 @@ set(HEADER_FILES
 	formats/tet.h
 	formats/tetgen.h
 	formats/tetmesh.h
+        formats/ts.h
 	formats/vtk.h
 )
 
