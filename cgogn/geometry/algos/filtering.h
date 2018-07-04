@@ -30,6 +30,8 @@
 #include <cgogn/geometry/functions/basics.h>
 #include <cgogn/geometry/algos/angle.h>
 
+#include <Eigen/IterativeLinearSolvers>
+
 namespace cgogn
 {
 
@@ -206,7 +208,7 @@ template <typename MAP, typename MASK, typename VERTEX_ATTR>
 void filter_laplacian(
 	MAP& map,
 	const MASK& mask,
-	const VERTEX_ATTR& position_in,
+	VERTEX_ATTR& position_in,
 	VERTEX_ATTR& position_out
 )
 {
@@ -250,28 +252,15 @@ void filter_laplacian(
 	{
 		uint32 vidx = vertex_index[v];
 		Scalar wsum = 0;
-		map.foreach_incident_edge(v, [&] (Edge e) { wsum += edge_weight[e]; });
+		Scalar a = 1. / (4. * area(map, v, position_in));
+		map.foreach_incident_edge(v, [&] (Edge e) { wsum += a * edge_weight[e]; });
 		map.foreach_adjacent_vertex_through_edge(v, [&] (Vertex av)
 		{
-			LAPLcoeffs.push_back(Eigen::Triplet<Scalar>(vidx, vertex_index[av], edge_weight[Edge(av.dart)] / wsum));
+			LAPLcoeffs.push_back(Eigen::Triplet<Scalar>(vidx, vertex_index[av], (a * edge_weight[Edge(av.dart)]) / wsum));
 		});
 		LAPLcoeffs.push_back(Eigen::Triplet<Scalar>(vidx, vidx, -1.));
 	},
 	mask);
-//	map.foreach_cell([&] (Edge e)
-//	{
-//		Scalar w = edge_weight[e];
-//		auto vertices = map.vertices(e);
-//		uint32 vidx1 = vertex_index[vertices.first];
-//		uint32 vidx2 = vertex_index[vertices.second];
-
-//		LAPLcoeffs.push_back(Eigen::Triplet<Scalar>(vidx1, vidx2, w));
-//		LAPLcoeffs.push_back(Eigen::Triplet<Scalar>(vidx2, vidx1, w));
-
-//		LAPLcoeffs.push_back(Eigen::Triplet<Scalar>(vidx1, vidx1, -w));
-//		LAPLcoeffs.push_back(Eigen::Triplet<Scalar>(vidx2, vidx2, -w));
-//	},
-//	mask);
 	LAPL.setFromTriplets(LAPLcoeffs.begin(), LAPLcoeffs.end());
 
 	Eigen::MatrixXd vpos(nb_vertices, 3);
@@ -312,7 +301,7 @@ void filter_laplacian(
 template <typename MAP, typename VERTEX_ATTR>
 void filter_laplacian(
 	MAP& map,
-	const VERTEX_ATTR& position_in,
+	VERTEX_ATTR& position_in,
 	VERTEX_ATTR& position_out
 )
 {
