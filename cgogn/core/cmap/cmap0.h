@@ -25,10 +25,12 @@
 #define CGOGN_CORE_CMAP_CMAP0_H_
 
 #include <cgogn/core/cmap/map_base.h>
-#include <cgogn/core/cmap/cmap0_builder.h>
 
 namespace cgogn
 {
+
+template <typename MAP2>
+class CMap0Builder_T;
 
 template <typename MAP_TYPE>
 class CMap0_T : public MapBase<MAP_TYPE>

@@ -2,8 +2,6 @@ project(cgogn_core
 	LANGUAGES CXX
 )
 
-
-
 set(HEADER_BASIC
 	basic/dart.h
 	basic/dart_marker.h
@@ -16,7 +14,7 @@ set(HEADER_CMAP
 	cmap/map_base_data.h
 	cmap/map_base.h
 	cmap/cmap0.h
-        cmap/cmap0_builder.h
+	cmap/cmap0_builder.h
 	cmap/cmap1.h
 	cmap/cmap1_builder.h
 	cmap/cmap2.h
@@ -66,7 +64,6 @@ set(HEADER_UTILS
 )
 
 set(HEADER_FILES dll.h ${HEADER_BASIC} ${HEADER_CMAP} ${HEADER_CONTAINER} ${HEADER_GRAPH} ${HEADER_UTILS})
-
 
 set(SOURCE_CMAP
 	cmap/map_base_data.cpp

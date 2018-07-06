@@ -30,6 +30,7 @@
 #include <cgogn/core/utils/string.h>
 
 #include <cgogn/core/cmap/cmap3.h>
+#include <cgogn/core/cmap/cmap3_builder.h>
 #include <cgogn/geometry/types/geometry_traits.h>
 #include <cgogn/geometry/functions/orientation.h>
 
@@ -114,9 +115,9 @@ namespace io
 template <typename MAP>
 class VolumeImport
 {
-public:
-
 	static_assert(MAP::DIMENSION == 3, "Must use map of dimension 3 in volume import");
+
+public:
 
 	using Self = VolumeImport<MAP>;
 
