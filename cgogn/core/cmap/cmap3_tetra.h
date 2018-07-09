@@ -332,6 +332,21 @@ protected:
 		return add_tetra_topo_fp();
 	}
 
+	inline Dart add_prism_topo_fp(std::size_t size)
+	{
+		unused_parameters(size);
+		cgogn_message_assert(false, "Can create only tetra");
+		cgogn_log_warning("add_prism_topo_fp") << "Attempt to create a volume which is not a tetrahedron in CMap3Tetra";
+		return Dart();
+	}
+
+	inline Dart add_stamp_volume_topo_fp()
+	{
+		cgogn_message_assert(false, "Can create only tetra");
+		cgogn_log_warning("add_stamp_volume_topo_fp") << "Attempt to create a volume which is not a tetrahedron in CMap3Tetra";
+		return Dart();
+	}
+
 	/**
 	 * @brief sew two volumes along a face
 	 * The darts given in the Volume parameters must be part of Face2 that have

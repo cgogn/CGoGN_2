@@ -200,7 +200,6 @@ inline void import_volume(MAP& map, const std::string& filename)
 			si->create_map();
 }
 
-
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
 extern template CGOGN_IO_API void import_point_set<Eigen::Vector3f>(CMap0&, const std::string&);
 extern template CGOGN_IO_API void import_point_set<Eigen::Vector3d>(CMap0&, const std::string&);
