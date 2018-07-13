@@ -42,33 +42,31 @@ namespace type_traits
  * function_traits
  * Traits class to inspect function characteristics (return type, arity, parameters types)
  * Warning : when dealing with a member function, the pointer to the current object is ignored.
+ * see https://functionalcpp.wordpress.com/2013/08/05/function-traits/
  */
-
-// specialization for lambda functions
-template <typename T>
-struct function_traits : public function_traits<decltype(&T::operator())>
-{};
+template<class Fn>
+struct function_traits;
 
 // General case
-template <typename ReturnType, typename... Args>
-struct function_traits<ReturnType(Args...)>
+template <typename ReturnType, typename... ArgTypes>
+struct function_traits<ReturnType(ArgTypes...)>
 {
-	static const size_t arity = sizeof...(Args);
+	static const size_t arity = sizeof...(ArgTypes);
 
 	using result_type = ReturnType;
 
 	template <size_t i>
 	struct arg
 	{
-		static_assert(i < sizeof...(Args), "Trying to access to an argument whose index is higher than the function arity.");
-		using type = typename std::tuple_element<i, std::tuple<Args...>>::type;
+		static_assert(i < arity, "Trying to access to an argument whose index is higher than the function arity.");
+		using type = typename std::tuple_element<i, std::tuple<ArgTypes...>>::type;
 		// the i-th argument is equivalent to the i-th tuple element of a tuple composed of those arguments.
 	};
 };
 
 // specialization for function pointers
-template <typename ReturnType, typename... Args>
-struct function_traits<ReturnType(*)(Args...)> : public function_traits<ReturnType(Args...)> {};
+template <typename ReturnType, typename... ArgTypes>
+struct function_traits<ReturnType(*)(ArgTypes...)> : public function_traits<ReturnType(ArgTypes...)> {};
 
 // specialization for function references
 template <typename ReturnType, typename... Args>
@@ -76,13 +74,42 @@ struct function_traits<ReturnType(&)(Args...)> : public function_traits<ReturnTy
 
 // specialization for member function pointers
 template <typename ClassType, typename ReturnType, typename... Args>
-struct function_traits<ReturnType(ClassType::*)(Args...)>: public function_traits<ReturnType(Args...)> {};
+struct function_traits<ReturnType(ClassType::*)(Args...)>: public function_traits<ReturnType(ClassType&, Args...)> {};
 
 // specialization for const member function pointers
 template <typename ClassType, typename ReturnType, typename... Args>
-struct function_traits<ReturnType(ClassType::*)(Args...) const> : public function_traits<ReturnType(Args...)>{};
+struct function_traits<ReturnType(ClassType::*)(Args...) const> : public function_traits<ReturnType(ClassType&, Args...)>{};
 
+// specialization for member object pointer
+template <typename ClassType, typename ReturnType>
+struct function_traits<ReturnType(ClassType::*)> : public function_traits<ReturnType(ClassType&)>{};
 
+// functor
+template<class F>
+struct function_traits
+{
+	private:
+		using call_type = function_traits<decltype(&F::operator())>;
+
+	public:
+		using result_type = typename call_type::result_type;
+
+		static const std::size_t arity = call_type::arity - 1;
+
+		template <size_t i>
+		struct arg
+		{
+			static_assert(i < arity, "error: invalid parameter index.");
+			using type = typename call_type::template arg<i+1>::type;
+		};
+};
+
+// The two extra specializations will also strip any reference qualifiers to prevent wierd errors.
+template<class F>
+struct function_traits<F&> : public function_traits<F> {};
+
+template<class F>
+struct function_traits<F&&> : public function_traits<F> {};
 
 template <class>
 struct sfinae_true : std::true_type {};
