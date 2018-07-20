@@ -148,11 +148,11 @@ template class CGOGN_IO_API OffSurfaceImport<CMap2, geometry::Vec_T<std::array<f
 template class CGOGN_IO_API OffSurfaceImport<CMap2, geometry::Vec_T<std::array<float32,3>>>;
 template class CGOGN_IO_API OffSurfaceExport<CMap2>;
 
-template class CGOGN_IO_API PlotPointSetImport<CMap0, Eigen::Vector3d>;
-template class CGOGN_IO_API PlotPointSetImport<CMap0, Eigen::Vector3f>;
-template class CGOGN_IO_API PlotPointSetImport<CMap0, geometry::Vec_T<std::array<float64,3>>>;
-template class CGOGN_IO_API PlotPointSetImport<CMap0, geometry::Vec_T<std::array<float32,3>>>;
-template class CGOGN_IO_API PlotPointSetExport<CMap0>;
+template class CGOGN_IO_API PloPointSetImport<CMap0, Eigen::Vector3d>;
+template class CGOGN_IO_API PloPointSetImport<CMap0, Eigen::Vector3f>;
+template class CGOGN_IO_API PloPointSetImport<CMap0, geometry::Vec_T<std::array<float64,3>>>;
+template class CGOGN_IO_API PloPointSetImport<CMap0, geometry::Vec_T<std::array<float32,3>>>;
+template class CGOGN_IO_API PloPointSetExport<CMap0>;
 
 template class CGOGN_IO_API PlySurfaceImport<CMap2, Eigen::Vector3d>;
 template class CGOGN_IO_API PlySurfaceImport<CMap2, Eigen::Vector3f>;
