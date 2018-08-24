@@ -6,6 +6,8 @@ add_library(${PROJECT_NAME} SHARED "")
 
 target_sources(${PROJECT_NAME}
     PRIVATE
+        "${CMAKE_CURRENT_LIST_DIR}/dll.h"
+
         "${CMAKE_CURRENT_LIST_DIR}/types/plane_3d.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/types/quadric.cpp"
 
