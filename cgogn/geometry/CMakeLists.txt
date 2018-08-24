@@ -2,53 +2,50 @@ project(cgogn_geometry
 	LANGUAGES CXX
 )
 
-set(HEADER_ALGOS
-	algos/bounding_box.h
-	algos/feature.h
-	algos/area.h
-	algos/centroid.h
-	algos/curvature.h
-	algos/normal.h
-	algos/ear_triangulation.h
-	algos/picking.h
-	algos/selection.h
-	algos/filtering.h
-	algos/length.h
-	algos/angle.h
-)
-set(HEADER_FUNCTIONS
-	functions/basics.h
-	functions/area.h
-	functions/normal.h
-	functions/orientation.h
-	functions/inclusion.h
-	functions/intersection.h
-	functions/distance.h
-)
-set(HEADER_TYPES
-	types/aabb.h
-	types/obb.h
-	types/eigen.h
-	types/geometry_traits.h
-	types/plane_3d.h
-	types/quadric.h
-	types/vec.h
-)
-set(HEADER_FILES dll.h ${HEADER_ALGOS} ${HEADER_FUNCTIONS} ${HEADER_TYPES})
+add_library(${PROJECT_NAME} SHARED "")
 
+target_sources(${PROJECT_NAME}
+    PRIVATE
+        "${CMAKE_CURRENT_LIST_DIR}/types/plane_3d.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/types/quadric.cpp"
 
-set(SOURCE_TYPES
-	types/plane_3d.cpp
-	types/quadric.cpp
-)
+        "${CMAKE_CURRENT_LIST_DIR}/algos/bounding_box.h"
+        "${CMAKE_CURRENT_LIST_DIR}/algos/feature.h"
+        "${CMAKE_CURRENT_LIST_DIR}/algos/area.h"
+        "${CMAKE_CURRENT_LIST_DIR}/algos/centroid.h"
+        "${CMAKE_CURRENT_LIST_DIR}/algos/curvature.h"
+        "${CMAKE_CURRENT_LIST_DIR}/algos/normal.h"
+        "${CMAKE_CURRENT_LIST_DIR}/algos/ear_triangulation.h"
+        "${CMAKE_CURRENT_LIST_DIR}/algos/picking.h"
+        "${CMAKE_CURRENT_LIST_DIR}/algos/selection.h"
+        "${CMAKE_CURRENT_LIST_DIR}/algos/filtering.h"
+        "${CMAKE_CURRENT_LIST_DIR}/algos/length.h"
+        "${CMAKE_CURRENT_LIST_DIR}/algos/angle.h"
+
+        "${CMAKE_CURRENT_LIST_DIR}/functions/basics.h"
+        "${CMAKE_CURRENT_LIST_DIR}/functions/area.h"
+        "${CMAKE_CURRENT_LIST_DIR}/functions/normal.h"
+        "${CMAKE_CURRENT_LIST_DIR}/functions/orientation.h"
+        "${CMAKE_CURRENT_LIST_DIR}/functions/inclusion.h"
+        "${CMAKE_CURRENT_LIST_DIR}/functions/intersection.h"
+        "${CMAKE_CURRENT_LIST_DIR}/functions/distance.h"
+
+        "${CMAKE_CURRENT_LIST_DIR}/types/aabb.h"
+        "${CMAKE_CURRENT_LIST_DIR}/types/obb.h"
+        "${CMAKE_CURRENT_LIST_DIR}/types/eigen.h"
+        "${CMAKE_CURRENT_LIST_DIR}/types/geometry_traits.h"
+        "${CMAKE_CURRENT_LIST_DIR}/types/plane_3d.h"
+        "${CMAKE_CURRENT_LIST_DIR}/types/quadric.h"
+        "${CMAKE_CURRENT_LIST_DIR}/types/vec.h"
+    )
 
 if(${CGOGN_EXTERNAL_TEMPLATES})
-    set(SOURCE_FILES ${SOURCE_TYPES} external_templates.cpp)
-else()
-    set(SOURCE_FILES ${SOURCE_TYPES})
+    target_sources(${PROJECT_NAME}
+        PRIVATE
+            "${CMAKE_CURRENT_LIST_DIR}/external_templates.cpp"
+    )
 endif()
 
-add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
 target_compile_definitions(${PROJECT_NAME} PRIVATE "-DCGOGN_GEOMETRY_DLL_EXPORT")
@@ -74,7 +71,7 @@ install(DIRECTORY algos functions types
 cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CGOGN_SOURCE_DIR};${CGOGN_THIRDPARTY_EIGEN3_INCLUDE_DIR}" "include;include/cgogn/thirdparty")
 
 # VisualStudio nice source organisation
-source_group("ALGOS" FILES ${HEADER_ALGOS} ${SOURCE_ALGOS})
-source_group("TYPES" FILES ${HEADER_TYPES} ${SOURCE_TYPES})
-source_group("FUNCTIONS" FILES ${HEADER_FUNCTIONS})
+#source_group("ALGOS" FILES ${HEADER_ALGOS} ${SOURCE_ALGOS})
+#source_group("TYPES" FILES ${HEADER_TYPES} ${SOURCE_TYPES})
+#source_group("FUNCTIONS" FILES ${HEADER_FUNCTIONS})
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER cgogn)
