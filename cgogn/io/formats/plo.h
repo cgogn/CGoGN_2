@@ -116,17 +116,17 @@ protected:
 		// Vertices
 		map.foreach_cell([&] (Vertex v)
 		{
-			output << this->position_attribute(Vertex::ORBIT)->export_element(map.embedding(v), output, false, false);
+			this->position_attribute(Vertex::ORBIT)->export_element(map.embedding(v), output, false, false);
 			output << std::endl;
 		}, *(this->cell_cache_));
 	}
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_IO_API PlotPointSetImport<CMap0, Eigen::Vector3d>;
-extern template class CGOGN_IO_API PlotPointSetImport<CMap0, Eigen::Vector3f>;
-extern template class CGOGN_IO_API PlotPointSetImport<CMap0, geometry::Vec_T<std::array<float64,3>>>;
-extern template class CGOGN_IO_API PlotPointSetImport<CMap0, geometry::Vec_T<std::array<float32,3>>>;
+extern template class CGOGN_IO_API PloPointSetImport<CMap0, Eigen::Vector3d>;
+extern template class CGOGN_IO_API PloPointSetImport<CMap0, Eigen::Vector3f>;
+extern template class CGOGN_IO_API PloPointSetImport<CMap0, geometry::Vec_T<std::array<float64,3>>>;
+extern template class CGOGN_IO_API PloPointSetImport<CMap0, geometry::Vec_T<std::array<float32,3>>>;
 
 extern template class CGOGN_IO_API PlotPointSetExport<CMap0>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
