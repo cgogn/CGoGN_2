@@ -123,7 +123,10 @@ enum FileType
 	FileType_TETGEN,
 	FileType_NASTRAN,
 	FileType_AIMATSHAPE,
-	FileType_TETMESH
+	FileType_TETMESH,
+	FileType_PLO,
+	FileType_TS,
+	FileType_LIN,
 };
 
 enum DataType

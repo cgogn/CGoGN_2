@@ -28,7 +28,6 @@ target_sources(${PROJECT_NAME}
 		"${CMAKE_CURRENT_LIST_DIR}/mesh_io_gen.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/surface_export.h"
 		"${CMAKE_CURRENT_LIST_DIR}/volume_export.h"
-
 		"${CMAKE_CURRENT_LIST_DIR}/formats/2dm.h"
 		"${CMAKE_CURRENT_LIST_DIR}/formats/dot.h"
 		"${CMAKE_CURRENT_LIST_DIR}/formats/cg.h"

@@ -34,6 +34,7 @@
 #include <cgogn/io/formats/off.h>
 #include <cgogn/io/formats/obj.h>
 #include <cgogn/io/formats/stl.h>
+#include <cgogn/io/formats/plo.h>
 #include <cgogn/io/formats/ply.h>
 #include <cgogn/io/formats/cg.h>
 #include <cgogn/io/formats/cskel.h>
@@ -48,6 +49,30 @@ namespace cgogn
 
 namespace io
 {
+
+template <typename MAP>
+inline std::unique_ptr<PointSetExport<MAP>> new_point_set_export(const std::string& filename)
+{
+	const FileType ft = file_type(filename);
+	switch(ft) {
+		case FileType::FileType_PLO:		return make_unique<PloPointSetExport<MAP>>();
+		default:
+			cgogn_log_warning("new_point_set_export") << "PointSetExport does not handle files with extension \"" << extension(filename) << "\".";
+			return std::unique_ptr<PointSetExport<MAP>>();
+	}
+}
+
+template <typename MAP>
+inline std::unique_ptr<PolylineExport<MAP>> new_polyline_export(const std::string& filename)
+{
+	const FileType ft = file_type(filename);
+	switch(ft) {
+		case FileType::FileType_OBJ:		return make_unique<ObjPolylineExport<MAP>>();
+		default:
+			cgogn_log_warning("new_polyline_export") << "PolylineExport does not handle files with extension \"" << extension(filename) << "\".";
+			return std::unique_ptr<PolylineExport<MAP>>();
+	}
+}
 
 template <typename MAP>
 inline std::unique_ptr<GraphExport<MAP>> new_graph_export(const std::string& filename)
@@ -103,6 +128,24 @@ inline std::unique_ptr<VolumeExport<MAP>> new_volume_export(const std::string& f
 }
 
 template <typename MAP>
+inline void export_point_set(MAP& map, const ExportOptions& options)
+{
+	static_assert(MAP::DIMENSION == 0, "export_point_set is designed for 0D maps.");
+	auto se = new_point_set_export<MAP>(options.filename_);
+	if (se)
+		se->export_file(map, options);
+}
+
+template <typename MAP>
+inline void export_polyline(MAP& map, const ExportOptions& options)
+{
+	static_assert(MAP::DIMENSION == 1, "export_polyline is designed for 1D maps.");
+	auto se = new_polyline_export<MAP>(options.filename_);
+	if (se)
+		se->export_file(map, options);
+}
+
+template <typename MAP>
 inline void export_graph(MAP& map, const ExportOptions& options)
 {
 	auto se = new_graph_export<MAP>(options.filename_);
@@ -129,6 +172,8 @@ inline void export_volume(MAP& map3, const ExportOptions& options)
 }
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
+extern template CGOGN_IO_API void export_point_set(CMap0& , const ExportOptions&);
+extern template CGOGN_IO_API void export_polyline(CMap1& , const ExportOptions&);
 extern template CGOGN_IO_API void export_graph(UndirectedGraph& , const ExportOptions&);
 extern template CGOGN_IO_API void export_surface(CMap2& , const ExportOptions&);
 extern template CGOGN_IO_API void export_volume(CMap3& , const ExportOptions&);
