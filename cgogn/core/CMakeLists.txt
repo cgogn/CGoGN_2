@@ -2,97 +2,80 @@ project(cgogn_core
 	LANGUAGES CXX
 )
 
+add_library(${PROJECT_NAME} SHARED "")
 
+target_sources(${PROJECT_NAME}
+	PRIVATE
+		"${CMAKE_CURRENT_LIST_DIR}/dll.h"
+		"${CMAKE_CURRENT_LIST_DIR}/basic/dart.h"
+		"${CMAKE_CURRENT_LIST_DIR}/basic/dart_marker.h"
+		"${CMAKE_CURRENT_LIST_DIR}/basic/cell.h"
+		"${CMAKE_CURRENT_LIST_DIR}/basic/cell_marker.h"
 
-set(HEADER_BASIC
-	basic/dart.h
-	basic/dart_marker.h
-	basic/cell.h
-	basic/cell_marker.h
-)
+		"${CMAKE_CURRENT_LIST_DIR}/cmap/map_traits.h"
+		"${CMAKE_CURRENT_LIST_DIR}/cmap/map_base_data.h"
+		"${CMAKE_CURRENT_LIST_DIR}/cmap/map_base_data.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/cmap/map_base.h"
+		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap0.h"
+		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap1.h"
+		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap2.h"
+		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap2_builder.h"
+		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap3.h"
+		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap3_builder.h"
+		"${CMAKE_CURRENT_LIST_DIR}/cmap/attribute.h"
+		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap2_tri.h"
+		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap2_quad.h"
+		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap3_tetra.h"
+		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap3_hexa.h"
 
-set(HEADER_CMAP
-	cmap/map_traits.h
-	cmap/map_base_data.h
-	cmap/map_base.h
-	cmap/cmap0.h
-	cmap/cmap1.h
-	cmap/cmap2.h
-	cmap/cmap2_builder.h
-	cmap/cmap3.h
-	cmap/cmap3_builder.h
-	cmap/attribute.h
-	cmap/cmap2_tri.h
-	cmap/cmap2_quad.h
-	cmap/cmap3_tetra.h
-	cmap/cmap3_hexa.h
-)
+		"${CMAKE_CURRENT_LIST_DIR}/container/chunk_array_container.h"
+		"${CMAKE_CURRENT_LIST_DIR}/container/chunk_array_factory.h"
+		"${CMAKE_CURRENT_LIST_DIR}/container/chunk_array_gen.h"
+		"${CMAKE_CURRENT_LIST_DIR}/container/chunk_array.h"
+		"${CMAKE_CURRENT_LIST_DIR}/container/chunk_stack.h"
 
-set(HEADER_CONTAINER
-	container/chunk_array_container.h
-	container/chunk_array_factory.h
-	container/chunk_array_gen.h
-	container/chunk_array.h
-	container/chunk_stack.h
-)
+		"${CMAKE_CURRENT_LIST_DIR}/graph/undirected_graph.h"
+		"${CMAKE_CURRENT_LIST_DIR}/graph/undirected_graph_builder.h"
 
-set(HEADER_GRAPH
-	graph/undirected_graph.h
-	graph/undirected_graph_builder.h
-)
-
-set(HEADER_UTILS
-	utils/assert.h
-	utils/buffers.h
-	utils/definitions.h
-	utils/endian.h
-	utils/unique_ptr.h
-	utils/name_types.h
-	utils/serialization.h
-	utils/thread.h
-	utils/thread_pool.h
-	utils/string.h
-	utils/masks.h
-	utils/logger.h
-	utils/log_entry.h
-	utils/logger_output.h
-	utils/log_stream.h
-	utils/numerics.h
-	utils/type_traits.h
-	utils/timer.h
-	utils/parallel_foreach_element.h
-)
-
-set(HEADER_FILES dll.h ${HEADER_BASIC} ${HEADER_CMAP} ${HEADER_CONTAINER} ${HEADER_GRAPH} ${HEADER_UTILS})
-
-
-set(SOURCE_CMAP
-	cmap/map_base_data.cpp
-)
-
-set(SOURCE_UTILS
-	utils/assert.cpp
-	utils/name_types.cpp
-	utils/thread.cpp
-	utils/thread_pool.cpp
-	utils/serialization.cpp
-	utils/logger.cpp
-	utils/log_entry.cpp
-	utils/logger_output.cpp
-	utils/log_stream.cpp
-	utils/masks.cpp
-	utils/string.cpp
-	utils/timer.cpp
+		"${CMAKE_CURRENT_LIST_DIR}/utils/assert.h"
+		"${CMAKE_CURRENT_LIST_DIR}/utils/assert.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/utils/buffers.h"
+		"${CMAKE_CURRENT_LIST_DIR}/utils/definitions.h"
+		"${CMAKE_CURRENT_LIST_DIR}/utils/endian.h"
+		"${CMAKE_CURRENT_LIST_DIR}/utils/unique_ptr.h"
+		"${CMAKE_CURRENT_LIST_DIR}/utils/name_types.h"
+		"${CMAKE_CURRENT_LIST_DIR}/utils/name_types.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/utils/serialization.h"
+		"${CMAKE_CURRENT_LIST_DIR}/utils/serialization.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/utils/thread.h"
+		"${CMAKE_CURRENT_LIST_DIR}/utils/thread.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/utils/thread_pool.h"
+		"${CMAKE_CURRENT_LIST_DIR}/utils/thread_pool.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/utils/string.h"
+		"${CMAKE_CURRENT_LIST_DIR}/utils/string.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/utils/masks.h"
+		"${CMAKE_CURRENT_LIST_DIR}/utils/masks.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/utils/logger.h"
+		"${CMAKE_CURRENT_LIST_DIR}/utils/logger.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/utils/log_entry.h"
+		"${CMAKE_CURRENT_LIST_DIR}/utils/log_entry.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/utils/logger_output.h"
+		"${CMAKE_CURRENT_LIST_DIR}/utils/logger_output.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/utils/log_stream.h"
+		"${CMAKE_CURRENT_LIST_DIR}/utils/log_stream.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/utils/numerics.h"
+		"${CMAKE_CURRENT_LIST_DIR}/utils/type_traits.h"
+		"${CMAKE_CURRENT_LIST_DIR}/utils/timer.h"
+		"${CMAKE_CURRENT_LIST_DIR}/utils/timer.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/utils/parallel_foreach_element.h"
 )
 
 if(${CGOGN_EXTERNAL_TEMPLATES})
-    set(SOURCE_FILES ${SOURCE_CMAP} ${SOURCE_UTILS} external_templates.cpp)
-else()
-    set(SOURCE_FILES ${SOURCE_CMAP} ${SOURCE_UTILS})
+	target_sources(${PROJECT_NAME}
+		PRIVATE
+			"${CMAKE_CURRENT_LIST_DIR}/external_templates.cpp"
+	)
 endif()
-
-add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
-
 
 # use of target_compile_options to have transitive flags
 if(CGOGN_USE_SIMD)
@@ -101,6 +84,7 @@ if(CGOGN_USE_SIMD)
 else()
 	target_compile_definitions(${PROJECT_NAME} PUBLIC "EIGEN_DONT_VECTORIZE")
 endif()
+
 if(NOT MSVC)
 	if (CGOGN_CPP_STD STREQUAL "11")
 		target_compile_options(${PROJECT_NAME} PUBLIC "-std=c++11")
@@ -163,19 +147,13 @@ else()
 endif()
 
 
-
-install(FILES "dll.h" DESTINATION "include/cgogn/core/")
+install(FILES "dll.h" DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cgogn/core/)
 install(DIRECTORY basic cmap container utils graph
-	DESTINATION "include/cgogn/core/"
+	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cgogn/core/
 	FILES_MATCHING PATTERN "*.h"
 )
 
 cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CGOGN_SOURCE_DIR};${CGOGN_THIRDPARTY_TERMCOLOR_INCLUDE_DIR}" "include;include/cgogn/thirdparty")
 
 # VisualStudio nice source organisation
-source_group("CMAP" FILES ${HEADER_CMAP} ${SOURCE_CMAP})
-source_group("CONTAINER" FILES ${HEADER_CONTAINER} ${SOURCE_CONTAINER})
-source_group("GRAPH" FILES ${HEADER_GRAPH} ${SOURCE_GRAPH})
-source_group("UTILS" FILES ${HEADER_UTILS} ${SOURCE_UTILS})
-source_group("BASIC" FILES ${HEADER_BASIC})
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER cgogn)

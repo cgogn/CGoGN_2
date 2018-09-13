@@ -54,7 +54,6 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE "-DCGOGN_GEOMETRY_DLL_EXPORT"
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
 	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_EIGEN3_INCLUDE_DIR}>
 	$<INSTALL_INTERFACE:include/cgogn/thirdparty>
-#	$<INSTALL_INTERFACE:include/cgogn/thirdparty/eigen/unsupported>
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC
@@ -64,16 +63,13 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 target_link_libraries(${PROJECT_NAME} cgogn_core)
 
-install(FILES "dll.h" DESTINATION "include/cgogn/geometry")
+install(FILES "dll.h" DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cgogn/geometry)
 install(DIRECTORY algos functions types
-	DESTINATION "include/cgogn/geometry"
+	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cgogn/geometry
 	FILES_MATCHING PATTERN "*.h"
 )
 
 cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CGOGN_SOURCE_DIR};${CGOGN_THIRDPARTY_EIGEN3_INCLUDE_DIR}" "include;include/cgogn/thirdparty")
 
 # VisualStudio nice source organisation
-#source_group("ALGOS" FILES ${HEADER_ALGOS} ${SOURCE_ALGOS})
-#source_group("TYPES" FILES ${HEADER_TYPES} ${SOURCE_TYPES})
-#source_group("FUNCTIONS" FILES ${HEADER_FUNCTIONS})
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER cgogn)
