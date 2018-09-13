@@ -5,7 +5,12 @@ project(cgogn_rendering
 find_package(Qt5 5.4.0 COMPONENTS Gui REQUIRED)
 find_package(QOGLViewer REQUIRED)
 
+#CMake will handle .qrc files added as target sources
+set(CMAKE_AUTORCC ON)
+
 add_library(${PROJECT_NAME} SHARED "")
+
+add_library(cgogn::rendering ALIAS cgogn_rendering)
 
 target_sources(${PROJECT_NAME}
 	PRIVATE
@@ -24,6 +29,7 @@ target_sources(${PROJECT_NAME}
 		"${CMAKE_CURRENT_LIST_DIR}/frame_manipulator.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/text_drawer.h"
 		"${CMAKE_CURRENT_LIST_DIR}/text_drawer.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/fonte.qrc"
 
 		"${CMAKE_CURRENT_LIST_DIR}/shaders/vbo.h"
 		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_program.h"
@@ -78,27 +84,29 @@ else()
 	message(WARNING "Qt version < 5.6 : not compiling transparency rendering (need MRT FBO)")
 endif()
 
-qt5_add_resources(RCC_FILES fonte.qrc)
+set_target_properties(${PROJECT_NAME} PROPERTIES
+										DEBUG_POSTFIX "_d"
+										EXPORT_NAME rendering)
 
-set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
 target_compile_definitions(${PROJECT_NAME} PRIVATE "-DCGOGN_RENDERING_DLL_EXPORT")
 
 target_include_directories(${PROJECT_NAME} PUBLIC
 	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_QOGLVIEWER_INCLUDE_DIR}>
 	$<BUILD_INTERFACE:${CGOGN_SOURCE_DIR}>
 	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_TINYXML2_INCLUDE_DIR}>
-	$<INSTALL_INTERFACE:include>
-	$<INSTALL_INTERFACE:include/cgogn/thirdparty>
+	$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+	$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/cgogn/thirdparty>
 )
 
-target_link_libraries(${PROJECT_NAME} cgogn_core cgogn_geometry Qt5::Gui QOGLViewer)
+target_link_libraries(${PROJECT_NAME} cgogn::core cgogn::geometry Qt5::Gui QOGLViewer)
 
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ ${CMAKE_CURRENT_SOURCE_DIR}/shaders transparency_shaders
-	DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/cgogn/rendering
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
+	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cgogn/rendering
 	FILES_MATCHING PATTERN "*.h"
+	REGEX "(examples|tests)" EXCLUDE
 )
 
-cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CGOGN_SOURCE_DIR}" "include;include/cgogn/thirdparty")
+cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}")
 
 # VisualStudio nice source organisation
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER cgogn)

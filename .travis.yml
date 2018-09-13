@@ -6,10 +6,28 @@ matrix:
           sudo: required
           dist: trusty
         - os: osx
-          osx_image: xcode8.3
+          osx_image: xcode10
 
-install:
-  - bash .travis_install.sh
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+      - sourceline: "ppa:beineri/opt-qt58-trusty"
+    packages:
+      - gcc-5
+      - g++-5
+      - libglu1-mesa-dev
+      - qt58base
+
+before_install:
+  # manually install latest cmake
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then 
+      wget -q https://cmake.org/files/v3.10/cmake-3.10.0-Linux-x86_64.sh ;
+      sudo sh cmake-3.10.0-Linux-x86_64.sh --prefix=/usr/local --exclude-subdir --skip-license ; 
+    fi
+
+script:
+  - source /opt/qt58/bin/qt58-env.sh
     
 branches:
   only:
@@ -18,7 +36,7 @@ branches:
 script:
   - mkdir build
   - cd build
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then  cmake .. -DQt5_DIR=/opt/5.6.3/gcc_64/lib/cmake/Qt5 -DCMAKE_CXX_COMPILER=g++-5 -DCMAKE_C_COMPILER=gcc-5 -DCGOGN_BUILD_TESTS=ON -DCGOGN_BUILD_EXAMPLES=ON -DCGOGN_BUILD_BENCHS=ON ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then  cmake .. -DCMAKE_CXX_COMPILER=g++-5 -DCMAKE_C_COMPILER=gcc-5 -DCGOGN_BUILD_TESTS=ON -DCGOGN_BUILD_EXAMPLES=ON -DCGOGN_BUILD_BENCHS=ON ; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then  cmake .. -DCGOGN_MODULE_rendering=OFF -DCGOGN_USE_QT=OFF -DCGOGN_BUILD_TESTS=ON -DCGOGN_BUILD_EXAMPLES=ON -DCGOGN_BUILD_BENCHS=ON ; fi
   - make -j2
   - make test
@@ -28,4 +46,3 @@ script:
   - cd build_app
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then  cmake ../cgogn/geometry/examples/ -DCMAKE_CXX_COMPILER=g++-5 -DCMAKE_C_COMPILER=gcc-5 -DCGOGN_USE_QT=ON ; make ; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then  cmake ../cgogn/modeling/examples/ -DCGOGN_USE_QT=OFF ; make triangular_tiling ; fi
-

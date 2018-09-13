@@ -37,9 +37,6 @@ set(SOURCE_FILES
 	QOGLViewer/vec.cpp
 )
 
-cgogn_reset_warning_level()
-
-
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 target_link_libraries(${PROJECT_NAME} PUBLIC ${OPENGL_LIBRARY} Qt5::Widgets)
 
@@ -58,16 +55,11 @@ else()
 endif()
 
 # for glu warning on mac
-if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-	add_flags(CMAKE_CXX_FLAGS "-Wno-deprecated-declarations")
-endif()
+target_compile_options(${PROJECT_NAME} PUBLIC
+		$<$<CXX_COMPILER_ID:Clang>:-Wno-deprecated-declarations>)
 
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/QOGLViewer"
 	DESTINATION "include/cgogn/thirdparty/"
 	FILES_MATCHING PATTERN "*.h")
 
-
-file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/qt_inst.conf ${Qt5_DIR} )
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/qt_inst.conf DESTINATION "include/cgogn/thirdparty/")
-
-cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}" "include/cgogn/thirdparty")
+cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}")

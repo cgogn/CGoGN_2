@@ -4,6 +4,8 @@ project(cgogn_geometry
 
 add_library(${PROJECT_NAME} SHARED "")
 
+add_library(cgogn::geometry ALIAS cgogn_geometry)
+
 target_sources(${PROJECT_NAME}
     PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/dll.h"
@@ -48,28 +50,30 @@ if(${CGOGN_EXTERNAL_TEMPLATES})
     )
 endif()
 
+set_target_properties(${PROJECT_NAME} PROPERTIES
+											DEBUG_POSTFIX "_d"
+											EXPORT_NAME geometry)
 
-set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
 target_compile_definitions(${PROJECT_NAME} PRIVATE "-DCGOGN_GEOMETRY_DLL_EXPORT")
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
 	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_EIGEN3_INCLUDE_DIR}>
-	$<INSTALL_INTERFACE:include/cgogn/thirdparty>
+	$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/cgogn/thirdparty>
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC
 	$<BUILD_INTERFACE:${CGOGN_SOURCE_DIR}>
-	$<INSTALL_INTERFACE:include>
+	$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
-target_link_libraries(${PROJECT_NAME} cgogn_core)
+target_link_libraries(${PROJECT_NAME} cgogn::core)
 
-install(FILES "dll.h" DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cgogn/geometry)
-install(DIRECTORY algos functions types
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
 	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cgogn/geometry
 	FILES_MATCHING PATTERN "*.h"
+	REGEX "(examples|tests)" EXCLUDE
 )
 
-cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CGOGN_SOURCE_DIR};${CGOGN_THIRDPARTY_EIGEN3_INCLUDE_DIR}" "include;include/cgogn/thirdparty")
+cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}")
 
 # VisualStudio nice source organisation
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER cgogn)

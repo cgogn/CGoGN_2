@@ -32,7 +32,7 @@ configuration:
 
 environment:
   matrix:
-    - arch: Win64
+    - arch: x64
 
 build:
   parallel: true
@@ -42,9 +42,10 @@ build:
 init:
   - echo %arch%
   - echo %APPVEYOR_BUILD_WORKER_IMAGE%
-  - if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2017" (set GENERATOR="Visual Studio 15 2017 %arch%" && set QT_DIR="C:\Qt\5.10.1\msvc2017_64\lib\cmake\Qt5")
-  - if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2015" (set GENERATOR="Visual Studio 14 2015 %arch%" && set QT_DIR="C:\Qt\5.10.1\msvc2015_64\lib\cmake\Qt5")
-  - if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2013" (set GENERATOR="Visual Studio 12 2013 %arch%" && set QT_DIR="C:\Qt\5.8\msvc2013_64\lib\cmake\Qt5")
+  - if "%arch%"=="x64" (set TARGET_PLATFORM= Win64)
+  - if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2017" (set GENERATOR="Visual Studio 15 2017%TARGET_PLATFORM%" && set QT_DIR="C:\Qt\5.10.1\msvc2017_64\lib\cmake\Qt5")
+  - if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2015" (set GENERATOR="Visual Studio 14 2015%TARGET_PLATFORM%" && set QT_DIR="C:\Qt\5.10.1\msvc2015_64\lib\cmake\Qt5")
+  - if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2013" (set GENERATOR="Visual Studio 12 2013%TARGET_PLATFORM%" && set QT_DIR="C:\Qt\5.8\msvc2013_64\lib\cmake\Qt5")
   - echo %GENERATOR%
   - echo %QT_DIR%
 

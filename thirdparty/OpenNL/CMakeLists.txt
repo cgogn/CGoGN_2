@@ -6,7 +6,6 @@ project(OpenNL
 	LANGUAGES C
 )
 
-cgogn_reset_warning_level()
 set(HEADER_FILES
 	OpenNL_psm.h
 )
@@ -23,6 +22,6 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC "_CRT_SECURE_NO_WARNINGS")
 
 install(FILES "OpenNL_psm.h" DESTINATION "include/cgogn/thirdparty")
 
-cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}" "include/cgogn/thirdparty")
+cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}")
 
 set_target_properties(OpenNL PROPERTIES FOLDER thirdparty)
