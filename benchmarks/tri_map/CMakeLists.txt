@@ -11,6 +11,6 @@ find_package(benchmark REQUIRED)
 
 add_executable(${PROJECT_NAME} bench_tri_map.cpp)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/thirdparty/google-benchmark/include)
-target_link_libraries(${PROJECT_NAME} ${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${cgogn_geometry_LIBRARIES} ${benchmark_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} cgogn::core cgogn::io cgogn::geometry benchmark)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER benchmarks)
