@@ -13,22 +13,23 @@ addons:
     sources:
       - ubuntu-toolchain-r-test
       - sourceline: "ppa:beineri/opt-qt58-trusty"
+      - sourceline: "ppa:corentinjabot/cmake-backport" #cmake 3.7.2
+      # for cmake 3.12 use ppa:dluxen/cmake-backports
     packages:
       - gcc-5
       - g++-5
       - libglu1-mesa-dev
       - qt58base
-
-before_install:
-  # manually install latest cmake
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then 
-      wget -q https://cmake.org/files/v3.10/cmake-3.10.0-Linux-x86_64.sh ;
-      sudo sh cmake-3.10.0-Linux-x86_64.sh --prefix=/usr/local --exclude-subdir --skip-license ; 
-    fi
+      - cmake
+  homebrew:
+    packages:
+      - qt5
 
 script:
-  - source /opt/qt58/bin/qt58-env.sh
-    
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+      source /opt/qt58/bin/qt58-env.sh ;
+    fi
+
 branches:
   only:
   - develop
@@ -36,13 +37,36 @@ branches:
 script:
   - mkdir build
   - cd build
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then  cmake .. -DCMAKE_CXX_COMPILER=g++-5 -DCMAKE_C_COMPILER=gcc-5 -DCGOGN_BUILD_TESTS=ON -DCGOGN_BUILD_EXAMPLES=ON -DCGOGN_BUILD_BENCHS=ON ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then  cmake .. -DCGOGN_MODULE_rendering=OFF -DCGOGN_USE_QT=OFF -DCGOGN_BUILD_TESTS=ON -DCGOGN_BUILD_EXAMPLES=ON -DCGOGN_BUILD_BENCHS=ON ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then  
+      cmake .. 
+        -DCMAKE_CXX_COMPILER=g++-5 
+        -DCMAKE_C_COMPILER=gcc-5 
+        -DCGOGN_BUILD_TESTS=ON 
+        -DCGOGN_BUILD_EXAMPLES=ON 
+        -DCGOGN_BUILD_BENCHS=ON ; 
+    fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then  
+      cmake .. 
+        -DCMAKE_PREFIX_PATH=$(brew --prefix qt) 
+        -DCGOGN_BUILD_TESTS=ON
+        -DCGOGN_BUILD_EXAMPLES=ON 
+        -DCGOGN_BUILD_BENCHS=ON ; 
+    fi
   - make -j2
   - make test
   - sudo make install
   - cd ..
   - mkdir build_app
   - cd build_app
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then  cmake ../cgogn/geometry/examples/ -DCMAKE_CXX_COMPILER=g++-5 -DCMAKE_C_COMPILER=gcc-5 -DCGOGN_USE_QT=ON ; make ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then  cmake ../cgogn/modeling/examples/ -DCGOGN_USE_QT=OFF ; make triangular_tiling ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then  
+      cmake ../cgogn/geometry/examples/ 
+        -DCMAKE_CXX_COMPILER=g++-5 
+        -DCMAKE_C_COMPILER=gcc-5 
+        -DCGOGN_USE_QT=ON ; 
+      make ; 
+    fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then  
+      cmake ../cgogn/modeling/examples/ 
+        -DCMAKE_PREFIX_PATH=$(brew --prefix qt) ; 
+      make ; 
+    fi

@@ -61,7 +61,7 @@ CGOGN_IO_API std::vector<std::vector<unsigned char>> zlib_compress(const unsigne
 
 		zstream.avail_in = static_cast<uInt>(std::min(chunk_size, size));
 		size -= zstream.avail_in;
-		zstream.next_in = input;
+		zstream.next_in = const_cast<unsigned char*>(input);
 		input += zstream.avail_in;
 		res.emplace_back(buffer_size);
 		zstream.avail_out = static_cast<uInt>(res.back().size());
