@@ -49,11 +49,16 @@ init:
   - echo %GENERATOR%
   - echo %QT_DIR%
 
+install:
+  - vcpkg install
+        zlib
+        --triplet %arch%-windows
+
 build_script:
   - md build
   - cd build
   - cmake --version
-  - cmake -Wno-dev -Wno-deprecated -G %GENERATOR% .. -DCMAKE_SUPPRESS_REGENERATION=1 -DQt5_DIR=%QT_DIR% -DCGOGN_BUILD_TESTS=ON -DCGOGN_BUILD_EXAMPLES=ON -DCGOGN_BUILD_BENCHS=ON
+  - cmake -Wno-dev -Wno-deprecated -G %GENERATOR% .. -DCMAKE_SUPPRESS_REGENERATION=1 -DCMAKE_TOOLCHAIN_FILE=C:/Tools/vcpkg/scripts/buildsystems/vcpkg.cmake -DQt5_DIR=%QT_DIR% -DCGOGN_BUILD_TESTS=ON -DCGOGN_BUILD_EXAMPLES=ON -DCGOGN_BUILD_BENCHS=ON 
   - cmake --build . --config "%CONFIGURATION%" -- /verbosity:minimal
   - cmake --build . --config "%CONFIGURATION%" --target RUN_TESTS -- /verbosity:minimal
   - cmake --build . --config "%CONFIGURATION%" --target INSTALL -- /verbosity:minimal

@@ -4,10 +4,6 @@ project(cgogn_io_test
 
 find_package(cgogn_geometry REQUIRED)
 find_package(cgogn_io REQUIRED)
-find_package(ply REQUIRED)
-find_package(Meshb REQUIRED)
-find_package(tinyxml2 REQUIRED)
-find_package(Zlib REQUIRED NO_CMAKE_ENVIRONMENT_PATH)
 
 add_executable(${PROJECT_NAME} main.cpp)
 

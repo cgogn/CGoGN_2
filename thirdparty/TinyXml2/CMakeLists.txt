@@ -1,5 +1,3 @@
-set(CGOGN_THIRDPARTY_TINYXML2_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE PATH "TinyXml2 include directory")
-
 cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 project(tinyxml2)
 
@@ -10,6 +8,11 @@ if(MSVC)
 endif(MSVC)
 
 add_library(${PROJECT_NAME} STATIC tinyxml2.cpp tinyxml2.h)
+target_include_directories(${PROJECT_NAME} PUBLIC
+	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+	$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/cgogn/thirdparty>
+)
+
 set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_DEFINITIONS "TINYXML2_EXPORT")
 
 if(NOT MSVC)

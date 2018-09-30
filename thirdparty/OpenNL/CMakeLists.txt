@@ -1,7 +1,5 @@
 #version OpenNL PSM_1.3.10 (2016-10-18 14:51)
  
-set(CGOGN_THIRDPARTY_OPEN_NL_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE PATH "OpenNL include directory")
-
 project(OpenNL
 	LANGUAGES C
 )
@@ -16,6 +14,11 @@ set(SOURCE_FILES
 
 
 add_library(${PROJECT_NAME} STATIC ${HEADER_FILES} ${SOURCE_FILES})
+target_include_directories(${PROJECT_NAME} PUBLIC
+	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+	$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/cgogn/thirdparty>
+)
+
 set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
 
 target_compile_definitions(${PROJECT_NAME} PUBLIC "_CRT_SECURE_NO_WARNINGS")

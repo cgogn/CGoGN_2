@@ -96,6 +96,7 @@ target_compile_options(${PROJECT_NAME} PUBLIC
 	$<$<CXX_COMPILER_ID:GNU>:$<BUILD_INTERFACE:-Wall>>
 	$<$<CXX_COMPILER_ID:GNU>:-Wextra>
 	$<$<CXX_COMPILER_ID:GNU>:-Wnon-virtual-dtor>
+	$<$<CXX_COMPILER_ID:GNU>:-Wno-unknown-pragmas>
 	# Clang
 	$<$<CXX_COMPILER_ID:Clang>:$<BUILD_INTERFACE:-Wall>>
 	$<$<CXX_COMPILER_ID:Clang>:-Wextra>
