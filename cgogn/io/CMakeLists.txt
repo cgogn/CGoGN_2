@@ -4,7 +4,7 @@ project(cgogn_io
 
 find_package(ply REQUIRED)
 find_package(Meshb REQUIRED)
-find_package(tinyxml2 REQUIRED)
+find_package(TinyXML2 REQUIRED)
 find_package(ZLIB REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED "")
