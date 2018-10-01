@@ -2,6 +2,8 @@ project(cgogn_geometry
 	LANGUAGES CXX
 )
 
+find_package(Eigen3 3.2)
+
 add_library(${PROJECT_NAME} SHARED "")
 
 add_library(cgogn::geometry ALIAS cgogn_geometry)
@@ -56,7 +58,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE "-DCGOGN_GEOMETRY_DLL_EXPORT")
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
-	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_EIGEN3_INCLUDE_DIR}>
+	#$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_EIGEN3_INCLUDE_DIR}>
 	$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/cgogn/thirdparty>
 )
 
@@ -65,7 +67,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
-target_link_libraries(${PROJECT_NAME} cgogn::core)
+target_link_libraries(${PROJECT_NAME} cgogn::core Eigen3::Eigen)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
 	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cgogn/geometry

@@ -1,6 +1,3 @@
-if(CGOGN_PROVIDE_EIGEN)
-	add_subdirectory(eigen)
-endif(CGOGN_PROVIDE_EIGEN)
 
 if(CGOGN_USE_QT)
 	add_subdirectory(libQGLViewer)
