@@ -2,11 +2,6 @@ if(CGOGN_PROVIDE_EIGEN)
 	add_subdirectory(eigen)
 endif(CGOGN_PROVIDE_EIGEN)
 
-if(CGOGN_PROVIDE_TINYXML2)
-	add_subdirectory(TinyXml2)
-	set_target_properties(tinyxml2 PROPERTIES FOLDER thirdparty)
-endif(CGOGN_PROVIDE_TINYXML2)
-
 if(CGOGN_USE_QT)
 	add_subdirectory(libQGLViewer)
 	set_target_properties(QOGLViewer PROPERTIES FOLDER thirdparty)
