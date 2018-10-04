@@ -99,6 +99,10 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 target_link_libraries(${PROJECT_NAME} cgogn::core cgogn::geometry Qt5::Gui QOGLViewer)
 
+set(PKG_CONFIG_REQUIRES "cgogn_core cgogn_geometry")
+configure_file(${PROJECT_SOURCE_DIR}/cgogn_rendering.pc.in ${CMAKE_CURRENT_BINARY_DIR}/cgogn_rendering.pc @ONLY)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/cgogn_rendering.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
 	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cgogn/rendering
 	FILES_MATCHING PATTERN "*.h"
