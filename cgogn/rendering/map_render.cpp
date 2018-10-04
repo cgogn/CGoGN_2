@@ -65,11 +65,14 @@ void MapRender::draw(DrawingType prim)
 		case BOUNDARY:
 			switch (boundary_dimension_)
 			{
+				case 0:
+					ogl->glDrawElements(GL_POINTS, nb_indices_[BOUNDARY], GL_UNSIGNED_INT, 0);
+					break;
 				case 1:
 					ogl->glDrawElements(GL_LINES, nb_indices_[BOUNDARY], GL_UNSIGNED_INT, 0);
 					break;
 				case 2:
-					ogl->glDrawElements(GL_TRIANGLES, nb_indices_[TRIANGLES], GL_UNSIGNED_INT, 0);
+					ogl->glDrawElements(GL_TRIANGLES, nb_indices_[BOUNDARY], GL_UNSIGNED_INT, 0);
 					break;
 			}
 			break;

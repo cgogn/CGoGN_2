@@ -141,7 +141,6 @@ public:
 			chunk_array_->add_external_ref(reinterpret_cast<ChunkArrayGen**>(&chunk_array_));
 	}
 
-
 	inline Attribute_T& operator=(const Self& att)
 	{
 		if (this != &att)
@@ -283,7 +282,6 @@ public:
 		{
 			return index_;
 		}
-
 	};
 
 	inline const_iterator begin() const
@@ -341,8 +339,6 @@ public:
 		{
 			return index_;
 		}
-
-
 	};
 
 	inline iterator begin()
@@ -358,6 +354,11 @@ public:
 	inline Orbit orbit() const
 	{
 		return orbit_;
+	}
+
+	inline uint32 size() const
+	{
+		return this->chunk_array_cont_->size();
 	}
 
 protected:
@@ -446,12 +447,42 @@ public:
 	{
 		return ORBIT;
 	}
-
-	inline uint32 size() const
-	{
-		return this->chunk_array_cont_->size();
-	}
 };
+
+
+//template<typename VERTEX_ATTR>
+//constexpr auto is_orbit_of(uint32)
+//-> typename std::enable_if<!std::is_base_of<AttributeGen,VERTEX_ATTR>::value, bool>::type
+//{
+//	return  false;
+//}
+//
+//template<typename VERTEX_ATTR>
+//constexpr auto is_orbit_of(uint32 orb)
+//-> typename std::enable_if<std::is_base_of<AttributeGen,VERTEX_ATTR>::value, bool>::type
+//{
+//	return  VERTEX_ATTR::orb_ == orb;
+//}
+
+template<typename VERTEX_ATTR, int ORB, typename EN = void>
+struct is_orbit_of
+{
+	static const bool value = false;
+};
+
+template<typename VERTEX_ATTR, int ORB>
+struct is_orbit_of<VERTEX_ATTR, ORB, typename std::enable_if<std::is_base_of<AttributeGen, VERTEX_ATTR>::value, void>::type>
+{
+	static const bool value = VERTEX_ATTR::orb_ == ORB;
+};
+
+
+/**
+ * type of the attribut content
+ */
+template <typename ATTR>
+using InsideTypeOf = typename ATTR::value_type;
+
 
 } // namespace cgogn
 

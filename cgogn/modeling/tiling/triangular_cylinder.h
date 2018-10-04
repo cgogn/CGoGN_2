@@ -80,6 +80,9 @@ public:
 				c->vertex_table_[pos + (nb_x-1)] = Vertex();
 			}
 
+			//mark last vertex
+			c->vertex_table_[(z*nb_x) + (nb_x-1)] = Vertex();
+
 			//suppress the last n vertex (in y direction) from the vertex_table_
 			c->vertex_table_.erase(
 				std::remove_if(
@@ -186,13 +189,16 @@ public:
 	 *  @param[in] top_radius
 	 *  @param[in] height
 	 */
-	template <typename T>
+	template <typename VERTEX_ATTR>
 	void embed_into_cylinder(
-		typename MAP::template VertexAttribute<T>& attribute,
+		VERTEX_ATTR& attribute,
 		float32 bottom_radius,
 		float32 top_radius,
 		float32 height)
 	{
+		static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
+		using T = InsideTypeOf<VERTEX_ATTR>;
 		const float32 alpha = 2.0f * float32(M_PI) / float32(this->nx_);
 		const float32 dz = height / float32(this->ny_);
 
@@ -221,11 +227,14 @@ public:
 	 *  @param[in] radius
 	 *  @param[in] height
 	 */
-	template <typename T>
+	template <typename VERTEX_ATTR>
 	void embed_into_sphere(
-		typename MAP::template VertexAttribute<T>& attribute,
+		VERTEX_ATTR& attribute,
 		float32 radius)
 	{
+		static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
+		using T = InsideTypeOf<VERTEX_ATTR>;
 		const float32 alpha = 2.0f * float32(M_PI) / float32(this->nx_);
 		const float32 beta = float32(M_PI) / float32(this->ny_ + 2.0f);
 
@@ -257,12 +266,15 @@ public:
 	 *  @param[in] radius
 	 *  @param[in] height
 	 */
-	template <typename T>
+	template <typename VERTEX_ATTR>
 	void embed_into_cone(
-		typename MAP::template VertexAttribute<T>& attribute,
+		VERTEX_ATTR& attribute,
 		float32 radius,
 		float32 height)
 	{
+		static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
+		using T = InsideTypeOf<VERTEX_ATTR>;
 		if (top_closed_ && top_triangulated_)
 		{
 			const float32 alpha = 2.0f * float32(M_PI) / float32(this->nx_);
@@ -368,9 +380,9 @@ public:
 	//@}
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_TILING_TRIANGULAR_CYLINDER_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_EXTERNAL_TEMPLATES_CPP_))
 extern template class CGOGN_MODELING_API TriangularCylinder<CMap2>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_TILING_TRIANGULAR_CYLINDER_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace modeling
 

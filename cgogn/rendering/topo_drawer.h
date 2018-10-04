@@ -54,7 +54,7 @@ namespace rendering
  * init:
  *  topo_ = cgogn::make_unique<cgogn::rendering::TopoDrawer>();
  *  topo_rend_ = topo_->generate_renderer();
- *  topo_->update<Vec3>(map_,vertex_position_);
+ *  topo_->update(map_,vertex_position_);
  *
  * draw:
  *  topo_rend_->draw(proj,view,this);
@@ -62,7 +62,7 @@ namespace rendering
  */
 class CGOGN_RENDERING_API TopoDrawer
 {
-	using Vec3f = std::array<float32, 3>;
+	using Vec3f = geometry::Vec_T<std::array<float32,3>>;
 
 protected:
 
@@ -82,12 +82,13 @@ protected:
 	std::vector<Dart> darts_id_;
 
 public:
-	template <typename VEC3, typename MAP>
-	typename std::enable_if<MAP::DIMENSION == 2, void>::type update(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position);
+	template <typename MAP, typename VERTEX_ATTR>
+	auto update(const MAP& m, const VERTEX_ATTR& position)
+	-> typename std::enable_if<MAP::DIMENSION == 2, void>::type;
 
-	template <typename VEC3, typename MAP>
-	typename std::enable_if<MAP::DIMENSION == 3, void>::type update(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position);
-
+	template <typename MAP, typename VERTEX_ATTR>
+	auto update(const MAP& m, const VERTEX_ATTR& position)
+	-> typename std::enable_if<MAP::DIMENSION == 3, void>::type;
 
 	class CGOGN_RENDERING_API Renderer
 	{
@@ -108,10 +109,9 @@ public:
 		 * @brief draw
 		 * @param projection projection matrix
 		 * @param modelview model-view matrix
-		 * @param ogl33 OGLFunction (use "this" ptr if you inherit from QOpenGLWidget
 		 * @param with_blending
 		 */
-		void draw(const QMatrix4x4& projection, const QMatrix4x4& modelview, QOpenGLFunctions_3_3_Core* ogl33, bool with_blending = true);
+		void draw(const QMatrix4x4& projection, const QMatrix4x4& modelview, bool with_blending = true);
 
 		void set_clipping_plane(const QVector4D& p);
 
@@ -196,10 +196,13 @@ public:
 };
 
 
-
-template <typename VEC3, typename MAP>
-typename std::enable_if<MAP::DIMENSION == 2, void>::type TopoDrawer::update(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position)
+template <typename MAP, typename VERTEX_ATTR>
+auto TopoDrawer::update(const MAP& m, const VERTEX_ATTR& position)
+-> typename std::enable_if<MAP::DIMENSION == 2, void>::type
 {
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
+	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
 	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
@@ -296,9 +299,13 @@ typename std::enable_if<MAP::DIMENSION == 2, void>::type TopoDrawer::update(cons
 	vbo_relations_->release();
 }
 
-template <typename VEC3, typename MAP>
-typename std::enable_if<MAP::DIMENSION == 3, void>::type TopoDrawer::update(const MAP& m, const typename MAP::template VertexAttribute<VEC3>& position)
+template <typename MAP, typename VERTEX_ATTR>
+auto TopoDrawer::update(const MAP& m, const VERTEX_ATTR& position)
+-> typename std::enable_if<MAP::DIMENSION == 3, void>::type
 {
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
+	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
 	using Volume = typename MAP::Volume;
@@ -328,7 +335,7 @@ typename std::enable_if<MAP::DIMENSION == 3, void>::type TopoDrawer::update(cons
 
 	m.foreach_cell([&] (Volume v)
 	{
-		VEC3 center_vol = geometry::centroid<VEC3>(m, v, position);
+		VEC3 center_vol = geometry::centroid(m, v, position);
 		m.foreach_incident_face(v, [&] (Face f)
 		{
 			local_vertices.clear();
@@ -413,10 +420,10 @@ typename std::enable_if<MAP::DIMENSION == 3, void>::type TopoDrawer::update(cons
 
 
 
-template <typename ATTR>
-void TopoDrawer::update_colors(const ATTR& color)
+template <typename VERTEX_ATTR>
+void TopoDrawer::update_colors(const VERTEX_ATTR& color)
 {
-	using VEC3 = array_data_type<ATTR>;
+	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 
 	std::vector<Vec3f> darts_col;
 	darts_col.reserve(2*darts_id_.size());
@@ -456,11 +463,11 @@ void TopoDrawer::update_color(Dart d, const RGB& rgb)
 template <typename VEC3, typename VEC4>
 Dart TopoDrawer::pick(const VEC3& xA, const VEC3& xB, const VEC4& plane, VEC3* xdp1, VEC3* xdp2)
 {
-	using LVEC = geometry::Vec_T<Vec3f>;
+//	using LVEC = geometry::Vec_T<Vec3f>;
 
 	VEC3 xAB = xB-xA;
-	LVEC A(xA[0],xA[1],xA[2]);
-	LVEC AB(xAB[0],xAB[1],xAB[2]);
+	Vec3f A(xA[0],xA[1],xA[2]);
+	Vec3f AB(xAB[0],xAB[1],xAB[2]);
 
 	float32 dmax = std::numeric_limits<float32>::max();
 	float32 AB2 = AB.dot(AB);
@@ -485,9 +492,7 @@ Dart TopoDrawer::pick(const VEC3& xA, const VEC3& xB, const VEC4& plane, VEC3* x
 
 		if ((prod1<=0.0f)||(prod2<=0.0f))
 		{
-			const LVEC& P = reinterpret_cast<const LVEC&>(PP);
-			const LVEC& Q = reinterpret_cast<const LVEC&>(QQ);
-			float32 d2 = geometry::squared_distance_line_seg(A, AB, AB2, P, Q);
+			float32 d2 = geometry::squared_distance_line_seg(A, AB, AB2, PP, QQ);
 			if (d2 < dmax)
 			{
 				dmax = d2;
@@ -516,11 +521,11 @@ Dart TopoDrawer::pick(const VEC3& xA, const VEC3& xB, const VEC4& plane, VEC3* x
 template <typename VEC3, typename VEC4>
 Dart TopoDrawer::pick(const VEC3& xA, const VEC3& xB, const VEC4& plane1, const VEC4& plane2, VEC3* xdp1, VEC3* xdp2)
 {
-	using LVEC = geometry::Vec_T<Vec3f>;
+//	using LVEC = geometry::Vec_T<Vec3f>;
 
 	VEC3 xAB = xB-xA;
-	LVEC A(xA[0],xA[1],xA[2]);
-	LVEC AB(xAB[0],xAB[1],xAB[2]);
+	Vec3f A(xA[0],xA[1],xA[2]);
+	Vec3f AB(xAB[0],xAB[1],xAB[2]);
 
 	float32 dmax = std::numeric_limits<float32>::max();
 	float32 AB2 = AB.dot(AB);
@@ -554,9 +559,7 @@ Dart TopoDrawer::pick(const VEC3& xA, const VEC3& xB, const VEC4& plane1, const 
 
 		if (((prod1<=0.0f)||(prod2<=0.0f)) && ((prod3<=0.0f)||(prod4<=0.0f)))
 		{
-			const LVEC& P = reinterpret_cast<const LVEC&>(PP);
-			const LVEC& Q = reinterpret_cast<const LVEC&>(QQ);
-			float32 d2 = geometry::squared_distance_line_seg(A, AB, AB2, P, Q);
+			float32 d2 = geometry::squared_distance_line_seg(A, AB, AB2, PP, QQ);
 			if (d2 < dmax)
 			{
 				dmax = d2;

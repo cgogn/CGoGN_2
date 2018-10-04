@@ -166,12 +166,15 @@ public:
 	 *  @param[in] top_radius
 	 *  @param[in] height
 	 */
-	template <typename T>
-	void embed_into_cylinder(typename MAP::template VertexAttribute<T>& attribute,
+	template <typename VERTEX_ATTR>
+	void embed_into_cylinder(VERTEX_ATTR& attribute,
 							 float32 bottom_radius,
 							 float32 top_radius,
 							 float32 height)
 	{
+		static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
+		using T = InsideTypeOf<VERTEX_ATTR>;
 		const float32 alpha = 2.0f * float32(M_PI)/float32(this->nx_);
 		const float32 dz = height / float32(this->ny_);
 
@@ -235,11 +238,14 @@ public:
 	 *  @param[in] radius
 	 *  @param[in] height
 	 */
-	template <typename T>
-	void embed_into_cone(typename MAP::template VertexAttribute<T>& attribute,
+	template <typename VERTEX_ATTR>
+	void embed_into_cone(VERTEX_ATTR& attribute,
 						 float32 radius,
 						 float32 height)
 	{
+		static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
+		using T = InsideTypeOf<VERTEX_ATTR>;
 		if(top_closed_ && top_triangulated_)
 		{
 			const float32 alpha = 2.0f * float32(M_PI) / float32(this->nx_);
@@ -345,9 +351,9 @@ public:
 	//@}
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_TILING_SQUARE_CYLINDER_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_EXTERNAL_TEMPLATES_CPP_))
 extern template class CGOGN_MODELING_API SquareCylinder<CMap2>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_TILING_SQUARE_CYLINDER_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_EXTERNAL_TEMPLATES_CPP_))
 
 } //namespace modeling
 

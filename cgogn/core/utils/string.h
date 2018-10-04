@@ -32,6 +32,11 @@
 namespace cgogn
 {
 
+CGOGN_CORE_API std::string trim_left(const std::string& str);
+
+CGOGN_CORE_API std::string trim_right(const std::string& str);
+
+CGOGN_CORE_API std::string trim(const std::string& str);
 
 CGOGN_CORE_API std::string to_upper(const std::string& str);
 

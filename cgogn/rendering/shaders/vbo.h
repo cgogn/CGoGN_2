@@ -41,7 +41,7 @@ class VBO
 {
 protected:
 
-	uint32 nb_vectors_;
+	std::size_t nb_vectors_;
 	uint32 vector_dimension_;
 	QOpenGLBuffer buffer_;
 	std::string name_;
@@ -92,12 +92,12 @@ public:
 	 * @param nb_vectors number of vectors
 	 * @param vector_dimension_ number of component of each vector
 	 */
-	inline void allocate(uint32 nb_vectors, uint32 vector_dimension)
+	inline void allocate(std::size_t nb_vectors, uint32 vector_dimension)
 	{
 		buffer_.bind();
-		uint32 total = nb_vectors * vector_dimension;
+		std::size_t total = nb_vectors * vector_dimension;
 		if (total != nb_vectors_ * vector_dimension_) // only allocate when > ?
-			buffer_.allocate(total * uint32(sizeof(float32)));
+			buffer_.allocate(uint32(total) * uint32(sizeof(float32)));
 		nb_vectors_ = nb_vectors;
 		if (vector_dimension != vector_dimension_)
 		{
@@ -131,9 +131,9 @@ public:
 	 * @param nb number of bytes to copy
 	 * @param src source pointer
 	 */
-	inline void copy_data(uint32 offset, uint32 nb, const void* src)
+	inline void copy_data(uint32 offset, std::size_t nb, const void* src)
 	{
-		buffer_.write(offset, src, nb);
+		buffer_.write(offset, src, int(nb));
 	}
 
 	/**
@@ -146,7 +146,7 @@ public:
 
 	uint32 size() const
 	{
-		return nb_vectors_;
+		return uint32(nb_vectors_);
 	}
 
 	GLuint id() const
@@ -167,7 +167,7 @@ void update_vbo(const std::vector<VEC>& vector, VBO* vbo)
 	using Scalar = typename geometry::vector_traits<VEC>::Scalar;
 	static_assert(std::is_same<Scalar, float32>::value || std::is_same<Scalar, float64>::value, "only float or double allowed for vbo");
 
-	const uint32 vec_dim = geometry::nb_components_traits<VEC>::value;
+	const uint32 vec_dim = geometry::vector_traits<VEC>::SIZE;
 	uint32 vec_sz = uint32(vector.size());
 	vbo->allocate(vec_sz, vec_dim);
 	const uint32 vbo_bytes =  vec_dim * vec_sz * uint32(sizeof(float32));
@@ -226,7 +226,7 @@ void update_vbo(const std::vector<VEC>& vector, VBO* vbo)
 template <typename ATTR>
 void update_vbo(const ATTR& attr, VBO* vbo)
 {
-	using Scalar = typename geometry::vector_traits<typename ATTR::value_type>::Scalar;
+	using Scalar = geometry::ScalarOf<InsideTypeOf<ATTR>>;
 	static_assert(std::is_same<Scalar, float32>::value || std::is_same<Scalar, float64>::value, "only float or double allowed for vbo");
 
 	const typename ATTR::TChunkArray* ca = attr.data();
@@ -238,14 +238,14 @@ void update_vbo(const ATTR& attr, VBO* vbo)
 	std::vector<const void*> chunk_addr = ca->chunks_pointers(byte_chunk_size);
 	const uint32 nb_chunks = uint32(chunk_addr.size());
 
-	const uint32 vec_dim = geometry::nb_components_traits<typename ATTR::value_type>::value;
+	const uint32 vec_dim = geometry::vector_traits<InsideTypeOf<ATTR>>::SIZE;
 
 	vbo->allocate(nb_chunks * ATTR::CHUNK_SIZE, vec_dim);
 
 	const uint32 vbo_blk_bytes = ATTR::CHUNK_SIZE * vec_dim * sizeof(float32);
 
 	// handle the case where we want to use SIMD with Eigen::AlignedVector3
-	if (std::is_same<typename ATTR::value_type, Eigen::AlignedVector3<Scalar>>::value)
+	if (std::is_same<InsideTypeOf<ATTR>, Eigen::AlignedVector3<Scalar>>::value)
 	{
 		// copy (after conversion to float)
 		float32* float_buffer = new float32[ATTR::CHUNK_SIZE * vec_dim];

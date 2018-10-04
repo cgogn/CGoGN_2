@@ -152,7 +152,7 @@ auto compute_gen_dual2_vertices(const MAP& src, MAP& dst, const typename MAP::te
 	dst.foreach_cell([&](Vertex v)
 	{
 		Face f = Face(face_of_src[v]);
-		position[v] = cgogn::geometry::centroid<VEC>(src, f, position_src);
+		position[v] = cgogn::geometry::centroid(src, f, position_src);
 	});
 }
 

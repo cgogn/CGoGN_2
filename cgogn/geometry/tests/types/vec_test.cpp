@@ -51,6 +51,35 @@ TEST(VEC_OP_TEST, CGOGN_Typename)
 	EXPECT_EQ(cgogn::name_of_type(EigenVec3d()), "Eigen::Matrix<double,3,1,0,3,1>");
 }
 
+template <typename V, typename S, uint32 N>
+void tmpl_test_vector_traits()
+{
+	using Scalar = typename cgogn::geometry::vector_traits<V>::Scalar;
+	auto  sz = cgogn::geometry::vector_traits<V>::SIZE;
+	bool b = std::is_same<Scalar, S>::value;
+	EXPECT_TRUE(b);
+	EXPECT_EQ(sz, N);
+}
+
+TEST(VEC_OP_TEST, Vector_traits)
+{
+	tmpl_test_vector_traits<StdArrayf,  float32, 3>();
+	tmpl_test_vector_traits<StdArrayd,  float64, 3>();
+	tmpl_test_vector_traits<EigenVec3f, float,   3>();
+	tmpl_test_vector_traits<EigenVec3d, double,  3>();
+
+	using AlignedVec3f = Eigen::AlignedVector3<float>;
+	tmpl_test_vector_traits<AlignedVec3f, float, 3>();
+
+	EigenVec3d a, b;
+	using cwise = decltype(a + b);
+	tmpl_test_vector_traits<cwise, double, 3>();
+	bool same = std::is_same< cgogn::geometry::vector_traits<cwise>::Type , EigenVec3d >::value;
+	EXPECT_TRUE(same);
+}
+
+
+
 TYPED_TEST(VEC_OP_TEST, Constructor)
 {
 	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;

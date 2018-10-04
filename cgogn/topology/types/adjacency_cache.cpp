@@ -21,6 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES)
+
 #define CGOGN_TOPOLOGY_TYPES_ADJACENCY_CACHE_CPP_
 
 #include <cgogn/topology/types/adjacency_cache.h>
@@ -31,9 +33,11 @@ namespace cgogn
 namespace topology
 {
 
-template class CGOGN_TOPLOGY_API AdjacencyCache<CMap2>;
-template class CGOGN_TOPLOGY_API AdjacencyCache<CMap3>;
+template class CGOGN_TOPOLOGY_API AdjacencyCache<CMap2>;
+template class CGOGN_TOPOLOGY_API AdjacencyCache<CMap3>;
 
 } // namespace topology
+
 } // namespace cgogn
 
+#endif

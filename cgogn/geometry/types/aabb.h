@@ -44,16 +44,16 @@ namespace geometry
 template <typename VEC_T>
 class AABB
 {
-
 public:
 
 	using Vec = VEC_T;
-	using Scalar = typename vector_traits<Vec>::Scalar;
+	using Scalar = ScalarOf<Vec>;
 	using Self = AABB<Vec>;
 	static const uint32 dim_ = vector_traits<Vec>::SIZE;
 	// https://eigen.tuxfamily.org/dox-devel/group__TopicStructHavingEigenMembers.html
 	static const bool eigen_make_aligned = std::is_same<Eigen::AlignedVector3<Scalar>, Vec>::value;
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW_IF(eigen_make_aligned)
+
 private:
 
 	bool initialized_;
@@ -224,11 +224,11 @@ public:
 		cgogn_message_assert(initialized_, "Axis-Aligned Bounding box not initialized");
 		Vec bbmin = bb.min();
 		Vec bbmax = bb.max();
-		for(uint32 i = 0; i < dim_; ++i)
+		for (uint32 i = 0; i < dim_; ++i)
 		{
-			if(bbmin[i] < p_min_[i])
+			if (bbmin[i] < p_min_[i])
 				p_min_[i] = bbmin[i];
-			if(bbmax[i] > p_max_[i])
+			if (bbmax[i] > p_max_[i])
 				p_max_[i] = bbmax[i];
 		}
 	}
@@ -237,11 +237,11 @@ public:
 	bool contains(const Vec& p) const
 	{
 		cgogn_message_assert(initialized_, "Axis-Aligned Bounding box not initialized");
-		for(uint32 i = 0; i < dim_; ++i)
+		for (uint32 i = 0; i < dim_; ++i)
 		{
-			if(p_min_[i] > p[i])
+			if (p_min_[i] > p[i])
 				return false;
-			if(p[i] > p_max_[i])
+			if (p[i] > p_max_[i])
 				return false;
 		}
 			return true;
@@ -272,10 +272,11 @@ public:
 		p_max_ = ((p_max_ - center) * size) + center;
 	}
 
-	/// \brief Test if a ray intersectes an axis-aligned box
+	/// \brief Test if a ray intersects an axis-aligned box
 	/// \tparam VEC3 the domain of the box. Has to be of dimension 3
+	template <bool B = true>
 	auto ray_intersect(const Vec& P, const Vec& V) const
-	  -> typename std::enable_if<nb_components_traits<Vec>::value == 3, bool>::type
+	  -> typename std::enable_if<B && is_dim_of<Vec, 3>::value, bool>::type
 	{
 		if (!cgogn::almost_equal_relative(V[2], Scalar(0)))
 		{
@@ -348,12 +349,12 @@ inline void aabb_union(AABB<VEC_T>& target, const AABB<VEC_T>& b1, const AABB<VE
 	}
 }
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_TYPES_AABB_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_EXTERNAL_TEMPLATES_CPP_))
 extern template class CGOGN_GEOMETRY_API AABB<Eigen::Vector3d>;
 extern template class CGOGN_GEOMETRY_API AABB<Eigen::Vector3f>;
 extern template class CGOGN_GEOMETRY_API AABB<Vec_T<std::array<float32, 3>>>;
 extern template class CGOGN_GEOMETRY_API AABB<Vec_T<std::array<float64,3>>>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_TYPES_AABB_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace geometry
 

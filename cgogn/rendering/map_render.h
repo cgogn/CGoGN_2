@@ -55,11 +55,6 @@ enum DrawingType : uint8
 class CGOGN_RENDERING_API MapRender
 {
 protected:
-
-	// indices used for sorting
-	std::vector<std::array<uint32,3>> indices_tri_;
-	std::vector<uint32> indices_points_;
-
 	std::array<std::unique_ptr<QOpenGLBuffer>, SIZE_BUFFER>	indices_buffers_;
 	std::array<bool, SIZE_BUFFER>							indices_buffers_uptodate_;
 	std::array<uint32, SIZE_BUFFER>							nb_indices_;
@@ -152,9 +147,33 @@ protected:
 				table_indices.push_back(m.embedding(Vertex(m.phi1(m.phi1(f.dart)))));
 			}
 			else
-				cgogn::geometry::append_ear_triangulation<VEC3>(m, f, *position, table_indices);
+				cgogn::geometry::append_ear_triangulation(m, f, *position, table_indices);
 		},
 		mask);
+	}
+
+	template <typename MAP, typename MASK>
+	inline auto init_boundaries(const MAP& m, const MASK& mask, std::vector<uint32>& table_indices)
+		-> typename std::enable_if<MAP::DIMENSION == 1 && std::is_same<MASK, typename MAP::BoundaryCache>::value, void>::type
+	{
+		using Vertex = typename MAP::Vertex;
+
+		m.foreach_cell([&] (Vertex v)
+		{
+			table_indices.push_back(m.embedding(v));
+		},
+		mask);
+
+		boundary_dimension_ = 0;
+	}
+
+	template <typename MAP, typename MASK>
+	inline auto init_boundaries(const MAP& m, const MASK& /*mask*/, std::vector<uint32>& table_indices)
+		-> typename std::enable_if<MAP::DIMENSION == 1 && !std::is_same<MASK, typename MAP::BoundaryCache>::value, void>::type
+	{
+		// if the given MASK is not a BoundaryCache, build a BoundaryCache and use it
+		typename MAP::BoundaryCache bcache(m);
+		init_boundaries(m, bcache, table_indices);
 	}
 
 	template <typename MAP, typename MASK>
@@ -234,21 +253,25 @@ public:
 		return nb_indices_[prim];
 	}
 
-	template <typename VEC3, typename MAP, typename MASK>
-	inline void init_primitives(
+	template <typename MAP, typename MASK, typename VERTEX_ATTR>
+	inline auto init_primitives(
 		const MAP& m,
 		const MASK& mask,
 		DrawingType prim,
-		const typename MAP::template VertexAttribute<VEC3>* position
+		const VERTEX_ATTR* position
 	)
+		-> typename std::enable_if<(MAP::DIMENSION == 2 || MAP::DIMENSION == 3) && !std::is_same<MASK, typename MAP::BoundaryCache>::value, void>::type
 	{
+		static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"attribute must be a vertex attribute");
+
+		using VEC3 = InsideTypeOf<VERTEX_ATTR>;
+
 		std::vector<uint32> table_indices;
 
 		switch (prim)
 		{
 			case POINTS:
 				init_points(m, mask, table_indices);
-				indices_points_.clear();
 				break;
 			case LINES:
 				init_lines(m, mask, table_indices);
@@ -258,7 +281,6 @@ public:
 					init_triangles_ear<VEC3>(m, mask, table_indices, position);
 				else
 					init_triangles(m, mask, table_indices);
-				indices_tri_.clear();
 				break;
 			case BOUNDARY:
 				init_boundaries(m, mask, table_indices);
@@ -280,22 +302,104 @@ public:
 		indices_buffers_[prim]->release();
 	}
 
-	template <typename VEC3, typename MAP>
+	template <typename MAP, typename MASK, typename VERTEX_ATTR>
+	inline auto init_primitives(
+		const MAP& m,
+		const MASK& mask,
+		DrawingType prim,
+		const VERTEX_ATTR* /*position*/
+	)
+		-> typename std::enable_if<MAP::DIMENSION == 0 && !std::is_same<MASK, typename MAP::BoundaryCache>::value, void>::type
+	{
+		static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"attribute must be a vertex attribute");
+
+		using VEC3 = InsideTypeOf<VERTEX_ATTR>;
+
+		std::vector<uint32> table_indices;
+
+		switch (prim)
+		{
+			case POINTS:
+				init_points(m, mask, table_indices);
+				break;
+			default:
+				break;
+		}
+
+		indices_buffers_uptodate_[prim] = true;
+		nb_indices_[prim] = uint32(table_indices.size());
+
+		if (table_indices.empty())
+			return;
+
+		if (!indices_buffers_[prim]->isCreated())
+			indices_buffers_[prim]->create();
+		indices_buffers_[prim]->bind();
+		indices_buffers_[prim]->allocate(&(table_indices[0]), nb_indices_[prim] * sizeof(uint32));
+		indices_buffers_[prim]->release();
+	}
+
+	template <typename MAP, typename MASK, typename VERTEX_ATTR>
+	inline auto init_primitives(
+		const MAP& m,
+		const MASK& mask,
+		DrawingType prim,
+		const VERTEX_ATTR* /*position*/
+	)
+		-> typename std::enable_if<MAP::DIMENSION == 1 && !std::is_same<MASK, typename MAP::BoundaryCache>::value, void>::type
+	{
+		static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"attribute must be a vertex attribute");
+
+		using VEC3 = InsideTypeOf<VERTEX_ATTR>;
+
+		std::vector<uint32> table_indices;
+
+		switch (prim)
+		{
+			case POINTS:
+				init_points(m, mask, table_indices);
+				break;
+			case LINES:
+				init_lines(m, mask, table_indices);
+				break;
+			case BOUNDARY:
+				init_boundaries(m, mask, table_indices);
+				break;
+			default:
+				break;
+		}
+
+		indices_buffers_uptodate_[prim] = true;
+		nb_indices_[prim] = uint32(table_indices.size());
+
+		if (table_indices.empty())
+			return;
+
+		if (!indices_buffers_[prim]->isCreated())
+			indices_buffers_[prim]->create();
+		indices_buffers_[prim]->bind();
+		indices_buffers_[prim]->allocate(&(table_indices[0]), nb_indices_[prim] * sizeof(uint32));
+		indices_buffers_[prim]->release();
+	}
+
+
+	template <typename MAP, typename VERTEX_ATTR>
 	inline void init_primitives(
 		const MAP& m,
 		DrawingType prim,
-		const typename MAP::template VertexAttribute<VEC3>* position
+		const VERTEX_ATTR* position
 	)
 	{
-		init_primitives<VEC3>(m, AllCellsFilter(), prim, position);
+		init_primitives(m, AllCellsFilter(), prim, position);
 	}
 
 	template <typename MAP, typename MASK>
-	inline void init_primitives(
+	inline auto init_primitives(
 		const MAP& m,
 		const MASK& mask,
 		DrawingType prim
 	)
+		-> typename std::enable_if<(MAP::DIMENSION == 2 || MAP::DIMENSION == 3) && !std::is_same<MASK, typename MAP::BoundaryCache>::value, void>::type
 	{
 		std::vector<uint32> table_indices;
 
@@ -303,14 +407,82 @@ public:
 		{
 			case POINTS:
 				init_points(m, mask, table_indices);
-				indices_points_.clear();
 				break;
 			case LINES:
 				init_lines(m, mask, table_indices);
 				break;
 			case TRIANGLES:
 				init_triangles(m, mask, table_indices);
-				indices_tri_.clear();
+				break;
+			case BOUNDARY:
+				init_boundaries(m, mask, table_indices);
+				break;
+			default:
+				break;
+		}
+
+		indices_buffers_uptodate_[prim] = true;
+		nb_indices_[prim] = uint32(table_indices.size());
+
+		if (table_indices.empty())
+			return;
+
+		if (!indices_buffers_[prim]->isCreated())
+			indices_buffers_[prim]->create();
+		indices_buffers_[prim]->bind();
+		indices_buffers_[prim]->allocate(&(table_indices[0]), nb_indices_[prim] * sizeof(uint32));
+		indices_buffers_[prim]->release();
+	}
+
+	template <typename MAP, typename MASK>
+	inline auto init_primitives(
+		const MAP& m,
+		const MASK& mask,
+		DrawingType prim
+	)
+		-> typename std::enable_if<MAP::DIMENSION == 0 && !std::is_same<MASK, typename MAP::BoundaryCache>::value, void>::type
+	{
+		std::vector<uint32> table_indices;
+
+		switch (prim)
+		{
+			case POINTS:
+				init_points(m, mask, table_indices);
+				break;
+			default:
+				break;
+		}
+
+		indices_buffers_uptodate_[prim] = true;
+		nb_indices_[prim] = uint32(table_indices.size());
+
+		if (table_indices.empty())
+			return;
+
+		if (!indices_buffers_[prim]->isCreated())
+			indices_buffers_[prim]->create();
+		indices_buffers_[prim]->bind();
+		indices_buffers_[prim]->allocate(&(table_indices[0]), nb_indices_[prim] * sizeof(uint32));
+		indices_buffers_[prim]->release();
+	}
+
+	template <typename MAP, typename MASK>
+	inline auto init_primitives(
+		const MAP& m,
+		const MASK& mask,
+		DrawingType prim
+	)
+		-> typename std::enable_if<MAP::DIMENSION == 1 && !std::is_same<MASK, typename MAP::BoundaryCache>::value, void>::type
+	{
+		std::vector<uint32> table_indices;
+
+		switch (prim)
+		{
+			case POINTS:
+				init_points(m, mask, table_indices);
+				break;
+			case LINES:
+				init_lines(m, mask, table_indices);
 				break;
 			case BOUNDARY:
 				init_boundaries(m, mask, table_indices);
@@ -351,9 +523,12 @@ public:
  * @param pos_out transformed positions
  * @param view modelview matrix
  */
-template <typename VEC3, typename MAP>
-void transform_position(const MAP& map, const typename MAP::template VertexAttribute<VEC3>& pos_in, typename MAP::template VertexAttribute<VEC3>& pos_out, const QMatrix4x4& view)
+template <typename MAP, typename VERTEX_ATTR>
+void transform_position(const MAP& map, const VERTEX_ATTR& pos_in, VERTEX_ATTR& pos_out, const QMatrix4x4& view)
 {
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
+	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 	map.template const_attribute_container<MAP::Vertex::ORBIT>().parallel_foreach_index( [&] (uint32 i)
 	{
 		QVector3D P = view.map(QVector3D(pos_in[i][0],pos_in[i][1],pos_in[i][2]));
@@ -368,14 +543,16 @@ void transform_position(const MAP& map, const typename MAP::template VertexAttri
  * @param indices1 embedding indices of vertices
  * @param indices2 embedding indices of faces
  */
-template <typename VEC3, typename MAP>
+template <typename MAP, typename VERTEX_ATTR>
 void create_indices_vertices_faces(
 	const MAP& m,
-	const typename MAP::template VertexAttribute<VEC3>& position,
+	const VERTEX_ATTR& position,
 	std::vector<uint32>& indices1,
 	std::vector<uint32>& indices2
 )
 {
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
 	using Vertex = typename MAP::Vertex;
 	using Face = typename MAP::Face;
 
@@ -402,7 +579,7 @@ void create_indices_vertices_faces(
 		}
 		else
 		{
-			cgogn::geometry::append_ear_triangulation<VEC3>(m, f, position, local_vert_indices);
+			cgogn::geometry::append_ear_triangulation(m, f, position, local_vert_indices);
 			for (uint32 i : local_vert_indices)
 			{
 				indices1.push_back(i);
@@ -412,18 +589,22 @@ void create_indices_vertices_faces(
 	});
 }
 
-template <typename VEC3, typename MAP>
-void add_to_drawer(const MAP& m, typename MAP::Edge e, const typename MAP::template VertexAttribute<VEC3>& position, DisplayListDrawer* dr)
+template <typename MAP, typename VERTEX_ATTR>
+void add_to_drawer(const MAP& m, typename MAP::Edge e, const VERTEX_ATTR& position, DisplayListDrawer* dr)
 {
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
 	using Vertex = typename MAP::Vertex;
 
 	dr->vertex3fv(position[Vertex(e.dart)]);
 	dr->vertex3fv(position[Vertex(m.phi1(e.dart))]);
 }
 
-template <typename VEC3, typename MAP>
-void add_to_drawer(const MAP& m, typename MAP::Face f, const typename MAP::template VertexAttribute<VEC3>& position, DisplayListDrawer* dr)
+template <typename MAP, typename VERTEX_ATTR>
+void add_to_drawer(const MAP& m, typename MAP::Face f, const VERTEX_ATTR& position, DisplayListDrawer* dr)
 {
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
 
@@ -434,9 +615,11 @@ void add_to_drawer(const MAP& m, typename MAP::Face f, const typename MAP::templ
 	});
 }
 
-template <typename VEC3, typename MAP>
-void add_to_drawer(const MAP& m, typename MAP::Volume vo, const typename MAP::template VertexAttribute<VEC3>& position, DisplayListDrawer* dr)
+template <typename MAP, typename VERTEX_ATTR>
+void add_to_drawer(const MAP& m, typename MAP::Volume vo, const VERTEX_ATTR& position, DisplayListDrawer* dr)
 {
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
 

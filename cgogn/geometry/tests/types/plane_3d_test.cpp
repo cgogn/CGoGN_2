@@ -43,17 +43,15 @@ TYPED_TEST_CASE(Plane3D_TEST, VecTypes );
 
 TEST(Plane3D_TEST, NameOfType)
 {
-	EXPECT_EQ(cgogn::name_of_type(cgogn::geometry::Plane3D<StdArrayf>(StdArrayf(),0)), "cgogn::geometry::Plane3D<cgogn::geometry::Vec_T<std::array<float32,3>>>");
-	EXPECT_EQ(cgogn::name_of_type(cgogn::geometry::Plane3D<EigenVec3f>(EigenVec3f(),0)), "cgogn::geometry::Plane3D<Eigen::Matrix<float,3,1,0,3,1>>");
-	EXPECT_EQ(cgogn::name_of_type(cgogn::geometry::Plane3D<StdArrayd>(StdArrayd(),0)), "cgogn::geometry::Plane3D<cgogn::geometry::Vec_T<std::array<float64,3>>>");
-	EXPECT_EQ(cgogn::name_of_type(cgogn::geometry::Plane3D<EigenVec3d>(EigenVec3d(),0)), "cgogn::geometry::Plane3D<Eigen::Matrix<double,3,1,0,3,1>>");
+	EXPECT_EQ(cgogn::name_of_type(cgogn::geometry::Plane3D(StdArrayf(),0)), "cgogn::geometry::Plane3D");
+	EXPECT_EQ(cgogn::name_of_type(cgogn::geometry::Plane3D(EigenVec3d(),0)), "cgogn::geometry::Plane3D");
 }
 
 TYPED_TEST(Plane3D_TEST, Project)
 {
 	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
 
-	cgogn::geometry::Plane3D<TypeParam> plane(TypeParam{Scalar(4), Scalar(0), Scalar(0)}, TypeParam{Scalar(0), Scalar(0), Scalar(0)});
+	cgogn::geometry::Plane3D plane(TypeParam{Scalar(4), Scalar(0), Scalar(0)}, TypeParam{Scalar(0), Scalar(0), Scalar(0)});
 	TypeParam p{Scalar(5), Scalar(8), Scalar(12)};
 	plane.project(p);
 	EXPECT_EQ(p[0], Scalar(0));
@@ -65,7 +63,7 @@ TYPED_TEST(Plane3D_TEST, Orient)
 {
 	using Scalar = typename cgogn::geometry::vector_traits<TypeParam>::Scalar;
 
-	cgogn::geometry::Plane3D<TypeParam> plane(TypeParam{Scalar(0), Scalar(0), Scalar(15)}, TypeParam{Scalar(0), Scalar(0), Scalar(0)});
+	cgogn::geometry::Plane3D plane(TypeParam{Scalar(0), Scalar(0), Scalar(15)}, TypeParam{Scalar(0), Scalar(0), Scalar(0)});
 	TypeParam p1{Scalar(546854), Scalar(864), Scalar(12)};
 	TypeParam p2{Scalar(-5), Scalar(886486), Scalar(-12)};
 	TypeParam p3{Scalar(44552), Scalar(7), Scalar(0)};

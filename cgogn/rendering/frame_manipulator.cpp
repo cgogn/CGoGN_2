@@ -183,8 +183,9 @@ float32 FrameManipulator::get_size()
 	return scale_rendering_;
 }
 
-void FrameManipulator::draw(bool frame, bool zplane, const QMatrix4x4& proj, const QMatrix4x4& view, QOpenGLFunctions_3_3_Core* ogl33)
+void FrameManipulator::draw(bool frame, bool zplane, const QMatrix4x4& proj, const QMatrix4x4& view)
 {
+	QOpenGLFunctions_3_3_Core * ogl33 = QOpenGLContext::currentContext()->versionFunctions<QOpenGLFunctions_3_3_Core>();
 
 	proj_mat_ = proj;
 	view_mat_ = view;
@@ -436,7 +437,7 @@ uint32 FrameManipulator::pick_frame(const QVector4D& PP, const QVector4D& QQ)
 	// Circles:
 	// plane X=0
 	Vec3 Qx;
-	bool inter = cgogn::geometry::intersection_line_plane<Vec3>(P,V,origin, Vec3(1.0f,0.0f,0.0f), &Qx);
+	bool inter = cgogn::geometry::intersection_line_plane(P,V,origin, Vec3(1.0f,0.0f,0.0f), &Qx);
 
 	if (axis_pickable(Xr))
 	{
@@ -449,7 +450,7 @@ uint32 FrameManipulator::pick_frame(const QVector4D& PP, const QVector4D& QQ)
 
 	// plane Y=0
 	Vec3 Qy;
-	inter = cgogn::geometry::intersection_line_plane<Vec3>(P,V,origin, Vec3(0.0f,1.0f,0.0f), &Qy);
+	inter = cgogn::geometry::intersection_line_plane(P,V,origin, Vec3(0.0f,1.0f,0.0f), &Qy);
 
 	if (axis_pickable(Yr))
 	{
@@ -462,7 +463,7 @@ uint32 FrameManipulator::pick_frame(const QVector4D& PP, const QVector4D& QQ)
 
 	// plane Z=0
 	Vec3 Qz;
-	inter = cgogn::geometry::intersection_line_plane<Vec3>(P,V,origin, Vec3(0.0f,0.0f,1.0f), &Qz);
+	inter = cgogn::geometry::intersection_line_plane(P,V,origin, Vec3(0.0f,0.0f,1.0f), &Qz);
 
 	if (axis_pickable(Zr))
 	{

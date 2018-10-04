@@ -113,16 +113,16 @@ Drawing::Drawing(Drawing* ptr) :
 
 void Drawing::draw()
 {
-	wp_rend_->draw(this);
-	button_rend_->draw(this);
+	wp_rend_->draw();
+	button_rend_->draw();
 
 	QMatrix4x4 proj;
 	QMatrix4x4 view;
 	camera()->getProjectionMatrix(proj);
 	camera()->getModelViewMatrix(view);
 
-	drawer_rend_->draw(proj,view,this);
-	drawer2_rend_->draw(proj,view,this);
+	drawer_rend_->draw(proj,view);
+	drawer2_rend_->draw(proj,view);
 }
 
 void Drawing::init()
@@ -140,7 +140,7 @@ void Drawing::init()
 		drawer2_ = m_first->drawer2_;
 		wp_ = m_first->wp_;
 		button_ = m_first->button_;
-
+		
 		drawer_rend_ = drawer_->generate_renderer();
 		drawer2_rend_ = drawer2_->generate_renderer();
 		wp_rend_ = wp_->generate_renderer();
@@ -240,9 +240,7 @@ void Drawing::init()
 				drawer2_->vertex3f(x,y,z);
 			}
 	drawer2_->end();
-
 	drawer2_->end_list();
-
 }
 
 int main(int argc, char** argv)

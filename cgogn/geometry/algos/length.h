@@ -36,61 +36,70 @@ namespace cgogn
 namespace geometry
 {
 
-template <typename VEC3, typename MAP>
-inline VEC3 vector_from(
+template <typename MAP, typename VERTEX_ATTR>
+inline InsideTypeOf<VERTEX_ATTR> vector_from(
 	const MAP& map,
 	const Dart d,
-	const typename MAP::template VertexAttribute<VEC3>& position
+	const VERTEX_ATTR& position
 )
 {
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
 	using Vertex = typename MAP::Vertex;
-
 	return position[Vertex(map.phi1(d))] - position[Vertex(d)];
 }
 
-template <typename VEC3, typename MAP>
-inline typename vector_traits<VEC3>::Scalar length(
+template <typename MAP, typename VERTEX_ATTR>
+inline ScalarOf<InsideTypeOf<VERTEX_ATTR>> length(
 	const MAP& map,
 	const typename MAP::Edge e,
-	const typename MAP::template VertexAttribute<VEC3>& position
+	const VERTEX_ATTR& position
 )
 {
-	return vector_from<VEC3>(map, e.dart, position).norm();
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+	return vector_from(map, e.dart, position).norm();
 }
 
-template <typename VEC3, typename MAP, typename MASK>
+template <typename MAP, typename MASK, typename VERTEX_ATTR>
 inline void compute_length(
 	const MAP& map,
 	const MASK& mask,
-	const typename MAP::template VertexAttribute<VEC3>& position,
-	typename MAP::template EdgeAttribute<VEC3>& edge_length
+	const VERTEX_ATTR& position,
+	typename MAP::template EdgeAttribute<ScalarOf<InsideTypeOf<VERTEX_ATTR>>>& edge_length
 )
 {
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
 	map.parallel_foreach_cell([&] (typename MAP::Edge e)
 	{
-		edge_length[e] = length<VEC3>(map, e, position);
+		edge_length[e] = length(map, e, position);
 	},
 	mask);
 }
 
-template <typename VEC3, typename MAP>
+
+template <typename MAP, typename VERTEX_ATTR>
 inline void compute_length(
 	const MAP& map,
-	const typename MAP::template VertexAttribute<VEC3>& position,
-	typename MAP::template EdgeAttribute<VEC3>& edge_length
+	const VERTEX_ATTR& position,
+	typename MAP::template EdgeAttribute<ScalarOf<InsideTypeOf<VERTEX_ATTR>>>& edge_length
 )
 {
-	compute_length<VEC3>(map, AllCellsFilter(), position, edge_length);
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
+	compute_length(map, AllCellsFilter(), position, edge_length);
 }
 
-template <typename VEC3, typename MAP, typename MASK>
-inline typename vector_traits<VEC3>::Scalar mean_edge_length(
+template <typename MAP, typename MASK, typename VERTEX_ATTR>
+inline ScalarOf<InsideTypeOf<VERTEX_ATTR>> mean_edge_length(
 	const MAP& map,
 	const MASK& mask,
-	const typename MAP::template VertexAttribute<VEC3>& position
+	const VERTEX_ATTR& position
 )
 {
-	using Scalar = typename vector_traits<VEC3>::Scalar;
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
+	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
+	using Scalar = ScalarOf<VEC3>;
 	using Edge = typename MAP::Edge;
 
 	std::vector<Scalar> edge_length_per_thread(thread_pool()->nb_workers(), 0);
@@ -98,8 +107,8 @@ inline typename vector_traits<VEC3>::Scalar mean_edge_length(
 
 	map.parallel_foreach_cell([&] (Edge e)
 	{
-		uint32 thread_index =cgogn::current_thread_index();
-		edge_length_per_thread[thread_index] += ::cgogn::geometry::length<VEC3>(map, e, position);
+		uint32 thread_index = current_thread_index();
+		edge_length_per_thread[thread_index] += length(map, e, position);
 		++nb_edges_per_thread[thread_index];
 	},
 	mask);
@@ -112,13 +121,16 @@ inline typename vector_traits<VEC3>::Scalar mean_edge_length(
 	return length / Scalar(nbe);
 }
 
-template <typename VEC3, typename MAP>
-inline typename vector_traits<VEC3>::Scalar mean_edge_length(
+
+template <typename MAP, typename VERTEX_ATTR>
+inline ScalarOf<InsideTypeOf<VERTEX_ATTR>> mean_edge_length(
 	const MAP& map,
-	const typename MAP::template VertexAttribute<VEC3>& position
+	const VERTEX_ATTR& position
 )
 {
-	return mean_edge_length<VEC3>(map, AllCellsFilter(), position);
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
+	return mean_edge_length(map, AllCellsFilter(), position);
 }
 
 } // namespace geometry

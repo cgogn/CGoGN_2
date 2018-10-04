@@ -187,9 +187,8 @@ public:
 	 * @param zplane draw z-plane or not
 	 * @param proj projection matrix
 	 * @param view model-view matrix
-	 * @param ogl33 pointer on widget that inherit from QOpenGLFunctions_3_3_Core
 	 */
-	void draw(bool frame, bool zplane, const QMatrix4x4& proj, const QMatrix4x4& view, QOpenGLFunctions_3_3_Core* ogl33);
+	void draw(bool frame, bool zplane, const QMatrix4x4& proj, const QMatrix4x4& view);
 
 	/**
 	 * @brief try picking the frame

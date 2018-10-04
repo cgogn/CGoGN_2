@@ -21,7 +21,6 @@
 *                                                                              *
 *******************************************************************************/
 
-
 #include <istream>
 #include <iostream>
 #include <map>
@@ -62,7 +61,7 @@ CGOGN_IO_API std::vector<std::vector<unsigned char>> zlib_compress(const unsigne
 
 		zstream.avail_in = static_cast<uInt>(std::min(chunk_size, size));
 		size -= zstream.avail_in;
-		zstream.next_in = input;
+		zstream.next_in = const_cast<unsigned char*>(input);
 		input += zstream.avail_in;
 		res.emplace_back(buffer_size);
 		zstream.avail_out = static_cast<uInt>(res.back().size());
@@ -97,13 +96,17 @@ CGOGN_IO_API std::vector<unsigned char> zlib_decompress(const char* input, DataT
 			nb_blocks = *reinterpret_cast<const std::uint64_t*>(&header_data[0]);
 			uncompressed_block_size = *reinterpret_cast<const std::uint64_t*>(&header_data[8]);
 			last_block_size = *reinterpret_cast<const std::uint64_t*>(&header_data[16]);
-		} else {
+		}
+		else
+		{
 			nb_blocks = *reinterpret_cast<const uint32*>(&header_data[0]);
 			uncompressed_block_size = *reinterpret_cast<const uint32*>(&header_data[4]);
 			last_block_size = *reinterpret_cast<const uint32*>(&header_data[8]);
 		}
 		compressed_size.resize(nb_blocks);
-	} else {
+	}
+	else
+	{
 		cgogn_log_warning("zlib_decompress") << "Unable to decode the header.";
 		return std::vector<unsigned char>();
 	}
@@ -214,7 +217,6 @@ CGOGN_IO_API std::vector<char> base64_encode(const char* input_buffer, std::size
 	return res;
 }
 
-
 CGOGN_IO_API std::vector<unsigned char> base64_decode(const char* input, std::size_t length)
 {
 	const std::locale locale;
@@ -306,11 +308,19 @@ CGOGN_IO_API FileType file_type(const std::string& filename)
 		{"nas", FileType_NASTRAN},
 		{"bdf", FileType_NASTRAN},
 		{"tet", FileType_AIMATSHAPE},
-		{"tetmesh", FileType_TETMESH}
+		{"tetmesh", FileType_TETMESH},
+		{"skel", FileType::FileType_SKEL},
+		{"cg", FileType::FileType_CG},
+		{"cskel", FileType::FileType_CSKEL},
+		{"skc", FileType::FileType_CSKEL},
+		{"dot", FileType::FileType_DOT},
+		{"plo", FileType::FileType_PLO},
+		{"ts", FileType::FileType_TS},
+		{"lin", FileType::FileType_LIN}
 	};
 
 	const auto it = file_type_map.find(ext);
-	if ( it != file_type_map.end())
+	if (it != file_type_map.end())
 		return it->second;
 	else
 		return FileType::FileType_UNKNOWN;
@@ -406,6 +416,35 @@ CGOGN_IO_API std::istream& getline_safe(std::istream& is, std::string& str)
 	}
 }
 
+CGOGN_IO_API std::istream& getline_safe(std::istream& is, std::string& str, char delim)
+{
+	str.clear();
+	std::istream::sentry se(is, true); // http://en.cppreference.com/w/cpp/io/basic_istream/sentry
+	std::streambuf* sb = is.rdbuf();
+
+	while (true)
+	{
+		const auto c = sb->sbumpc();
+		if (c == delim)
+			return is;
+		switch (c)
+		{
+		case '\n':
+			return is;
+		case '\r':
+			if (sb->sgetc() == '\n')
+				sb->sbumpc();
+			return is;
+		case EOF: // Also handle the case when the last line has no line ending
+			if (str.empty())
+				is.setstate(std::ios::eofbit);
+			return is;
+		default:
+			str.push_back(static_cast<char>(c));
+		}
+	}
+}
+
 ExportOptions::ExportOptions() :
 	filename_(),
 	position_attributes_(),
@@ -443,4 +482,3 @@ ExportOptions ExportOptions::create()
 } // namespace io
 
 } // namespace cgogn
-

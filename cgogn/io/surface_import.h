@@ -102,7 +102,7 @@ public:
 
 	inline void copy_line_vertex_container(uint32 dest, uint32 src)
 	{
-		vertex_container().template copy_line(dest, src, false, false);
+		vertex_container().copy_line(dest, src, false, false);
 	}
 
 	inline ChunkArrayGen* add_vertex_attribute(const DataInputGen& in_data, const std::string& att_name)
@@ -297,10 +297,10 @@ public:
 	virtual ~SurfaceFileImport() {}
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_SURFACE_IMPORT_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
 extern template class CGOGN_IO_API SurfaceImport<CMap2>;
 extern template class CGOGN_IO_API SurfaceFileImport<CMap2>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_SURFACE_IMPORT_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace io
 

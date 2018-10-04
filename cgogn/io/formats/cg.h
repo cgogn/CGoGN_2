@@ -63,19 +63,40 @@ protected:
     virtual bool import_file_impl(const std::string& filename) override
     {
         std::ifstream fp(filename.c_str(), std::ios::in);
-		ChunkArray<VEC3>* position = this->template add_vertex_attribute<VEC3>("position");
 
         std::string line;
         line.reserve(512);
 
+		io::getline_safe(fp, line);
+		if (line.rfind("# D") == std::string::npos)
+		{
+				cgogn_log_error("CgGraphImport::import_file_impl") << "File \"" << filename << "\" is not a valid cg file.";
+				return false;
+		}
 
-		uint32 nb_vertices = 0, nb_edges = 0;
+		// read header
+		std::replace(line.begin(), line.end(), ':', ' ');
+		std::stringstream ossl(line);
+		std::string tagl;
+		uint32 value;
+		ossl >> tagl;
+		ossl >> tagl;
+		ossl >> value; // dimension unused for now
+		ossl >> tagl;
+		ossl >> value;
+		const uint32 nb_vertices = value;
+		ossl >> tagl;
+		ossl >> value;
+		const uint32 nb_edges = value;
 
-        // lecture des sommets
+		this->reserve(nb_vertices);
+
+		ChunkArray<VEC3>* position = this->template add_vertex_attribute<VEC3>("position");
+
+		// read vertices
         std::vector<uint32> vertices_id;
-        vertices_id.reserve(102400);
-        VEC3 centroid;
-        centroid.setZero();
+		vertices_id.reserve(nb_vertices);
+
         for (uint32 i = 0; i < nb_vertices; ++i)
         {
             io::getline_safe(fp, line);
@@ -93,19 +114,14 @@ protected:
 
                 VEC3 pos{Scalar(x), Scalar(y), Scalar(z)};
 
-                centroid += pos;
-
                 uint32 vertex_id = this->vertex_attributes_.template insert_lines<1>();
                 (*position)[vertex_id] = pos;
 
                 vertices_id.push_back(vertex_id);
             }
-        }
+		}
 
-        centroid /= (Scalar)vertices_id.size();
-		//for(int vid=0; vid<(int)vertices_id.size(); ++vid)
-		//    (*position)[vid].coord -= centroid;
-
+		// read edges
         for (uint32 i = 0; i < nb_edges; ++i)
         {
             io::getline_safe(fp, line);
@@ -120,11 +136,9 @@ protected:
                 oss >> a;
                 oss >> b;
 
-                //TODO potentially a-1 and b-1
-
                 this->edges_nb_vertices_.push_back(2);
-                this->edges_vertex_indices_.push_back(a);
-                this->edges_vertex_indices_.push_back(b);
+				this->edges_vertex_indices_.push_back(a-1);
+				this->edges_vertex_indices_.push_back(b-1);
             }
         }
 
@@ -148,23 +162,35 @@ public:
 
 protected:
     virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& ) override
-    {
-		uint32 count = 0;
+	{
+		// Header
+		output << "# D:3 NV:" << map.template nb_cells<Vertex::ORBIT>() << " NE:" << map.template nb_cells<Edge::ORBIT>() << std::endl;
+
+		// Vertices
 		map.foreach_cell([&] (Vertex v)
 		{
-			++count;
-		});
+			output << "v ";
+			this->position_attribute(Vertex::ORBIT)->export_element(map.embedding(v), output, false, false);
+			output << std::endl;
+		}, *(this->cell_cache_));
+
+		// Edges (index from 1)
+		map.foreach_cell([&] (Edge e)
+		{
+			std::pair<Vertex, Vertex> vs = map.vertices(e);
+			output << "e " << (this->vindices_[vs.first]+1u) << " " << (this->vindices_[vs.second]+1u) << std::endl;
+		}, *(this->cell_cache_));
     }
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_FORMATS_CG_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
 extern template class CGOGN_IO_API CgGraphImport<Eigen::Vector3d>;
 extern template class CGOGN_IO_API CgGraphImport<Eigen::Vector3f>;
 extern template class CGOGN_IO_API CgGraphImport<geometry::Vec_T<std::array<float64,3>>>;
 extern template class CGOGN_IO_API CgGraphImport<geometry::Vec_T<std::array<float32,3>>>;
 
 extern template class CGOGN_IO_API CgGraphExport<UndirectedGraph>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_FORMATS_CG_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
 
 
 } // namespace io

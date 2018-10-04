@@ -3,96 +3,87 @@ project(cgogn_io
 )
 
 find_package(ply REQUIRED)
-find_package(lm6 REQUIRED)
-find_package(tinyxml2 REQUIRED)
-find_package(Zlib REQUIRED NO_CMAKE_ENVIRONMENT_PATH)
+find_package(Meshb REQUIRED)
+find_package(TinyXML2 REQUIRED)
+find_package(ZLIB REQUIRED)
 
-set(HEADER_FILES
-	data_io.h
-	surface_import.h
-	volume_import.h
-	map_import.h
-	map_export.h
-	graph_import.h
-	graph_export.h
-	io_utils.h
-	dll.h
-	c_locale.h
-	mesh_io_gen.h
-	surface_export.h
-	volume_export.h
-	formats/2dm.h
-	formats/dot.h
-	formats/cg.h
-	formats/cskel.h
-	formats/lm6.h
-	formats/msh.h
-	formats/nastran.h
-	formats/obj.h
-	formats/off.h
-	formats/ply.h
-	formats/ply_data.h
-	formats/skel.h
-	formats/stl.h
-	formats/tet.h
-	formats/tetgen.h
-	formats/tetmesh.h
-	formats/vtk.h
+add_library(${PROJECT_NAME} SHARED "")
+
+add_library(cgogn::io ALIAS cgogn_io)
+
+target_sources(${PROJECT_NAME}
+	PRIVATE
+		"${CMAKE_CURRENT_LIST_DIR}/dll.h"
+		"${CMAKE_CURRENT_LIST_DIR}/data_io.h"
+		"${CMAKE_CURRENT_LIST_DIR}/surface_import.h"
+		"${CMAKE_CURRENT_LIST_DIR}/volume_import.h"
+		"${CMAKE_CURRENT_LIST_DIR}/map_import.h"
+		"${CMAKE_CURRENT_LIST_DIR}/map_export.h"
+		"${CMAKE_CURRENT_LIST_DIR}/graph_import.h"
+		"${CMAKE_CURRENT_LIST_DIR}/graph_import.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/graph_export.h"
+		"${CMAKE_CURRENT_LIST_DIR}/io_utils.h"
+		"${CMAKE_CURRENT_LIST_DIR}/io_utils.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/dll.h"
+		"${CMAKE_CURRENT_LIST_DIR}/c_locale.h"
+		"${CMAKE_CURRENT_LIST_DIR}/mesh_io_gen.h"
+		"${CMAKE_CURRENT_LIST_DIR}/mesh_io_gen.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/surface_export.h"
+		"${CMAKE_CURRENT_LIST_DIR}/volume_export.h"
+		"${CMAKE_CURRENT_LIST_DIR}/formats/2dm.h"
+		"${CMAKE_CURRENT_LIST_DIR}/formats/dot.h"
+		"${CMAKE_CURRENT_LIST_DIR}/formats/cg.h"
+		"${CMAKE_CURRENT_LIST_DIR}/formats/cskel.h"
+		"${CMAKE_CURRENT_LIST_DIR}/formats/meshb.h"
+		"${CMAKE_CURRENT_LIST_DIR}/formats/msh.h"
+		"${CMAKE_CURRENT_LIST_DIR}/formats/nastran.h"
+		"${CMAKE_CURRENT_LIST_DIR}/formats/obj.h"
+		"${CMAKE_CURRENT_LIST_DIR}/formats/off.h"
+		"${CMAKE_CURRENT_LIST_DIR}/formats/ply.h"
+		"${CMAKE_CURRENT_LIST_DIR}/formats/ply.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/formats/ply_data.h"
+		"${CMAKE_CURRENT_LIST_DIR}/formats/ply_data.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/formats/skel.h"
+		"${CMAKE_CURRENT_LIST_DIR}/formats/stl.h"
+		"${CMAKE_CURRENT_LIST_DIR}/formats/tet.h"
+		"${CMAKE_CURRENT_LIST_DIR}/formats/tetgen.h"
+		"${CMAKE_CURRENT_LIST_DIR}/formats/tetmesh.h"
+		"${CMAKE_CURRENT_LIST_DIR}/formats/vtk.h"
+		"${CMAKE_CURRENT_LIST_DIR}/formats/vtk.cpp"
 )
 
-set(SOURCE_FILES
-	map_export.cpp
-	map_import.cpp
-	graph_export.cpp
-	graph_import.cpp
-	surface_import.cpp
-	surface_export.cpp
-	volume_import.cpp
-	volume_export.cpp
-	mesh_io_gen.cpp
-	io_utils.cpp
-	formats/2dm.cpp
-	formats/dot.cpp
-	formats/cg.cpp
-	formats/cskel.cpp
-	formats/lm6.cpp
-	formats/msh.cpp
-	formats/nastran.cpp
-	formats/obj.cpp
-	formats/off.cpp
-	formats/ply.cpp
-	formats/ply_data.cpp
-	formats/skel.cpp
-	formats/stl.cpp
-	formats/tet.cpp
-	formats/tetgen.cpp
-	formats/tetmesh.cpp
-	formats/vtk.cpp
-)
+if(${CGOGN_EXTERNAL_TEMPLATES})
+	target_sources(${PROJECT_NAME}
+		PRIVATE
+			"${CMAKE_CURRENT_LIST_DIR}/external_templates.cpp"
+	)
+endif()
 
-add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
+set_target_properties(${PROJECT_NAME} PROPERTIES
+										DEBUG_POSTFIX "_d"
+										EXPORT_NAME io)
 
-set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
 target_compile_definitions(${PROJECT_NAME} PRIVATE "-DCGOGN_IO_DLL_EXPORT")
 
 target_include_directories(${PROJECT_NAME} PUBLIC
 	$<BUILD_INTERFACE:${CGOGN_SOURCE_DIR}>
-	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_TINYXML2_INCLUDE_DIR}>
-	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_LM6_INCLUDE_DIR}>
-	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_PLY_INCLUDE_DIR}>
-	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_ZLIB_INCLUDE_DIR}>
-	$<INSTALL_INTERFACE:include>
-	$<INSTALL_INTERFACE:include/cgogn/thirdparty>
+	$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+	$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/cgogn/thirdparty>
 )
 
-target_link_libraries(${PROJECT_NAME} ${Zlib_LIBRARIES} cgogn_core cgogn_geometry ${ply_LIBRARIES} ${lm6_LIBRARIES} ${tinyxml2_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} cgogn::core cgogn::geometry ZLIB::ZLIB ply Meshb TinyXML2::TinyXML2)
 
-file(GLOB HEADERS "." "*.h")
-install(FILES ${HEADERS}
-	DESTINATION include/cgogn/io)
+set(PKG_CONFIG_REQUIRES "cgogn_core cgogn_geometry")
+configure_file(${PROJECT_SOURCE_DIR}/cgogn_io.pc.in ${CMAKE_CURRENT_BINARY_DIR}/cgogn_io.pc @ONLY)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/cgogn_io.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 
-cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CGOGN_SOURCE_DIR}" "include;include/cgogn/thirdparty")
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
+	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cgogn/io
+	FILES_MATCHING PATTERN "*.h"
+	REGEX "(examples|tests)" EXCLUDE
+)
+
+cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}")
 
 # VisualStudio nice source organisation
-source_group("IO" FILES ${HEADER_FILES} ${SOURCE_FILES})
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER cgogn)

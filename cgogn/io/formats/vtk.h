@@ -287,8 +287,21 @@ private:
 				output << "POINT_DATA " << nbv << std::endl;
 				for(ChunkArrayGen const* vatt : vertex_attributes)
 				{
-					output << "SCALARS " << vatt->name() << " " << cgogn_name_of_type_to_vtk_legacy_data_type(vatt->nested_type_name()) << " " << vatt->nb_components() << std::endl;
-					output << "LOOKUP_TABLE default" << std::endl;
+					if(vatt->nb_components() == 1)
+					{
+						output << "SCALARS " << vatt->name() << " " << cgogn_name_of_type_to_vtk_legacy_data_type(vatt->nested_type_name()) << " " << vatt->nb_components() << std::endl;
+						output << "LOOKUP_TABLE default" << std::endl;
+					}
+					else
+					{
+						if(vatt->name() == "color")
+							output << "COLOR_SCALARS " << vatt->name() << " " << cgogn_name_of_type_to_vtk_legacy_data_type(vatt->nested_type_name()) << " " << vatt->nb_components() << std::endl;
+						else if(vatt->name() == "normal")
+							output << "NORMALS " << vatt->name() << " " << cgogn_name_of_type_to_vtk_legacy_data_type(vatt->nested_type_name()) << std::endl;
+						else
+							output << "VECTORS " << vatt->name() << " " << cgogn_name_of_type_to_vtk_legacy_data_type(vatt->nested_type_name()) << std::endl;
+					}
+
 					map.foreach_cell([&](Vertex v)
 					{
 						vatt->export_element(map.embedding(v), output, bin, false);
@@ -654,9 +667,22 @@ private:
 				const auto& vertex_attributes = this->vertex_attributes();
 				output << "POINT_DATA " << nbv << std::endl;
 				for(ChunkArrayGen const* vatt : vertex_attributes)
-				{
-					output << "SCALARS " << vatt->name() << " " << cgogn_name_of_type_to_vtk_legacy_data_type(vatt->nested_type_name()) << " " << vatt->nb_components() << std::endl;
-					output << "LOOKUP_TABLE default" << std::endl;
+				{					
+					if(vatt->nb_components() == 1)
+					{
+						output << "SCALARS " << vatt->name() << " " << cgogn_name_of_type_to_vtk_legacy_data_type(vatt->nested_type_name()) << " " << vatt->nb_components() << std::endl;
+						output << "LOOKUP_TABLE default" << std::endl;
+					}
+					else
+					{
+						if(vatt->name() == "color")
+							output << "COLOR_SCALARS " << vatt->name() << " " << cgogn_name_of_type_to_vtk_legacy_data_type(vatt->nested_type_name()) << " " << vatt->nb_components() << std::endl;
+						else if(vatt->name() == "normal")
+							output << "NORMALS " << vatt->name() << " " << cgogn_name_of_type_to_vtk_legacy_data_type(vatt->nested_type_name()) << std::endl;
+						else
+							output << "VECTORS " << vatt->name() << " " << cgogn_name_of_type_to_vtk_legacy_data_type(vatt->nested_type_name()) << std::endl;
+					}
+
 					map.foreach_cell([&](Vertex v)
 					{
 						vatt->export_element(map.embedding(v), output, bin, false);
@@ -1157,6 +1183,18 @@ protected:
 												trash.skip_n(fp, nb_data, true);
 											}
 										}
+										else if(word == "TEXTURE_COORDINATES")
+										{
+											std::string data_name;
+											uint32 nb_comp = 0u;
+											std::string	data_type;
+											sstream >> data_name >> nb_comp  >> data_type;
+											data_type = vtk_data_type_to_cgogn_name_of_type(data_type);
+											cgogn_log_info("parse_vtk_legacy_file") << "reading \"" << data_name << "\" of type " << data_type << " (" << nb_comp << " components).";
+											std::unique_ptr<DataInputGen> att(DataInputGen::template newDataIO<PRIM_SIZE>(data_type, nb_comp));
+											att->read_n(fp, nb_data, !ascii_file, big_endian);
+											this->add_vertex_attribute(*att, data_name);
+										}
 									}
 								} while (word != "POINT_DATA" && word != "CELL_DATA" && (!fp.eof()));
 								if (!fp.eof())
@@ -1205,22 +1243,25 @@ protected:
 
 		const bool compressed = (root_node->Attribute("compressor") && (std::string(root_node->Attribute("compressor")) == "vtkZLibDataCompressor"));
 
-		XMLElement* grid_node = root_node->FirstChildElement("UnstructuredGrid");
-		if (grid_node == nullptr)
-			grid_node = root_node->FirstChildElement("PolyData");
+
+		XMLElement* grid_node = root_node->FirstChild()->ToElement();
 		cgogn_assert(grid_node != nullptr);
 		XMLElement* piece_node = grid_node->FirstChildElement("Piece");
 		cgogn_assert(piece_node != nullptr);
 
 		uint32 nb_vertices = 0u;
 		uint32 nb_cells = 0u;
+		uint32 nb_lines = 0u;
 
 		piece_node->QueryUnsignedAttribute("NumberOfPoints", &nb_vertices);
 		piece_node->QueryUnsignedAttribute("NumberOfCells", &nb_cells);
 		if (nb_cells == 0u)
 			piece_node->QueryUnsignedAttribute("NumberOfPolys", &nb_cells);
-		if (nb_vertices == 0u || nb_cells == 0u)
+		if (nb_vertices == 0u)
 			return false;
+
+		piece_node->QueryUnsignedAttribute("NumberOfLines", &nb_lines);
+
 
 		XMLElement* points_node = piece_node->FirstChildElement("Points");
 		cgogn_assert(points_node != nullptr);
@@ -1273,6 +1314,7 @@ protected:
 					mem_stream = make_unique<IMemoryStream>(reinterpret_cast<char*>(&binary_data[0]), binary_data.size());
 				else
 					mem_stream = make_unique<IMemoryStream>(ascii_data);
+
 				if (vertex_data == position_data_array_node)
 				{
 					cgogn_assert(nb_comp == 3);
@@ -1294,6 +1336,7 @@ protected:
 		}
 
 		XMLElement* const cell_node = piece_node->FirstChildElement("Cells");
+		if(cell_node)
 		{
 			std::vector<XMLElement*> cell_nodes;
 			XMLElement* cells_array_node = nullptr;
@@ -1393,11 +1436,90 @@ protected:
 			}
 		}
 
+		XMLElement* const lines_node = piece_node->FirstChildElement("Lines");
+		if (lines_node)
+		{
+			XMLElement* lines_array_node = lines_node->FirstChildElement("DataArray");
+			cgogn_assert(lines_array_node != nullptr);
+			std::vector<XMLElement*> lines_nodes;
+			while (lines_array_node)
+			{
+				lines_nodes.push_back(lines_array_node);
+				lines_array_node = lines_array_node->NextSiblingElement("DataArray");
+			}
+
+			for (XMLElement*& lines_data_array : lines_nodes)
+			{
+				if (lines_data_array->Attribute("Name") && to_lower(std::string(lines_data_array->Attribute("Name"))) == "connectivity" && (lines_data_array != lines_nodes.back()))
+				{
+					std::swap(lines_data_array, lines_nodes.back());
+				}
+			}
+
+			for (XMLElement* lines_data_array : lines_nodes)
+			{
+				const std::string& data_name = to_lower(std::string(lines_data_array->Attribute("Name")));
+				const bool binary = (lines_data_array->Attribute("format") && to_lower(std::string(lines_data_array->Attribute("format", nullptr))) == "binary");
+				uint32 nb_comp = 1;
+				lines_data_array->QueryUnsignedAttribute("NumberOfComponents", &nb_comp);
+				std::string type;
+				if (lines_data_array->Attribute("type", nullptr))
+					type = vtk_data_type_to_cgogn_name_of_type(std::string(lines_data_array->Attribute("type", nullptr)));
+
+				if (data_name.empty())
+					cgogn_log_debug("parse_xml_vtu")<< "Skipping a cell DataArray without \"Name\" attribute.";
+				else
+				{
+					const char* ascii_data = lines_data_array->GetText();
+					if(ascii_data != nullptr)
+					{
+						std::vector<unsigned char> binary_data;
+						if (binary)
+						{
+							binary_data = read_binary_xml_data(ascii_data,compressed, data_type(header_type));
+							if (binary_data.empty())
+							{
+								cgogn_log_warning("parse_xml_vtu") << "Unable to read cell attribute \"" <<  data_name << "\" of type " << type << ".";
+								continue;
+							}
+						}
+
+						std::unique_ptr<IMemoryStream> mem_stream;
+						if (binary)
+							mem_stream = make_unique<IMemoryStream>(reinterpret_cast<char*>(&binary_data[0]), binary_data.size());
+						else
+							mem_stream = make_unique<IMemoryStream>(ascii_data);
+						if (data_name == "connectivity")
+						{
+							const uint32 last_offset = this->offsets_.vec().back();
+							auto cells = DataInputGen::template newDataIO<PRIM_SIZE, uint32>(type);
+							cells->read_n(*mem_stream, last_offset,binary,!little_endian);
+							this->cells_ = *dynamic_cast_unique_ptr<DataInput<uint32>>(cells->simplify());
+						}
+						else
+						{
+							if (data_name == "offsets")
+							{
+								auto offsets = DataInputGen::template newDataIO<PRIM_SIZE, uint32>(type);
+								offsets->read_n(*mem_stream, nb_lines,binary,!little_endian);
+								this->offsets_ = *dynamic_cast_unique_ptr<DataInput<uint32>>(offsets->simplify());
+							}
+							else
+								cgogn_log_debug("parse_xml_vtu") << "Ignoring cell attribute \"" <<  data_name << "\" of type " << type << ".";
+						}
+					}
+				}
+			}
+		}
+
 		XMLElement* const poly_node = piece_node->FirstChildElement("Polys");
 		if (poly_node)
 		{
 			XMLElement* polys_array_node = poly_node->FirstChildElement("DataArray");
-			cgogn_assert(polys_array_node != nullptr);
+//			cgogn_assert(polys_array_node != nullptr);
+
+			if(polys_array_node != nullptr) {
+
 			std::vector<XMLElement*> poly_nodes;
 			while (polys_array_node)
 			{
@@ -1463,6 +1585,7 @@ protected:
 							cgogn_log_debug("parse_xml_vtu") << "Ignoring cell attribute \"" <<  data_name << "\" of type " << type << ".";
 					}
 				}
+			}
 			}
 		}
 		return true;
@@ -1795,6 +1918,15 @@ public:
 	{}
 
 protected:
+
+	inline bool read_xml_file(const std::string& filename)
+	{
+		if (!Inherit_Vtk::parse_xml_vtu(filename))
+			return false;
+		this->fill_graph_import();
+		return true;
+	}
+
 	inline bool read_vtk_legacy_file(std::ifstream& fp)
 	{
 		if (!Inherit_Vtk::parse_vtk_legacy_file(fp))
@@ -1820,41 +1952,72 @@ protected:
 
 	virtual bool import_file_impl(const std::string& filename) override
 	{
-		std::ifstream fp(filename.c_str(), std::ios::in | std::ios_base::binary);
-		cgogn_assert(fp.good());
-		return this->read_vtk_legacy_file(fp);
+		this->vtk_file_type_ = file_type(filename);
+		switch (this->vtk_file_type_)
+		{
+			case FileType::FileType_VTK_LEGACY:
+			{
+				std::ifstream fp(filename.c_str(), std::ios::in | std::ios_base::binary);
+				cgogn_assert(fp.good());
+				return this->read_vtk_legacy_file(fp);
+			}
+			case FileType::FileType_VTU:
+			case FileType::FileType_VTP:
+				return this->read_xml_file(filename);
+			default:
+				cgogn_log_warning("VtkGraphImport::import_file_impl")<< "VtkGraphImport does not handle the files of type \"" << extension(filename) << "\".";
+				return false;
+		}
 	}
 private:
 	inline void fill_graph_import()
 	{
-		const uint32 nb_edges = uint32(this->cell_types_.size());
-		this->reserve(nb_edges + 2);
-
-		auto cells_it = this->cells_.vec().begin();
-		const std::vector<int32>& cell_types_vec = this->cell_types_.vec();
-		const auto offsets_begin = this->offsets_.vec().begin();
-		auto offset_it = offsets_begin;
-		std::size_t last_offset(0);
-		for(auto cell_types_it = cell_types_vec.begin(); cell_types_it != cell_types_vec.end(); )
+		if (this->cell_types_.size() > 0) // .vtk and .vtu files
 		{
-			const int cell_type = *(cell_types_it++);
-			std::size_t nb_vert(0);
-			if (this->vtk_file_type_ == FileType::FileType_VTK_LEGACY)
-				nb_vert = *cells_it++;
-			else
-			{
-				const std::size_t curr_offset = *offset_it++;
-				nb_vert = curr_offset - last_offset;
-				last_offset = curr_offset;
-			}
+			const uint32 nb_edges = uint32(this->cell_types_.size());
+			this->reserve(nb_edges + 2);
 
-			if (cell_type == VTK_CELL_TYPES::VTK_LINE)
+			auto cells_it = this->cells_.vec().begin();
+			const std::vector<int32>& cell_types_vec = this->cell_types_.vec();
+			const auto offsets_begin = this->offsets_.vec().begin();
+			auto offset_it = offsets_begin;
+			std::size_t last_offset(0);
+			for(auto cell_types_it = cell_types_vec.begin(); cell_types_it != cell_types_vec.end(); )
 			{
-				this->edges_nb_vertices_.push_back(uint32(nb_vert));
-				for(std::size_t i = 0ul ; i < nb_vert ; ++i)
+				const int cell_type = *(cell_types_it++);
+				std::size_t nb_vert(0);
+				if (this->vtk_file_type_ == FileType::FileType_VTK_LEGACY)
+					nb_vert = *cells_it++;
+				else
 				{
-					this->edges_vertex_indices_.push_back(*cells_it++);
+					const std::size_t curr_offset = *offset_it++;
+					nb_vert = curr_offset - last_offset;
+					last_offset = curr_offset;
 				}
+
+				if (cell_type == VTK_CELL_TYPES::VTK_LINE)
+				{
+					this->edges_nb_vertices_.push_back(uint32(nb_vert));
+					for(std::size_t i = 0ul ; i < nb_vert ; ++i)
+						this->edges_vertex_indices_.push_back(*cells_it++);
+				}
+			}
+		}
+		else
+		{ // .vtp files
+			const uint32 nb_edges = uint32(this->offsets_.vec().size());
+			this->reserve(nb_edges + 2);
+
+			auto cells_it = this->cells_.vec().begin();
+			uint32 last_offset = 0u;
+			for(auto offset_it = this->offsets_.vec().begin(), offset_end = this->offsets_.vec().end(); offset_it != offset_end; ++offset_it)
+			{
+				const uint32 curr_offset = *offset_it;
+				const uint32 nb_vertices = curr_offset - last_offset;
+				this->edges_nb_vertices_.push_back(uint32(nb_vertices));
+				for (uint32 i = 0u; i < nb_vertices; ++i)
+					this->edges_vertex_indices_.push_back(*cells_it++);
+				last_offset = *offset_it;
 			}
 		}
 	}
@@ -1963,13 +2126,28 @@ private:
 				output << "POINT_DATA " << nbv << std::endl;
 				for(ChunkArrayGen const* vatt : vertex_attributes)
 				{
-					output << "SCALARS " << vatt->name() << " " << cgogn_name_of_type_to_vtk_legacy_data_type(vatt->nested_type_name()) << " " << vatt->nb_components() << std::endl;
-					output << "LOOKUP_TABLE default" << std::endl;
+					if(vatt->nb_components() == 1)
+					{
+						output << "SCALARS " << vatt->name() << " " << cgogn_name_of_type_to_vtk_legacy_data_type(vatt->nested_type_name()) << " " << vatt->nb_components() << std::endl;
+						output << "LOOKUP_TABLE default" << std::endl;
+					}
+					else
+					{
+						if(vatt->name() == "color")
+							output << "COLOR_SCALARS " << vatt->name() << " " << cgogn_name_of_type_to_vtk_legacy_data_type(vatt->nested_type_name()) << " " << vatt->nb_components() << std::endl;
+						else if(vatt->name() == "normal")
+							output << "NORMALS " << vatt->name() << " " << cgogn_name_of_type_to_vtk_legacy_data_type(vatt->nested_type_name()) << std::endl;
+						else
+							output << "VECTORS " << vatt->name() << " " << cgogn_name_of_type_to_vtk_legacy_data_type(vatt->nested_type_name()) << std::endl;
+					}
+
 					map.foreach_cell([&](Vertex v)
 					{
 						vatt->export_element(map.embedding(v), output, false, false);
 						output << std::endl;
 					}, *(this->cell_cache_));
+
+					output << std::endl ;
 				}
 
 				output << std::endl ;
@@ -1997,7 +2175,7 @@ private:
 	}
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_FORMATS_VTK_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
 extern template class CGOGN_IO_API VtkIO<1, Eigen::Vector3d>;
 extern template class CGOGN_IO_API VtkIO<1, Eigen::Vector3f>;
 
@@ -2014,7 +2192,7 @@ extern template class CGOGN_IO_API VtkGraphImport<Eigen::Vector3d>;
 extern template class CGOGN_IO_API VtkGraphImport<Eigen::Vector3f>;
 extern template class CGOGN_IO_API VtkGraphExport<UndirectedGraph>;
 
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_FORMATS_VTK_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace io
 

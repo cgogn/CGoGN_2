@@ -743,7 +743,7 @@ protected:
 	}
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_FORMATS_MSH_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
 extern template class CGOGN_IO_API MshIO<Eigen::Vector3d>;
 extern template class CGOGN_IO_API MshIO<Eigen::Vector3f>;
 extern template class CGOGN_IO_API MshIO<geometry::Vec_T<std::array<float64,3>>>;
@@ -759,7 +759,7 @@ extern template class CGOGN_IO_API MshVolumeImport<CMap3, geometry::Vec_T<std::a
 
 extern template class CGOGN_IO_API MshSurfaceExport<CMap2>;
 extern template class CGOGN_IO_API MshVolumeExport<CMap3>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_FORMATS_MSH_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace io
 

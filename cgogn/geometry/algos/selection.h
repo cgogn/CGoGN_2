@@ -46,7 +46,7 @@ public:
 	using Inherit = CellTraversor;
 	using Self = CollectorGen<VEC3>;
 
-	using Scalar = typename vector_traits<VEC3>::Scalar;
+	using Scalar = ScalarOf<VEC3>;
 	using const_iterator = std::vector<Dart>::const_iterator;
 
 	inline CollectorGen() : Inherit()
@@ -160,7 +160,7 @@ public:
 	using Inherit = Collector<VEC3, MAP>;
 	using Self = Collector_OneRing<VEC3, MAP>;
 
-	using Scalar = typename vector_traits<VEC3>::Scalar;
+	using Scalar = ScalarOf<VEC3>;
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
 	using Face = typename MAP::Face;
@@ -191,7 +191,7 @@ public:
 	{
 		Scalar result = 0;
 		for (Dart d : this->cells_[Face::ORBIT])
-			result += geometry::area<VEC3>(this->map_, Face(d), position);
+			result += geometry::area(this->map_, Face(d), position);
 		return result;
 	}
 };
@@ -204,7 +204,7 @@ public:
 	using Self = Collector_WithinSphere<VEC3, MAP>;
 	using Inherit = Collector<VEC3, MAP>;
 
-	using Scalar = typename vector_traits<VEC3>::Scalar;
+	using Scalar = ScalarOf<VEC3>;
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
 	using Face = typename MAP::Face;
@@ -303,7 +303,7 @@ public:
 		const VEC3& center_position = position[this->center_];
 		for (Dart d : this->cells_[Face::ORBIT])
 		{
-			result += geometry::area<VEC3>(this->map_, Face(d), position);
+			result += geometry::area(this->map_, Face(d), position);
 		}
 		// TODO: the following works only for triangle meshes
 		for (Dart d : this->border_)
@@ -314,16 +314,16 @@ public:
 			if (geometry::in_sphere(position[Vertex(g)], center_position, radius_)) // Vertex(g) is inside
 			{
 				Scalar alpha, beta;
-				geometry::intersection_sphere_segment<VEC3>(center_position, radius_, position[Vertex(d)], position[Vertex(f)], alpha);
-				geometry::intersection_sphere_segment<VEC3>(center_position, radius_, position[Vertex(g)], position[Vertex(f)], beta);
-				result += (alpha+beta - alpha*beta) * geometry::area<VEC3>(this->map_, Face(d), position);
+				geometry::intersection_sphere_segment(center_position, radius_, position[Vertex(d)], position[Vertex(f)], alpha);
+				geometry::intersection_sphere_segment(center_position, radius_, position[Vertex(g)], position[Vertex(f)], beta);
+				result += (alpha+beta - alpha*beta) * geometry::area(this->map_, Face(d), position);
 			}
 			else // Vertex(g) is outside
 			{
 				Scalar alpha, beta;
-				geometry::intersection_sphere_segment<VEC3>(center_position, radius_, position[Vertex(d)], position[Vertex(f)], alpha);
-				geometry::intersection_sphere_segment<VEC3>(center_position, radius_, position[Vertex(d)], position[Vertex(g)], beta);
-				result += alpha * beta * geometry::area<VEC3>(this->map_, Face(d), position);
+				geometry::intersection_sphere_segment(center_position, radius_, position[Vertex(d)], position[Vertex(f)], alpha);
+				geometry::intersection_sphere_segment(center_position, radius_, position[Vertex(d)], position[Vertex(g)], beta);
+				result += alpha * beta * geometry::area(this->map_, Face(d), position);
 			}
 		}
 		return result;
@@ -335,7 +335,7 @@ protected:
 	const typename MAP::template VertexAttribute<VEC3>& position_;
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_ALGOS_SELECTION_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_EXTERNAL_TEMPLATES_CPP_))
 extern template CGOGN_GEOMETRY_API class Collector_OneRing<Eigen::Vector3f, CMap2>;
 extern template CGOGN_GEOMETRY_API class Collector_OneRing<Eigen::Vector3d, CMap2>;
 extern template CGOGN_GEOMETRY_API class Collector_OneRing<Eigen::Vector3f, CMap3>;
@@ -344,7 +344,7 @@ extern template CGOGN_GEOMETRY_API class Collector_WithinSphere<Eigen::Vector3f,
 extern template CGOGN_GEOMETRY_API class Collector_WithinSphere<Eigen::Vector3d, CMap2>;
 extern template CGOGN_GEOMETRY_API class Collector_WithinSphere<Eigen::Vector3f, CMap3>;
 extern template CGOGN_GEOMETRY_API class Collector_WithinSphere<Eigen::Vector3d, CMap3>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_ALGOS_SELECTION_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace geometry
 

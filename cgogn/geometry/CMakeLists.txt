@@ -2,81 +2,84 @@ project(cgogn_geometry
 	LANGUAGES CXX
 )
 
-set(HEADER_ALGOS
-	algos/bounding_box.h
-	algos/feature.h
-	algos/area.h
-	algos/centroid.h
-	algos/curvature.h
-	algos/normal.h
-	algos/ear_triangulation.h
-	algos/picking.h
-	algos/selection.h
-	algos/filtering.h
-	algos/length.h
-	algos/angle.h
-)
-set(HEADER_FUNCTIONS
-	functions/basics.h
-	functions/area.h
-	functions/normal.h
-	functions/orientation.h
-	functions/inclusion.h
-	functions/intersection.h
-	functions/distance.h
-)
-set(HEADER_TYPES
-	types/aabb.h
-	types/obb.h
-	types/eigen.h
-	types/geometry_traits.h
-	types/plane_3d.h
-	types/quadric.h
-	types/vec.h
-)
-set(HEADER_FILES dll.h ${HEADER_ALGOS} ${HEADER_FUNCTIONS} ${HEADER_TYPES})
+find_package(Eigen3 3.2)
 
+add_library(${PROJECT_NAME} SHARED "")
 
-set(SOURCE_ALGOS
-	algos/angle.cpp
-	algos/selection.cpp
-)
-set(SOURCE_TYPES
-	types/aabb.cpp
-	types/obb.cpp
-	types/plane_3d.cpp
-	types/quadric.cpp
-	types/vec.cpp
-)
-set(SOURCE_FILES ${SOURCE_ALGOS} ${SOURCE_TYPES})
+add_library(cgogn::geometry ALIAS cgogn_geometry)
 
-add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
+target_sources(${PROJECT_NAME}
+    PRIVATE
+        "${CMAKE_CURRENT_LIST_DIR}/dll.h"
 
-set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
+        "${CMAKE_CURRENT_LIST_DIR}/types/plane_3d.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/types/quadric.cpp"
+
+        "${CMAKE_CURRENT_LIST_DIR}/algos/bounding_box.h"
+        "${CMAKE_CURRENT_LIST_DIR}/algos/feature.h"
+        "${CMAKE_CURRENT_LIST_DIR}/algos/area.h"
+        "${CMAKE_CURRENT_LIST_DIR}/algos/centroid.h"
+        "${CMAKE_CURRENT_LIST_DIR}/algos/curvature.h"
+        "${CMAKE_CURRENT_LIST_DIR}/algos/normal.h"
+        "${CMAKE_CURRENT_LIST_DIR}/algos/ear_triangulation.h"
+        "${CMAKE_CURRENT_LIST_DIR}/algos/picking.h"
+        "${CMAKE_CURRENT_LIST_DIR}/algos/selection.h"
+        "${CMAKE_CURRENT_LIST_DIR}/algos/filtering.h"
+        "${CMAKE_CURRENT_LIST_DIR}/algos/length.h"
+        "${CMAKE_CURRENT_LIST_DIR}/algos/angle.h"
+
+        "${CMAKE_CURRENT_LIST_DIR}/functions/basics.h"
+        "${CMAKE_CURRENT_LIST_DIR}/functions/area.h"
+        "${CMAKE_CURRENT_LIST_DIR}/functions/normal.h"
+        "${CMAKE_CURRENT_LIST_DIR}/functions/orientation.h"
+        "${CMAKE_CURRENT_LIST_DIR}/functions/inclusion.h"
+        "${CMAKE_CURRENT_LIST_DIR}/functions/intersection.h"
+        "${CMAKE_CURRENT_LIST_DIR}/functions/distance.h"
+
+        "${CMAKE_CURRENT_LIST_DIR}/types/aabb.h"
+        "${CMAKE_CURRENT_LIST_DIR}/types/obb.h"
+        "${CMAKE_CURRENT_LIST_DIR}/types/eigen.h"
+        "${CMAKE_CURRENT_LIST_DIR}/types/geometry_traits.h"
+        "${CMAKE_CURRENT_LIST_DIR}/types/plane_3d.h"
+        "${CMAKE_CURRENT_LIST_DIR}/types/quadric.h"
+        "${CMAKE_CURRENT_LIST_DIR}/types/vec.h"
+    )
+
+if(${CGOGN_EXTERNAL_TEMPLATES})
+    target_sources(${PROJECT_NAME}
+        PRIVATE
+            "${CMAKE_CURRENT_LIST_DIR}/external_templates.cpp"
+    )
+endif()
+
+set_target_properties(${PROJECT_NAME} PROPERTIES
+											DEBUG_POSTFIX "_d"
+											EXPORT_NAME geometry)
+
 target_compile_definitions(${PROJECT_NAME} PRIVATE "-DCGOGN_GEOMETRY_DLL_EXPORT")
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
-	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_EIGEN3_INCLUDE_DIR}>
-	$<INSTALL_INTERFACE:include/cgogn/thirdparty>
-#	$<INSTALL_INTERFACE:include/cgogn/thirdparty/eigen/unsupported>
+	#$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_EIGEN3_INCLUDE_DIR}>
+	$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/cgogn/thirdparty>
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC
 	$<BUILD_INTERFACE:${CGOGN_SOURCE_DIR}>
-	$<INSTALL_INTERFACE:include>
+	$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
-target_link_libraries(${PROJECT_NAME} cgogn_core)
+target_link_libraries(${PROJECT_NAME} cgogn::core Eigen3::Eigen)
 
-install(FILES "dll.h" DESTINATION "include/cgogn/geometry")
-install(DIRECTORY algos functions types
-	DESTINATION "include/cgogn/geometry"
+set(PKG_CONFIG_REQUIRES "cgogn_core")
+configure_file(${PROJECT_SOURCE_DIR}/cgogn_geometry.pc.in ${CMAKE_CURRENT_BINARY_DIR}/cgogn_geometry.pc @ONLY)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/cgogn_geometry.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
+	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cgogn/geometry
 	FILES_MATCHING PATTERN "*.h"
+	REGEX "(examples|tests)" EXCLUDE
 )
 
-cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CGOGN_SOURCE_DIR};${CGOGN_THIRDPARTY_EIGEN3_INCLUDE_DIR}" "include;include/cgogn/thirdparty")
+cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}")
 
 # VisualStudio nice source organisation
-source_group("ALGOS" FILES ${HEADER_ALGOS} ${SOURCE_ALGOS})
-source_group("TYPES" FILES ${HEADER_TYPES} ${SOURCE_TYPES})
-source_group("FUNCTIONS" FILES ${HEADER_FUNCTIONS})
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER cgogn)

@@ -38,15 +38,18 @@ namespace cgogn
 namespace modeling
 {
 
-template <typename VEC3, typename MAP>
-void loop(MAP& map, typename MAP::template VertexAttribute<VEC3>& position)
+template <typename MAP, typename VERTEX_ATTR>
+void loop(MAP& map, VERTEX_ATTR& position)
 {
-	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+
+	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
+	using Scalar = geometry::ScalarOf<VEC3>;
 	using Vertex = typename MAP::Vertex;
 	using Edge = typename MAP::Edge;
 	using Face = typename MAP::Face;
 
-	typename MAP::template VertexAttribute<VEC3> position2 = map.template add_attribute<VEC3, Vertex>("position_tempo_loop");
+	VERTEX_ATTR position2 = map.template add_attribute<VEC3, Vertex>("position_tempo_loop");
 
 	DartMarker<MAP> initial_edge_marker(map);
 
@@ -127,12 +130,12 @@ void loop(MAP& map, typename MAP::template VertexAttribute<VEC3>& position)
 	map.remove_attribute(position2);
 }
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_LOOP_CPP_))
-extern template CGOGN_MODELING_API void loop<Eigen::Vector3f, CMap2>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&);
-extern template CGOGN_MODELING_API void loop<Eigen::Vector3d, CMap2>(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&);
-extern template CGOGN_MODELING_API void loop<Eigen::Vector3f, CMap3>(CMap3&, CMap3::VertexAttribute<Eigen::Vector3f>&);
-extern template CGOGN_MODELING_API void loop<Eigen::Vector3d, CMap3>(CMap3&, CMap3::VertexAttribute<Eigen::Vector3d>&);
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_LOOP_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_EXTERNAL_TEMPLATES_CPP_))
+extern template CGOGN_MODELING_API void loop(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&);
+extern template CGOGN_MODELING_API void loop(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&);
+extern template CGOGN_MODELING_API void loop(CMap3&, CMap3::VertexAttribute<Eigen::Vector3f>&);
+extern template CGOGN_MODELING_API void loop(CMap3&, CMap3::VertexAttribute<Eigen::Vector3d>&);
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace modeling
 

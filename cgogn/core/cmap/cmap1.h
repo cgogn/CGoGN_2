@@ -25,6 +25,7 @@
 #define CGOGN_CORE_CMAP_CMAP1_H_
 
 #include <cgogn/core/cmap/cmap0.h>
+#include <cgogn/core/cmap/cmap1_builder.h>
 
 namespace cgogn
 {
@@ -42,12 +43,17 @@ public:
 	using Inherit = CMap0_T<MAP_TYPE>;
 	using Self = CMap1_T<MAP_TYPE>;
 
+	using Builder = CMap1Builder_T<Self>;
+
 	friend class MapBase<MAP_TYPE>;
+	friend class CMap1Builder_T<Self>;
 	friend class DartMarker_T<Self>;
 	friend class cgogn::DartMarkerStore<Self>;
 
+	using CDart  = typename Inherit::Vertex;
 	using Vertex = typename Inherit::Vertex;
-	using Face   = Cell<Orbit::PHI1>;
+	using Edge = Cell<Orbit::DART>;
+	using Face = Cell<Orbit::PHI1>;
 
 	using Boundary = Vertex;
 	using ConnectedComponent = Face;
@@ -73,8 +79,9 @@ public:
 	template <Orbit ORBIT>
 	using CellMarkerStore = typename cgogn::CellMarkerStore<Self, ORBIT>;
 
-	using CellCache = typename cgogn::CellCache<Self>;
+	using FilteredQuickTraversor = typename cgogn::FilteredQuickTraversor<Self>;
 	using QuickTraversor = typename cgogn::QuickTraversor<Self>;
+	using CellCache = typename cgogn::CellCache<Self>;
 	using BoundaryCache = typename cgogn::BoundaryCache<Self>;
 
 protected:
@@ -414,6 +421,125 @@ protected:
 		phi1_sew(e, d);				// Sew the last edge
 	}
 
+
+public:
+	inline Vertex make_polyline(uint32 size)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		const Dart v = add_face_topo(size);
+
+		if (this->template is_embedded<Vertex>())
+		{
+			foreach_dart_of_orbit(ConnectedComponent(v), [this] (Dart d)
+			{
+				this->new_orbit_embedding(Vertex(d));
+			});
+		}
+
+		this->boundary_mark(Boundary(v));
+
+		return Vertex(phi1(v));
+	}
+
+protected:
+
+	/*!
+	 * \brief Close the topological hole that contains Dart d (a fixed point of phi2 relation)
+	 * \param d a dart incident to the hole
+	 * \return a dart of the face that closes the hole
+	 * This method is used to close a CMap2 that has been built through the 2-sewing of 1-faces
+	 * A face is inserted on the boundary that begins at dart d
+	 */
+	inline Dart close_hole_topo(Dart d)
+	{
+		cgogn_message_assert(phi1(d) == d || phi_1(d) == d, "CMap1: close hole called on a dart that is not a phi1 fix point");
+
+		Dart first = this->add_topology_element();	// dart that will fill the hole
+
+		if(phi_1(d) == d)
+		{
+			phi1_sew(first, d);							// 1-sew the new dart to the hole
+
+			Dart d_next = d;
+			Dart d_phi1 = d;
+			do
+			{
+				d_next = d_phi1;
+				d_phi1 = phi1(d_next);
+			}while(d_next != d_phi1);
+
+			phi1_sew(d_phi1, first);
+		}
+
+	}
+
+	/*!
+	 * \brief Close a hole with a new face and update the embedding of incident cells.
+	 * \param d : a vertex of the hole
+	 * This method is used to close a CMap2 that has been build through the 2-sewing of 1-faces.
+	 * A face is inserted on the boundary that begin at dart d.
+	 * If the map has Dart, Vertex, Edge, Face or Volume attributes,
+	 * the embedding of the inserted face and incident cells are automatically updated.
+	 * More precisely :
+	 *  - the Vertex, Edge and Volume attributes are copied, if needed, from incident cells.
+	 */
+	inline Vertex close_hole(Dart d)
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		const Vertex v(close_hole_topo(d));
+
+//		if (this->template is_embedded<Vertex>())
+//		{
+//			foreach_dart_of_orbit(ConnectedComponent(v), [this] (Dart it)
+//			{
+//				this->template copy_embedding<Vertex>(it, this->phi1(phi2(it)));
+//			});
+//		}
+
+		return v;
+	}
+
+	/*!
+	 * \brief Close the map by inserting faces in its holes and update the embedding of incident cells.
+	 * This method is used to close a CMap2 that has been build through the 2-sewing of 1-faces.
+	 * If the map has Dart, Vertex, Edge, Face or Volume attributes,
+	 * the embedding of the inserted faces and incident cells are automatically updated.
+	 * More precisely :
+	 *  - Vertex, Edge and Volume attributes are copied, if needed, from incident cells.
+	 * If the indexation of embedding was unique, the closed map is well embedded.
+	 */
+	// The template parameter is a hack needed to compile the class CMap2_T<DefaultMapTraits, CMap3Type<DefaultMapTraits>> with MSVC. Otherwise calling boundary_mark leads to an error.
+	template <typename = std::enable_if<std::is_same<typename MapType::TYPE, Self>::value>>
+	inline uint32 close_map()
+	{
+		CGOGN_CHECK_CONCRETE_TYPE;
+
+		uint32 nb_holes = 0u;
+
+//		std::vector<Dart>* fix_point_darts = dart_buffers()->buffer();
+//		this->foreach_dart([&] (Dart d)
+//		{
+//			if (phi1(d) == d)
+//				fix_point_darts->push_back(d);
+//		});
+
+//		for (Dart d : (*fix_point_darts))
+//		{
+//			if (phi1(d) == d)
+//			{
+//				Vertex f = close_hole(d);
+//				this->boundary_mark(f);
+//				++nb_holes;
+//			}
+//		}
+
+//		dart_buffers()->release_buffer(fix_point_darts);
+
+		return nb_holes;
+	}
+
 	/*******************************************************************************
 	 * Connectivity information
 	 *******************************************************************************/
@@ -523,6 +649,11 @@ public:
 		foreach_dart_of_orbit(f, [&func] (Dart v) { return internal::void_to_true_binder(func, Vertex(v)); });
 	}
 
+	inline std::pair<Vertex,Vertex> vertices(Edge e) const
+	{
+		return std::pair<Vertex, Vertex>(Vertex(e.dart), Vertex(this->phi1(e.dart)));
+	}
+
 protected:
 
 	/**
@@ -568,7 +699,7 @@ struct CMap1Type
 
 using CMap1 = CMap1_T<CMap1Type>;
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP1_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
 extern template class CGOGN_CORE_API CMap1_T<CMap1Type>;
 extern template class CGOGN_CORE_API DartMarker<CMap1>;
 extern template class CGOGN_CORE_API DartMarkerStore<CMap1>;
@@ -580,7 +711,7 @@ extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap1, CMap1::Face::ORBI
 extern template class CGOGN_CORE_API CellMarkerStore<CMap1, CMap1::Vertex::ORBIT>;
 extern template class CGOGN_CORE_API CellMarkerStore<CMap1, CMap1::Face::ORBIT>;
 extern template class CGOGN_CORE_API QuickTraversor<CMap1>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_MAP_MAP1_CPP_))
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace cgogn
 

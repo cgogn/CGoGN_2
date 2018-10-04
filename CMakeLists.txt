@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.7.2 FATAL_ERROR)
 
 set(CGOGN_VERSION_MAJOR 2)
 set(CGOGN_VERSION_MINOR 0)
@@ -7,18 +7,16 @@ set(CGOGN_VERSION_PATCH 0)
 project(CGoGN
 	VERSION ${CGOGN_VERSION_MAJOR}.${CGOGN_VERSION_MINOR}.${CGOGN_VERSION_PATCH}
 	LANGUAGES CXX C
-)
+	)
 
 foreach(p
-    CMP0048 # version
-    CMP0054 # CMake 3.1
-    )
-  if(POLICY ${p})
-    cmake_policy(SET ${p} NEW)
-  endif()
+		CMP0048 # version
+		CMP0054 # CMake 3.1
+		)
+	if(POLICY ${p})
+		cmake_policy(SET ${p} NEW)
+	endif()
 endforeach()
-
-enable_testing()
 
 #### Default build type
 if(NOT CMAKE_BUILD_TYPE)
@@ -26,22 +24,32 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 #### CGoGN PATH
-set(CGOGN_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
+set(CGOGN_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 #### Here are located the FindPackages that we need
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
 list(APPEND CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}")
 
 #### Compile Options
-include(cmake/CompilerOptions.cmake)
+include(GNUInstallDirs)
+
+include(cmake/utilities.cmake)
+include(cmake/CheckSIMDFeatures.cmake)
 include(cmake/GenerateCppcheck.cmake)
 include(cmake/EnableCoverageReport.cmake)
 
-#### Build configuration
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
-set(CGOGN_SOURCE_DIR ${CGOGN_PATH})
+if(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+	  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY
+		  ${CMAKE_CURRENT_BINARY_DIR}/stage/${CMAKE_INSTALL_BINDIR})
+  endif()
+  if(NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
+	  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY
+		  ${CMAKE_CURRENT_BINARY_DIR}/stage/${CMAKE_INSTALL_LIBDIR})
+  endif()
+  if(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
+	  set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
+		  ${CMAKE_CURRENT_BINARY_DIR}/stage/${CMAKE_INSTALL_LIBDIR})
+endif()
 
 ### External Templates
 option(CGOGN_EXTERNAL_TEMPLATES "Use external templates to reduce compile time" OFF)
@@ -52,13 +60,19 @@ if (NOT MSVC)
 	set_property(CACHE CGOGN_CPP_STD PROPERTY STRINGS "11" "14" "17") # drop down list with cmake-gui
 endif(NOT MSVC)
 
+
+if (CGOGN_CPP_STD STREQUAL "11")
+	set(CMAKE_CXX_STANDARD 11)
+elseif(CGOGN_CPP_STD STREQUAL "14")
+	set(CMAKE_CXX_STANDARD 14)
+else(CGOGN_CPP_STD STREQUAL "11")
+	set(CMAKE_CXX_STANDARD 17)
+endif(CGOGN_CPP_STD STREQUAL "11")
+
 #### ThirdParty options
-set(CGOGN_THIRDPARTY_DIR ${CGOGN_PATH}/thirdparty)
-option(CGOGN_PROVIDE_EIGEN "Use the version of eigen that is packaged with CGoGN." ON)
-option(CGOGN_PROVIDE_TINYXML2 "Use the version of tinyxml2 that is packaged with CGoGN." ON)
+set(CGOGN_THIRDPARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty)
 option(CGOGN_BUILD_TESTS "Build cgogn unit tests using google test framework." OFF)
 option(CGOGN_BUILD_EXAMPLES "Build some example apps." OFF)
-option(CGOGN_BUILD_BENCHS "Build the benchmarks using google benchmark framework." OFF)
 option(CGOGN_USE_OPENMP "Activate openMP directives." OFF)
 option(CGOGN_USE_SIMD "Enable SIMD instructions (sse,avx...)" ON)
 option(CGOGN_ENABLE_LTO "Enable link-time optimizations (only with gcc)" ON)
@@ -68,7 +82,7 @@ if (NOT MSVC)
 	option(CGOGN_USE_GLIBCXX_DEBUG_PEDANTIC "Use an extremely picky debug version of STL." OFF)
 	option(CGOGN_USE_PARALLEL_GLIBCXX "Highly experimental : compiles using the parallel mode." OFF)
 	if (${CGOGN_USE_GLIBCXX_DEBUG_PEDANTIC})
-	set(CGOGN_USE_GLIBCXX_DEBUG "ON")
+		set(CGOGN_USE_GLIBCXX_DEBUG "ON")
 	endif(${CGOGN_USE_GLIBCXX_DEBUG_PEDANTIC})
 	option(CGOGN_USE_CXX11_ABI "use the CXX11 ABI." ON)
 endif(NOT MSVC)
@@ -102,7 +116,7 @@ if(UNIX)
 	set(CMAKE_INSTALL_RPATH "../lib:../../lib")
 
 	if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-	set(CMAKE_MACOSX_RPATH ON)
+		set(CMAKE_MACOSX_RPATH ON)
 	endif()
 endif(UNIX)
 
@@ -111,21 +125,12 @@ deduce_build_type()
 
 if(${CGOGN_USE_OPENMP})
 	find_package(OpenMP)
-	if(${OPENMP_FOUND})
-	add_flags(CMAKE_C_FLAGS ${OpenMP_C_FLAGS})
-	add_flags(CMAKE_CXX_FLAGS  ${OpenMP_CXX_FLAGS})
-	else()
-	if ((${CMAKE_CXX_COMPILER_ID} MATCHES "Clang") AND (NOT (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.7")))
-		add_flags(CMAKE_C_FLAGS "-fopenmp")
-		add_flags(CMAKE_CXX_FLAGS  "-fopenmp")
-	endif()
-	endif()
 endif()
 
 if(CGOGN_BUILD_TESTS)
 	if(NOT gtest_inited)
-	set(gtest_inited ON CACHE INTERNAL "" FORCE)
-	set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+		set(gtest_inited ON CACHE INTERNAL "" FORCE)
+		set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 	endif()
 endif(CGOGN_BUILD_TESTS)
 
@@ -135,26 +140,36 @@ test_big_endian(CGOGN_TEST_BIG_ENDIAN)
 
 #### Link time optimisation
 if (CGOGN_ENABLE_LTO AND ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU") AND (NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Debug"))
-	add_flags(CMAKE_CXX_FLAGS_RELEASE -flto)
 	find_program(GCC_AR gcc-ar)
 	if (GCC_AR)
-	set(CMAKE_AR ${GCC_AR})
+		set(CMAKE_AR ${GCC_AR})
 	endif()
 	find_program(GCC_RANLIB gcc-ranlib)
 	if (GCC_RANLIB)
-	set(CMAKE_RANLIB ${GCC_RANLIB})
+		set(CMAKE_RANLIB ${GCC_RANLIB})
 	endif()
 endif()
 
 include(GenerateExportHeader)
 include(CMakePackageConfigHelpers)
-
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 
-subdirlist(CGOGN_CONFIGURED_MODULES ${CGOGN_SOURCE_DIR}/cgogn)
+if(CGOGN_BUILD_TESTS)
+	include(cmake/googletest.cmake)
+	fetch_googletest(
+		${PROJECT_SOURCE_DIR}/cmake
+		${PROJECT_BINARY_DIR}/googletest
+		)
+	enable_testing()
+endif()
+
+
+set(CGOGN_SYSTEM_MODULE_PATH ${CGOGN_SOURCE_DIR}/cgogn)
 
 add_subdirectory(${CGOGN_THIRDPARTY_DIR})
+
+cgogn_list_subdirectory(CGOGN_CONFIGURED_MODULES ${CGOGN_SYSTEM_MODULE_PATH})
 
 foreach(subdir ${CGOGN_CONFIGURED_MODULES})
 	option( CGOGN_MODULE_${subdir} "Enable CGOGN component ${subdir}" ON)
@@ -184,21 +199,4 @@ foreach(subdir ${CGOGN_CONFIGURED_MODULES})
 	endif()
 endforeach()
 
-if(${CGOGN_BUILD_BENCHS})
-	add_subdirectory(benchmarks)
-endif(${CGOGN_BUILD_BENCHS})
-
-
-##  TODO a mettre dans un fichier cmake particulier
-
-# --- coverage ---
-ENABLE_COVERAGE_REPORT(TARGETS ${CGOGN_SOURCE_DIR})
-
-# --- CPPCheck ---
-GENERATE_CPPCHECK( SOURCES ${CGOGN_SOURCE_DIR}
-	ENABLE_IDS all
-	INCLUDES ${CGOGN_SOURCE_DIR}
-	PLATFORM_FLAGS "-UNDEBUG -UWIN32 -U__func__ -U__FUNCTION__ -U__GNUG__ -U__clang__ -U_MSC_VER"
-	SYSTEM_INCLUDE_WARNING_SUPPRESSION
-	INLINE_SUPPRESSION
-	HTML_REPORT)
+unset(CGOGN_SYSTEM_MODULE_PATH)
