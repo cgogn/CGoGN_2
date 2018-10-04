@@ -274,6 +274,9 @@ else()
 	target_compile_definitions(${PROJECT_NAME} PUBLIC "CGOGN_ENDIANNESS=CGOGN_LITTLE_ENDIAN")
 endif()
 
+configure_file(${PROJECT_SOURCE_DIR}/cgogn_core.pc.in ${CMAKE_CURRENT_BINARY_DIR}/cgogn_core.pc @ONLY)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/cgogn_core.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
 	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cgogn/core
 	FILES_MATCHING PATTERN "*.h"
