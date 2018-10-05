@@ -7,11 +7,6 @@ if(CGOGN_PROVIDE_TINYXML2)
 	set_target_properties(tinyxml2 PROPERTIES FOLDER thirdparty)
 endif(CGOGN_PROVIDE_TINYXML2)
 
-if(CGOGN_BUILD_TESTS)
-	add_subdirectory(googletest-master)
-	set_target_properties(gmock gmock_main gtest gtest_main PROPERTIES FOLDER thirdparty)
-endif(CGOGN_BUILD_TESTS)
-
 if(CGOGN_USE_QT)
 	add_subdirectory(libQGLViewer)
 	set_target_properties(QOGLViewer PROPERTIES FOLDER thirdparty)

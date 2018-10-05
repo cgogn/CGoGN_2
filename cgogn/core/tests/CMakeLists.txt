@@ -4,46 +4,40 @@ project(cgogn_core_test
 
 find_package(cgogn_core REQUIRED)
 
-set(SOURCE_FILES
-	basic/dart_test.cpp
-	basic/cell_test.cpp
-	basic/dart_marker_test.cpp
-	basic/cell_marker_test.cpp
+add_executable(${PROJECT_NAME} main.cpp)
 
-	container/chunk_array_container_test.cpp
+target_sources(${PROJECT_NAME}
+	PRIVATE
+		"${CMAKE_CURRENT_LIST_DIR}/basic/dart_test.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/basic/cell_test.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/basic/dart_marker_test.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/basic/cell_marker_test.cpp"
 
-	cmap/mapbase_test.cpp
-	cmap/cmap0_topo_test.cpp
-	cmap/cmap0_test.cpp
-	cmap/cmap1_topo_test.cpp
-	cmap/cmap1_test.cpp
-	cmap/cmap2_topo_test.cpp
-	cmap/cmap2_test.cpp
-	cmap/cmap3_topo_test.cpp
-	cmap/cmap3_test.cpp
+		"${CMAKE_CURRENT_LIST_DIR}/container/chunk_array_container_test.cpp"
 
-	cmap/cmap2tri_test.cpp
-	cmap/cmap2quad_test.cpp
-	cmap/cmap3tetra_test.cpp
-	cmap/cmap3hexa_test.cpp
+		"${CMAKE_CURRENT_LIST_DIR}/cmap/mapbase_test.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap0_topo_test.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap0_test.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap1_topo_test.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap1_test.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap2_topo_test.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap2_test.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap3_topo_test.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap3_test.cpp"
 
-	utils/endian_test.cpp
-	utils/name_types_test.cpp
-	utils/string_test.cpp
-	utils/type_traits_test.cpp
+		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap2tri_test.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap2quad_test.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap3tetra_test.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap3hexa_test.cpp"
 
-	main.cpp
+		"${CMAKE_CURRENT_LIST_DIR}/utils/endian_test.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/utils/name_types_test.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/utils/string_test.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/utils/type_traits_test.cpp"
 )
 
-add_executable(${PROJECT_NAME} ${SOURCE_FILES})
+target_link_libraries(cgogn_core_test gtest gmock cgogn::core)
 
-target_link_libraries(cgogn_core_test gtest gmock ${cgogn_core_LIBRARIES})
-
-target_include_directories(cgogn_core_test PRIVATE ${CMAKE_SOURCE_DIR}/thirdparty/googletest-master/googletest/include ${CMAKE_SOURCE_DIR}/thirdparty/googletest-master/googlemock/include)
-link_directories(${CMAKE_SOURCE_DIR}/thirdparty/googletest-master/googletest/lib)
-link_directories(${CMAKE_SOURCE_DIR}/thirdparty/googletest-master/googlemock/lib)
-
-add_test(NAME "${PROJECT_NAME}" WORKING_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}" COMMAND ${PROJECT_NAME})
-
+add_test(NAME ${PROJECT_NAME} WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} COMMAND $<TARGET_FILE:${PROJECT_NAME}>)
 
 set_target_properties (${PROJECT_NAME} PROPERTIES FOLDER tests)

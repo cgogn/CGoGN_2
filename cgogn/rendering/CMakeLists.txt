@@ -2,120 +2,111 @@ project(cgogn_rendering
 	LANGUAGES CXX
 )
 
-find_package(Qt5 5.4.0 COMPONENTS Widgets REQUIRED)
+find_package(Qt5 5.4.0 COMPONENTS Gui REQUIRED)
+find_package(QOGLViewer REQUIRED)
 
-if (Qt5Widgets_VERSION VERSION_GREATER 5.5.99)
-	set(HEADER_TRANSP_SHADER
-	transparency_shaders/shader_transparent_quad.h
-	transparency_shaders/shader_transparent_flat.h
-	transparency_shaders/shader_transparent_phong.h
-	transparency_shaders/shader_transparent_volumes.h
-	transparency_shaders/shader_copy_depth.h
-	transparency_drawer.h
-	transparency_volume_drawer.h
-	)
+#CMake will handle .qrc files added as target sources
+set(CMAKE_AUTORCC ON)
 
-	set(SOURCE_TRANSP_SHADER
-	transparency_shaders/shader_transparent_quad.cpp
-	transparency_shaders/shader_transparent_flat.cpp
-	transparency_shaders/shader_transparent_phong.cpp
-	transparency_shaders/shader_transparent_volumes.cpp
-	transparency_shaders/shader_copy_depth.cpp
-	transparency_drawer.cpp
-	transparency_volume_drawer.cpp
+add_library(${PROJECT_NAME} SHARED "")
+
+add_library(cgogn::rendering ALIAS cgogn_rendering)
+
+target_sources(${PROJECT_NAME}
+	PRIVATE
+		"${CMAKE_CURRENT_LIST_DIR}/dll.h"
+		"${CMAKE_CURRENT_LIST_DIR}/drawer.h"
+		"${CMAKE_CURRENT_LIST_DIR}/drawer.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/topo_drawer.h"
+		"${CMAKE_CURRENT_LIST_DIR}/topo_drawer.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/volume_drawer.h"
+		"${CMAKE_CURRENT_LIST_DIR}/volume_drawer.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/map_render.h"
+		"${CMAKE_CURRENT_LIST_DIR}/map_render.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/wall_paper.h"
+		"${CMAKE_CURRENT_LIST_DIR}/wall_paper.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/frame_manipulator.h"
+		"${CMAKE_CURRENT_LIST_DIR}/frame_manipulator.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/text_drawer.h"
+		"${CMAKE_CURRENT_LIST_DIR}/text_drawer.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/fonte.qrc"
+
+		"${CMAKE_CURRENT_LIST_DIR}/shaders/vbo.h"
+		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_program.h"
+		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_program.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_simple_color.h"
+		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_simple_color.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_color_per_vertex.h"
+		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_color_per_vertex.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_scalar_per_vertex.h"
+		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_scalar_per_vertex.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_flat.h"
+		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_flat.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_vector_per_vertex.h"
+		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_vector_per_vertex.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_phong.h"
+		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_phong.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_bold_line.h"
+		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_bold_line.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_round_point.h"
+		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_round_point.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_point_sprite.h"
+		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_point_sprite.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_explode_volumes.h"
+		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_explode_volumes.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_explode_volumes_line.h"
+		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_explode_volumes_line.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_texture.h"
+		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_texture.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_text.h"
+		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_text.cpp"
+)
+
+if (Qt5Gui_VERSION VERSION_GREATER 5.5.99)
+	target_sources(${PROJECT_NAME}
+		PRIVATE
+		"${CMAKE_CURRENT_LIST_DIR}/transparency_shaders/shader_transparent_quad.h"
+		"${CMAKE_CURRENT_LIST_DIR}/transparency_shaders/shader_transparent_quad.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/transparency_shaders/shader_transparent_flat.h"
+		"${CMAKE_CURRENT_LIST_DIR}/transparency_shaders/shader_transparent_flat.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/transparency_shaders/shader_transparent_phong.h"
+		"${CMAKE_CURRENT_LIST_DIR}/transparency_shaders/shader_transparent_phong.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/transparency_shaders/shader_transparent_volumes.h"
+		"${CMAKE_CURRENT_LIST_DIR}/transparency_shaders/shader_transparent_volumes.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/transparency_shaders/shader_copy_depth.h"
+		"${CMAKE_CURRENT_LIST_DIR}/transparency_shaders/shader_copy_depth.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/transparency_drawer.h"
+		"${CMAKE_CURRENT_LIST_DIR}/transparency_drawer.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/transparency_volume_drawer.h"
+		"${CMAKE_CURRENT_LIST_DIR}/transparency_volume_drawer.cpp"
 	)
 else()
 	message(WARNING "Qt version < 5.6 : not compiling transparency rendering (need MRT FBO)")
 endif()
 
-set(HEADER_SHADERS
-	shaders/vbo.h
-	shaders/shader_program.h
-	shaders/shader_simple_color.h
-	shaders/shader_color_per_vertex.h
-	shaders/shader_scalar_per_vertex.h
-	shaders/shader_flat.h
-	shaders/shader_vector_per_vertex.h
-	shaders/shader_phong.h
-	shaders/shader_bold_line.h
-	shaders/shader_round_point.h
-	shaders/shader_point_sprite.h
-	shaders/shader_explode_volumes.h
-	shaders/shader_explode_volumes_line.h
-	shaders/shader_texture.h
-	shaders/shader_text.h
-)
+set_target_properties(${PROJECT_NAME} PROPERTIES
+										DEBUG_POSTFIX "_d"
+										EXPORT_NAME rendering)
 
-set(HEADER_FILES
-	dll.h
-	drawer.h
-	topo_drawer.h
-	volume_drawer.h
-	map_render.h
-	wall_paper.h
-	frame_manipulator.h
-	text_drawer.h
-	${HEADER_SHADERS}
-	${HEADER_TRANSP_SHADER}
-)
-
-set(SOURCE_SHADERS
-	shaders/shader_program.cpp
-	shaders/shader_simple_color.cpp
-	shaders/shader_color_per_vertex.cpp
-	shaders/shader_scalar_per_vertex.cpp
-	shaders/shader_flat.cpp
-	shaders/shader_vector_per_vertex.cpp
-	shaders/shader_phong.cpp
-	shaders/shader_bold_line.cpp
-	shaders/shader_round_point.cpp
-	shaders/shader_point_sprite.cpp
-	shaders/shader_explode_volumes.cpp
-	shaders/shader_explode_volumes_line.cpp
-	shaders/shader_texture.cpp
-	shaders/shader_text.cpp
-)
-
-set(SOURCE_FILES
-	drawer.cpp
-	topo_drawer.cpp
-	volume_drawer.cpp
-	map_render.cpp
-	wall_paper.cpp
-	frame_manipulator.cpp
-	text_drawer.cpp
-	${SOURCE_SHADERS}
-	${SOURCE_TRANSP_SHADER}
-)
-
-qt5_add_resources(RCC_FILES fonte.qrc)
-
-add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES} ${RCC_FILES})
-
-set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
 target_compile_definitions(${PROJECT_NAME} PRIVATE "-DCGOGN_RENDERING_DLL_EXPORT")
 
 target_include_directories(${PROJECT_NAME} PUBLIC
 	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_QOGLVIEWER_INCLUDE_DIR}>
 	$<BUILD_INTERFACE:${CGOGN_SOURCE_DIR}>
 	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_TINYXML2_INCLUDE_DIR}>
-	$<INSTALL_INTERFACE:include>
-	$<INSTALL_INTERFACE:include/cgogn/thirdparty>
+	$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+	$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/cgogn/thirdparty>
 )
 
-target_link_libraries(${PROJECT_NAME} cgogn_core cgogn_geometry ${Qt5Widgets_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} cgogn::core cgogn::geometry Qt5::Gui QOGLViewer)
 
-file(GLOB HEADERS "." "*.h")
-install(FILES ${HEADERS}
-	DESTINATION include/cgogn/rendering)
-install(DIRECTORY shaders transparency_shaders
-	DESTINATION include/cgogn/rendering
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
+	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cgogn/rendering
 	FILES_MATCHING PATTERN "*.h"
+	REGEX "(examples|tests)" EXCLUDE
 )
 
-cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CGOGN_SOURCE_DIR}" "include;include/cgogn/thirdparty")
+cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}")
 
 # VisualStudio nice source organisation
-source_group("SHADERS" FILES ${HEADER_SHADERS} ${SOURCE_SHADERS})
-source_group("SHADERS_TRANSPARENT" FILES ${HEADER_TRANSP_SHADER} ${SOURCE_TRANSP_SHADER})
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER cgogn)

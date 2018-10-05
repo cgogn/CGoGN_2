@@ -7,8 +7,6 @@ project(Zlib
 	VERSION 1.2.8
 	LANGUAGES C)
 
-cgogn_reset_warning_level()
-
 set(VERSION "1.2.8")
 
 option(ASM686 "Enable building i686 assembly implementation")
@@ -225,6 +223,6 @@ endif()
 #	)
 install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/zlib.h" "${CMAKE_CURRENT_BINARY_DIR}/zconf.h" DESTINATION "include/cgogn/thirdparty")
 
-cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}" "include/cgogn/thirdparty/")
+cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}")
 
 set_target_properties(Zlib PROPERTIES FOLDER thirdparty)

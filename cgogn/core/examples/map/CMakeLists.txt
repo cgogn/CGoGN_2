@@ -5,6 +5,6 @@ project(${CGOGN_TEST_PREFIX}map
 find_package(cgogn_core REQUIRED)
 
 add_executable(map map.cpp)
-target_link_libraries(map ${cgogn_core_LIBRARIES})
+target_link_libraries(map cgogn::core)
 
 set_target_properties (map PROPERTIES FOLDER examples/core)

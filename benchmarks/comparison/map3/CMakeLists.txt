@@ -60,8 +60,8 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 	)
 
 target_link_libraries(${PROJECT_NAME}
-			${cgogn_core_LIBRARIES} ${cgogn_io_LIBRARIES} ${cgogn_geometry_LIBRARIES} ${cgogn_modeling_LIBRARIES}
-			${benchmark_LIBRARIES}
+			cgogn::core cgogn::io cgogn::geometry cgogn::modeling
+			benchmark
 			)
 
 if (CGOGN1_PATH)
