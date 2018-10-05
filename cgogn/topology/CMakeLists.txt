@@ -2,8 +2,6 @@ project(cgogn_topology
 	LANGUAGES CXX
 )
 
-find_package(OpenNL REQUIRED)
-
 add_library(${PROJECT_NAME} SHARED "")
 
 add_library(cgogn::topology ALIAS cgogn_topology)
@@ -18,7 +16,6 @@ target_sources(${PROJECT_NAME}
 		"${CMAKE_CURRENT_LIST_DIR}/algos/distance_field.h"
 		"${CMAKE_CURRENT_LIST_DIR}/algos/features.h"
 		"${CMAKE_CURRENT_LIST_DIR}/algos/scalar_field.h"
-		"${CMAKE_CURRENT_LIST_DIR}/algos/linear_solving.h"
 )
 
 if(${CGOGN_EXTERNAL_TEMPLATES})
@@ -35,13 +32,15 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 target_compile_definitions(${PROJECT_NAME} PRIVATE "-DCGOGN_TOPOLOGY_DLL_EXPORT")
 
 target_include_directories(${PROJECT_NAME} PUBLIC
-	$<BUILD_INTERFACE:${CGOGN_SOURCE_DIR}>	
-	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_OPEN_NL_INCLUDE_DIR}>
+	$<BUILD_INTERFACE:${CGOGN_SOURCE_DIR}>
 	$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-	$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/cgogn/thirdparty>
 )
 
-target_link_libraries(${PROJECT_NAME} cgogn::core cgogn::geometry OpenNL)
+target_link_libraries(${PROJECT_NAME} cgogn::core cgogn::geometry)
+
+set(PKG_CONFIG_REQUIRES "cgogn_core cgogn_geometry")
+configure_file(${PROJECT_SOURCE_DIR}/cgogn_topology.pc.in ${CMAKE_CURRENT_BINARY_DIR}/cgogn_topology.pc @ONLY)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/cgogn_topology.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
 	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cgogn/topology

@@ -1,5 +1,0 @@
-@PACKAGE_INIT@
-
-if(NOT TARGET Zlib)
-	include("${CMAKE_CURRENT_LIST_DIR}/ZlibTargets.cmake")
-endif()

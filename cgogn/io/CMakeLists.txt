@@ -4,8 +4,8 @@ project(cgogn_io
 
 find_package(ply REQUIRED)
 find_package(Meshb REQUIRED)
-find_package(tinyxml2 REQUIRED)
-find_package(Zlib REQUIRED NO_CMAKE_ENVIRONMENT_PATH)
+find_package(TinyXML2 REQUIRED)
+find_package(ZLIB REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED "")
 
@@ -67,15 +67,15 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE "-DCGOGN_IO_DLL_EXPORT")
 
 target_include_directories(${PROJECT_NAME} PUBLIC
 	$<BUILD_INTERFACE:${CGOGN_SOURCE_DIR}>
-	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_TINYXML2_INCLUDE_DIR}>
-	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_MESHB_INCLUDE_DIR}>
-	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_PLY_INCLUDE_DIR}>
-	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_ZLIB_INCLUDE_DIR}>
 	$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 	$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/cgogn/thirdparty>
 )
 
-target_link_libraries(${PROJECT_NAME} cgogn::core cgogn::geometry Zlib ply Meshb tinyxml2)
+target_link_libraries(${PROJECT_NAME} cgogn::core cgogn::geometry ZLIB::ZLIB ply Meshb TinyXML2::TinyXML2)
+
+set(PKG_CONFIG_REQUIRES "cgogn_core cgogn_geometry")
+configure_file(${PROJECT_SOURCE_DIR}/cgogn_io.pc.in ${CMAKE_CURRENT_BINARY_DIR}/cgogn_io.pc @ONLY)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/cgogn_io.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
 	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cgogn/io

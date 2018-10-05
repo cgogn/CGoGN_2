@@ -71,11 +71,8 @@ endif(CGOGN_CPP_STD STREQUAL "11")
 
 #### ThirdParty options
 set(CGOGN_THIRDPARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty)
-option(CGOGN_PROVIDE_EIGEN "Use the version of eigen that is packaged with CGoGN." ON)
-option(CGOGN_PROVIDE_TINYXML2 "Use the version of tinyxml2 that is packaged with CGoGN." ON)
 option(CGOGN_BUILD_TESTS "Build cgogn unit tests using google test framework." OFF)
 option(CGOGN_BUILD_EXAMPLES "Build some example apps." OFF)
-option(CGOGN_BUILD_BENCHS "Build the benchmarks using google benchmark framework." OFF)
 option(CGOGN_USE_OPENMP "Activate openMP directives." OFF)
 option(CGOGN_USE_SIMD "Enable SIMD instructions (sse,avx...)" ON)
 option(CGOGN_ENABLE_LTO "Enable link-time optimizations (only with gcc)" ON)
@@ -201,9 +198,5 @@ foreach(subdir ${CGOGN_CONFIGURED_MODULES})
 		endif()
 	endif()
 endforeach()
-
-if(${CGOGN_BUILD_BENCHS})
-	add_subdirectory(benchmarks)
-endif(${CGOGN_BUILD_BENCHS})
 
 unset(CGOGN_SYSTEM_MODULE_PATH)
