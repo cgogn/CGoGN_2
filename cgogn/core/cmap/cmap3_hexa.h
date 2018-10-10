@@ -329,30 +329,15 @@ protected:
 		return d;
 	}
 
-	inline Dart add_pyramid_topo_fp(std::size_t size)
-	{
-		unused_parameters(size);
-		cgogn_message_assert(false, "Can create only hexa");
-		cgogn_log_warning("add_prism_topo_fp") << "Attempt to create a volume which is not a hexahedron in CMap3Hexa";
-		return Dart();
-	}
-
 	inline Dart add_prism_topo_fp(std::size_t size)
 	{
-		cgogn_message_assert(size == 4u, "Can create only tetra");
+		cgogn_message_assert(size == 4u, "Can create only hexa");
 		if (size != 4)
 		{
-			cgogn_log_warning("add_pyramid_topo_fp") << "Attempt to create a volume which is not a hexahedron in CMap3Hexa";
+			cgogn_log_warning("add_prism_topo_fp") << "Attempt to create a volume which is not a hexahedron in CMap3Hexa";
 			return Dart();
 		}
 		return add_hexa_topo_fp();
-	}
-
-	inline Dart add_stamp_volume_topo_fp()
-	{
-		cgogn_message_assert(false, "Can create only tetra");
-		cgogn_log_warning("add_stamp_volume_topo_fp") << "Attempt to create a volume which is not a hexahedron in CMap3Hexa";
-		return Dart();
 	}
 
 	/**

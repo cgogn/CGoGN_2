@@ -33,6 +33,7 @@
 #include <cgogn/core/utils/string.h>
 
 #include <cgogn/core/cmap/cmap1.h>
+#include <cgogn/core/cmap/cmap1_builder.h>
 
 #include <cgogn/io/dll.h>
 #include <cgogn/io/c_locale.h>
@@ -48,8 +49,9 @@ namespace io
 template <typename MAP>
 class PolylineImport
 {
-public:
 	static_assert(MAP::DIMENSION == 1, "Must use map of dimension 1 in polyline import");
+
+public:
 
 	using Self = PolylineImport<MAP>;
 

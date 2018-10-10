@@ -25,9 +25,10 @@ macro(fetch_googletest _download_module_path _download_root)
             ${_download_root}
         )
 
-    # adds the targers: gtest, gtest_main, gmock, gmock_main
+	# adds the targets: gtest, gtest_main, gmock, gmock_main
+	# but do not install them
     add_subdirectory(
         ${_download_root}/googletest-src
         ${_download_root}/googletest-build
-        )
+		EXCLUDE_FROM_ALL)
 endmacro()

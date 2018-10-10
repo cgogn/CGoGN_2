@@ -24,6 +24,8 @@
 #include <gtest/gtest.h>
 
 #include <cgogn/core/cmap/cmap3.h>
+#include <cgogn/core/cmap/cmap2_builder.h>
+#include <cgogn/core/cmap/cmap3_builder.h>
 
 namespace cgogn
 {

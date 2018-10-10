@@ -58,3 +58,4 @@ script:
   - make -j2
   - make test
   - sudo make install
+  - sudo make uninstall

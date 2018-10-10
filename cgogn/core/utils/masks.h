@@ -444,6 +444,15 @@ public:
 	}
 
 	template <typename CellType>
+	inline void remove(CellType c)
+	{
+		static const Orbit ORBIT = CellType::ORBIT;
+		auto it = std::find_if(cells_[ORBIT].begin(), cells_[ORBIT].end(), [&] (Dart d) { return map_.same_cell(CellType(d), c); });
+		if (it != cells_[ORBIT].end())
+			cells_[ORBIT].erase(it);
+	}
+
+	template <typename CellType>
 	inline void clear()
 	{
 		static const Orbit ORBIT = CellType::ORBIT;

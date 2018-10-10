@@ -66,3 +66,4 @@ build_script:
   - cmake --build . --config "%CONFIGURATION%" -- /verbosity:minimal
   - cmake --build . --config "%CONFIGURATION%" --target RUN_TESTS -- /verbosity:minimal
   - cmake --build . --config "%CONFIGURATION%" --target INSTALL -- /verbosity:minimal
+  - cmake --build . --config "%CONFIGURATION%" --target UNINSTALL -- /verbosity:minimal
