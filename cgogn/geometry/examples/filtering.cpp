@@ -257,6 +257,19 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			update_bb();
 			setSceneRadius(bb_.diag_size()/2.0);
 			break;
+		case Qt::Key_L:
+			cgogn::geometry::filter_laplacian(map_, cell_cache_, vertex_position_, vertex_position2_);
+//			map_.swap_attributes(vertex_position_, vertex_position2_);
+			cgogn::geometry::compute_normal(map_, vertex_position_, vertex_normal_);
+			cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
+			cgogn::rendering::update_vbo(vertex_normal_, vbo_norm_.get());
+			cgogn::rendering::update_vbo(vertex_normal_, vbo_color_.get(), [] (const Vec3& n) -> std::array<float,3>
+			{
+				return {float(std::abs(n[0])), float(std::abs(n[1])), float(std::abs(n[2]))};
+			});
+			update_bb();
+			setSceneRadius(bb_.diag_size()/2.0);
+			break;
 		default:
 			break;
 	}

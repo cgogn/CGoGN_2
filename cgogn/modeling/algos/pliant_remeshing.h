@@ -29,6 +29,8 @@
 #include <cgogn/geometry/functions/basics.h>
 #include <cgogn/geometry/types/geometry_traits.h>
 #include <cgogn/geometry/algos/length.h>
+#include <cgogn/geometry/algos/centroid.h>
+#include <cgogn/geometry/algos/normal.h>
 
 #include <cgogn/core/cmap/cmap2.h>
 #include <cgogn/core/utils/masks.h>
@@ -53,38 +55,67 @@ void pliant_remeshing(
 	using Vertex = typename CMap2::Vertex;
 	using Edge = typename CMap2::Edge;
 
-	CMap2::CellCache cache(map);
-	cache.template build<Edge>();
-
-	Scalar mean_edge_length = geometry::mean_edge_length(map, cache, position);
+	Scalar mean_edge_length = geometry::mean_edge_length(map, position);
 
 	const Scalar squared_min_edge_length = Scalar(0.5625) * mean_edge_length * mean_edge_length; // 0.5625 = 0.75^2
 	const Scalar squared_max_edge_length = Scalar(1.5625) * mean_edge_length * mean_edge_length; // 1.5625 = 1.25^2
 
+	CMap2::CellCache cache(map);
+
+//	for (uint32 i = 0; i < 3; ++i)
+//	{
+
 	// cut long edges (and adjacent faces)
-	map.foreach_cell([&] (Edge e)
+	auto long_edges_selection = [&] (Edge e) {
+		std::pair<Vertex, Vertex> v = map.vertices(e);
+		return (position[v.first] - position[v.second]).squaredNorm() > squared_max_edge_length;
+	};
+
+	cache.template build<Edge>(long_edges_selection);
+	while (cache.template size<Edge>() > 0)
 	{
-		std::pair<Vertex,Vertex> v = map.vertices(e);
-		const VEC3 edge = position[v.first] - position[v.second];
-		if (edge.squaredNorm() > squared_max_edge_length)
+		map.foreach_cell([&] (Edge e)
 		{
 			Dart e2 = map.phi2(e.dart);
 			Vertex nv = map.cut_edge(e);
-			position[nv] = Scalar(0.5) * (position[v.first] + position[v.second]);
-			map.cut_face(nv.dart, map.phi_1(e.dart));
+			position[nv] = Scalar(0.5) * (position[Vertex(e.dart)] + position[Vertex(e2)]);
+			map.cut_face(map.phi1(e.dart), map.phi_1(e.dart));
 			if (!map.is_boundary(e2))
 				map.cut_face(map.phi1(e2), map.phi_1(e2));
-		}
-	},
-	cache);
+		},
+		cache);
+		cache.template build<Edge>(long_edges_selection);
+	}
 
 	// collapse short edges
-	map.foreach_cell([&] (Edge e)
+	auto short_edges_selection = [&] (Edge e)
 	{
-		std::pair<Vertex,Vertex> v = map.vertices(e);
-		const VEC3 edge = position[v.first] - position[v.second];
-		if(edge.squaredNorm() < squared_min_edge_length)
+		std::pair<Vertex, Vertex> v = map.vertices(e);
+		bool collapse = (position[v.first] - position[v.second]).squaredNorm() < squared_min_edge_length;
+		if (collapse)
 		{
+			const VEC3& p = position[v.first];
+			map.foreach_adjacent_vertex_through_edge(v.second, [&] (Vertex vv)
+			{
+				const VEC3& vec = p - position[vv];
+				if (vec.squaredNorm() > squared_max_edge_length)
+					collapse = false;
+			});
+			if (collapse)
+			{
+				if (!map.edge_can_collapse(e))
+					collapse = false;
+			}
+		}
+		return collapse;
+	};
+
+	cache.template build<Edge>(short_edges_selection);
+	while (cache.template size<Edge>() > 0)
+	{
+		map.foreach_cell([&] (Edge e)
+		{
+			std::pair<Vertex,Vertex> v = map.vertices(e);
 			bool collapse = true;
 			const VEC3& p = position[v.first];
 			map.foreach_adjacent_vertex_through_edge(v.second, [&] (Vertex vv)
@@ -101,8 +132,10 @@ void pliant_remeshing(
 					position[cv] = p;
 				}
 			}
-		}
-	});
+		},
+		cache);
+		cache.template build<Edge>(short_edges_selection);
+	}
 
 	// equalize valences with edge flips
 	typename CMap2::DartMarker dm(map);
@@ -136,6 +169,23 @@ void pliant_remeshing(
 			return flip > 1;
 		}
 	);
+
+	// tangential relaxation
+	map.foreach_cell([&] (Vertex v)
+	{
+		VEC3 c(0,0,0);
+		uint32 count = 0;
+		map.foreach_adjacent_vertex_through_edge(v, [&] (Vertex av)
+		{
+			c += position[av];
+			++count;
+		});
+		c /= Scalar(count);
+		VEC3 n = geometry::normal(map, v, position);
+		position[v] = c + n.dot(position[v] - c) * n;
+	});
+
+//	}
 }
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_EXTERNAL_TEMPLATES_CPP_))

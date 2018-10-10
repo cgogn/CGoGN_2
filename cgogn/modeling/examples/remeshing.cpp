@@ -131,7 +131,7 @@ public:
 
 		if (edge_rendering_)
 		{
-			param_edge_->bind(proj,view);
+			param_edge_->bind(proj, view);
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 			render_->draw(cgogn::rendering::LINES);
@@ -214,9 +214,9 @@ int main(int argc, char** argv)
 	std::string surface_mesh;
 	if (argc < 2)
 	{
-		cgogn_log_info("cmap2_import") << "USAGE: " << argv[0] << " [filename]";
+		cgogn_log_info("remeshing") << "USAGE: " << argv[0] << " [filename]";
 		surface_mesh = std::string(DEFAULT_MESH_PATH) + std::string("off/aneurysm_3D.off");
-		cgogn_log_info("cmap2_import") << "Using default mesh : " << surface_mesh;
+		cgogn_log_info("remeshing") << "Using default mesh : " << surface_mesh;
 	}
 	else
 		surface_mesh = std::string(argv[1]);

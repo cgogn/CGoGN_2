@@ -24,8 +24,13 @@
 #ifndef CGOGN_GEOMETRY_ALGOS_FILTERING_H_
 #define CGOGN_GEOMETRY_ALGOS_FILTERING_H_
 
-#include <cgogn/geometry/types/geometry_traits.h>
 #include <cgogn/core/utils/masks.h>
+
+#include <cgogn/geometry/types/geometry_traits.h>
+#include <cgogn/geometry/functions/basics.h>
+#include <cgogn/geometry/algos/angle.h>
+
+#include <Eigen/IterativeLinearSolvers>
 
 namespace cgogn
 {
@@ -147,14 +152,14 @@ void filter_taubin(
 	VERTEX_ATTR& position,
 	VERTEX_ATTR& position_tmp)
 {
-	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position & position_tmp must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, "position & position_tmp must be a vertex attribute");
 
 	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 	using Scalar = ScalarOf<VEC3>;
 	using Vertex = typename MAP::Vertex;
 
 	const Scalar lambda = 0.6307;
-	const Scalar mu = 0.6732;
+	const Scalar mu = -0.6532;
 
 	map.parallel_foreach_cell([&] (Vertex v)
 	{
@@ -196,8 +201,113 @@ void filter_taubin(
 	VERTEX_ATTR& position_tmp
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position & position_tmp must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, "position & position_tmp must be a vertex attribute");
 	filter_taubin(map, AllCellsFilter(), position, position_tmp);
+}
+
+template <typename MAP, typename MASK, typename VERTEX_ATTR>
+void filter_laplacian(
+	MAP& map,
+	const MASK& mask,
+	VERTEX_ATTR& position_in,
+	VERTEX_ATTR& position_out
+)
+{
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, "position_in & position_out must be a vertex attribute");
+
+	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
+	using Scalar = ScalarOf<VEC3>;
+	using CDart = typename MAP::CDart;
+	using Vertex = typename MAP::Vertex;
+	using Edge = typename MAP::Edge;
+
+	typename MAP::template EdgeAttribute<Scalar> edge_weight = map.template add_attribute<Scalar, Edge::ORBIT>("__edge_weight");
+	typename MAP::template VertexAttribute<uint32> vertex_index = map.template add_attribute<uint32, Vertex::ORBIT>("__vertex_index");
+	typename MAP::template VertexAttribute<VEC3> vertex_lapl = map.template add_attribute<VEC3, Vertex::ORBIT>("__vertex_lapl");
+
+	// compute edge weights
+	map.parallel_foreach_cell([&] (Edge e)
+	{
+		if (!map.is_incident_to_boundary(e))
+		{
+			edge_weight[e] = (
+				std::tan(M_PI_2 - angle(map, CDart(map.phi_1(e.dart)), position_in)) +
+				std::tan(M_PI_2 - angle(map, CDart(map.phi_1(map.phi2(e.dart))), position_in))
+			) / 2.0;
+		}
+		else
+		{
+			cgogn::Dart d = map.boundary_dart(e);
+			edge_weight[e] = std::tan(M_PI_2 - angle(map, CDart(map.phi_1(map.phi2(d))), position_in));
+		}
+	},
+	mask);
+
+	// compute vertices laplacian
+	uint32 nb_vertices = 0;
+	map.foreach_cell([&] (Vertex v) { vertex_index[v] = nb_vertices++; }, mask);
+	Eigen::SparseMatrix<Scalar, Eigen::ColMajor> LAPL(nb_vertices, nb_vertices);
+	std::vector<Eigen::Triplet<Scalar>> LAPLcoeffs;
+	LAPLcoeffs.reserve(nb_vertices * 10);
+	map.foreach_cell([&] (Vertex v)
+	{
+		uint32 vidx = vertex_index[v];
+		Scalar wsum = 0;
+		Scalar a = 1. / (4. * area(map, v, position_in));
+		map.foreach_incident_edge(v, [&] (Edge e) { wsum += a * edge_weight[e]; });
+		map.foreach_adjacent_vertex_through_edge(v, [&] (Vertex av)
+		{
+			LAPLcoeffs.push_back(Eigen::Triplet<Scalar>(vidx, vertex_index[av], (a * edge_weight[Edge(av.dart)]) / wsum));
+		});
+		LAPLcoeffs.push_back(Eigen::Triplet<Scalar>(vidx, vidx, -1.));
+	},
+	mask);
+	LAPL.setFromTriplets(LAPLcoeffs.begin(), LAPLcoeffs.end());
+
+	Eigen::MatrixXd vpos(nb_vertices, 3);
+	map.parallel_foreach_cell([&] (Vertex v)
+	{
+		const VEC3& pv = position_in[v];
+		uint32 vidx = vertex_index[v];
+		vpos(vidx, 0) = pv[0];
+		vpos(vidx, 1) = pv[1];
+		vpos(vidx, 2) = pv[2];
+	},
+	mask);
+
+	Eigen::MatrixXd lapl(nb_vertices, 3);
+	lapl = LAPL * vpos;
+	map.parallel_foreach_cell([&] (Vertex v)
+	{
+		VEC3& vl = vertex_lapl[v];
+		uint32 vidx = vertex_index[v];
+		vl[0] = lapl(vidx, 0);
+		vl[1] = lapl(vidx, 1);
+		vl[2] = lapl(vidx, 2);
+	},
+	mask);
+
+	// vertices displacement
+	map.parallel_foreach_cell([&] (Vertex v)
+	{
+		position_out[v] = position_in[v] + 0.1 * vertex_lapl[v];
+	},
+	mask);
+
+	map.remove_attribute(edge_weight);
+	map.remove_attribute(vertex_index);
+	map.remove_attribute(vertex_lapl);
+}
+
+template <typename MAP, typename VERTEX_ATTR>
+void filter_laplacian(
+	MAP& map,
+	VERTEX_ATTR& position_in,
+	VERTEX_ATTR& position_out
+)
+{
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, "position_in & position_out must be a vertex attribute");
+	filter_laplacian(map, AllCellsFilter(), position_in, position_out);
 }
 
 } // namespace geometry
