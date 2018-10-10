@@ -6,7 +6,6 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED "")
-
 add_library(cgogn::core ALIAS cgogn_core)
 
 target_sources(${PROJECT_NAME}
@@ -22,7 +21,9 @@ target_sources(${PROJECT_NAME}
 		"${CMAKE_CURRENT_LIST_DIR}/cmap/map_base_data.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/cmap/map_base.h"
 		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap0.h"
+		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap0_builder.h"
 		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap1.h"
+		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap1_builder.h"
 		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap2.h"
 		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap2_builder.h"
 		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap3.h"
@@ -30,8 +31,8 @@ target_sources(${PROJECT_NAME}
 		"${CMAKE_CURRENT_LIST_DIR}/cmap/attribute.h"
 		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap2_tri.h"
 		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap2_quad.h"
-		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap3_tetra.h"
-		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap3_hexa.h"
+#		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap3_tetra.h"
+#		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap3_hexa.h"
 
 		"${CMAKE_CURRENT_LIST_DIR}/container/chunk_array_container.h"
 		"${CMAKE_CURRENT_LIST_DIR}/container/chunk_array_factory.h"
@@ -185,11 +186,9 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC
 	$<$<CXX_COMPILER_ID:MSVC>:_USE_MATH_DEFINES>
 	$<$<CXX_COMPILER_ID:MSVC>:CGOGN_WIN_VER=${WIN_VERSION}>)
 
-
 if(CGOGN_USE_SIMD)
 	CGOGN_CHECK_FOR_SSE()
 endif(CGOGN_USE_SIMD)
-
 
 if(${CGOGN_USE_OPENMP})
 	if(OpenMP_FOUND OR OPENMP_FOUND OR OpenMP_CXX_FOUND)
@@ -209,8 +208,6 @@ if(${CGOGN_USE_OPENMP})
 		target_compile_definitions(${PROJECT_NAME} INTERFACE ${OpenMP_CXX_FLAGS})
 	endif()
 endif()
-
-
 
 # Profiler compilation flags
 if(CGOGN_WITH_GPROF)
@@ -284,7 +281,6 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
 )
 
 cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}")
-
 
 # VisualStudio nice source organisation
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER cgogn)

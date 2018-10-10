@@ -32,7 +32,8 @@
 #include <cgogn/core/utils/name_types.h>
 #include <cgogn/core/utils/string.h>
 
-#include <cgogn/core/cmap/cmap3.h>
+#include <cgogn/core/cmap/cmap2.h>
+#include <cgogn/core/cmap/cmap2_builder.h>
 
 #include <cgogn/io/dll.h>
 #include <cgogn/io/c_locale.h>

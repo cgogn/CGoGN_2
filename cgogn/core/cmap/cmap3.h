@@ -25,10 +25,12 @@
 #define CGOGN_CORE_CMAP_CMAP3_H_
 
 #include <cgogn/core/cmap/cmap2.h>
-#include <cgogn/core/cmap/cmap3_builder.h>
 
 namespace cgogn
 {
+
+template <typename MAP3>
+class CMap3Builder_T;
 
 template <typename MAP_TYPE>
 class CMap3_T : public CMap2_T<MAP_TYPE>
@@ -850,7 +852,7 @@ public:
 
 protected:
 
-	bool merge_incident_faces_topo(Dart d)
+	bool merge_incident_faces_of_edge_topo(Dart d)
 	{
 		if (this->degree(Edge(d)) != 2u)
 			return false;
@@ -889,7 +891,7 @@ public:
 
 		const Dart f = this->phi1(e.dart);
 
-		if (merge_incident_faces_topo(e.dart))
+		if (merge_incident_faces_of_edge_topo(e.dart))
 		{
 			if (this->template is_embedded<Face2>())
 			{
@@ -2568,7 +2570,6 @@ public:
 
 		// close the map
 		// and mark new darts with the dartmarker
-		Builder mb(*this);
 		for (uint32 i = first; i != this->topology_.end(); this->topology_.next(i))
 		{
 			Dart d(i);

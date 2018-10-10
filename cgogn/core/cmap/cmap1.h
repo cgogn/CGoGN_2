@@ -25,10 +25,12 @@
 #define CGOGN_CORE_CMAP_CMAP1_H_
 
 #include <cgogn/core/cmap/cmap0.h>
-#include <cgogn/core/cmap/cmap1_builder.h>
 
 namespace cgogn
 {
+
+template <typename MAP2>
+class CMap1Builder_T;
 
 template <typename MAP_TYPE>
 class CMap1_T : public CMap0_T<MAP_TYPE>
@@ -445,11 +447,11 @@ public:
 protected:
 
 	/*!
-	 * \brief Close the topological hole that contains Dart d (a fixed point of phi2 relation)
+	 * \brief Close the topological hole that contains Dart d (a fixed point of phi1 relation)
 	 * \param d a dart incident to the hole
-	 * \return a dart of the face that closes the hole
-	 * This method is used to close a CMap2 that has been built through the 2-sewing of 1-faces
-	 * A face is inserted on the boundary that begins at dart d
+	 * \return a dart of the edge that closes the hole
+	 * This method is used to close a CMap1 that has been built through the 1-sewing of edges
+	 * An edge is inserted on the boundary that begins at dart d
 	 */
 	inline Dart close_hole_topo(Dart d)
 	{
@@ -457,7 +459,7 @@ protected:
 
 		Dart first = this->add_topology_element();	// dart that will fill the hole
 
-		if(phi_1(d) == d)
+		if (phi_1(d) == d)
 		{
 			phi1_sew(first, d);							// 1-sew the new dart to the hole
 
@@ -467,11 +469,12 @@ protected:
 			{
 				d_next = d_phi1;
 				d_phi1 = phi1(d_next);
-			}while(d_next != d_phi1);
+			} while(d_next != d_phi1);
 
 			phi1_sew(d_phi1, first);
 		}
 
+		return first;
 	}
 
 	/*!
