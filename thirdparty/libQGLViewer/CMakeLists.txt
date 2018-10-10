@@ -59,7 +59,7 @@ target_compile_options(${PROJECT_NAME} PUBLIC
 		$<$<CXX_COMPILER_ID:Clang>:-Wno-deprecated-declarations>)
 
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/QOGLViewer"
-	DESTINATION "include/cgogn/thirdparty/"
+	DESTINATION "include/cgogn/thirdparty"
 	FILES_MATCHING PATTERN "*.h")
 
 cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}")
