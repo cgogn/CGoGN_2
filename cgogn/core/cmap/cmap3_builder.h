@@ -26,8 +26,8 @@
 
 #include <cgogn/core/cmap/map_base.h>
 #include <cgogn/core/cmap/cmap3.h>
-#include <cgogn/core/cmap/cmap3_tetra.h>
-#include <cgogn/core/cmap/cmap3_hexa.h>
+//#include <cgogn/core/cmap/cmap3_tetra.h>
+//#include <cgogn/core/cmap/cmap3_hexa.h>
 
 namespace cgogn
 {
@@ -125,47 +125,35 @@ public:
 		map_.sew_volumes_topo(f1.dart, f2.dart);
 	}
 
-	template <bool EnableBool = true>
-	inline auto cut_face_topo(Dart d, Dart e)
-		-> typename std::enable_if<std::is_same<Map3, CMap3>::value && EnableBool, Dart>::type
+	inline Dart cut_face_topo(Dart d, Dart e)
 	{
 		return map_.cut_face_topo(d,e);
 	}
 
-	template <bool EnableBool = true>
-	inline auto cut_edge_topo(Dart d)
-		-> typename std::enable_if<std::is_same<Map3, CMap3>::value && EnableBool, Dart>::type
+	inline Dart cut_edge_topo(Dart d)
 	{
 		return map_.cut_edge_topo(d);
 	}
 
-	template <bool EnableBool = true>
-	inline auto merge_volumes_topo_fp(Dart v1, Dart v2)
-		-> typename std::enable_if<std::is_same<Map3, CMap3>::value && EnableBool>::type
+	inline void merge_volumes_topo_fp(Dart v1, Dart v2)
 	{
 		using Map2 = typename Map3::Inherit;
 		map_.Map2::merge_volumes_topo(v1, v2);
 	}
 
-	template <bool EnableBool = true>
-	inline auto merge_incident_faces_fp(Dart d)
-		-> typename std::enable_if<std::is_same<Map3, CMap3>::value && EnableBool>::type
+	inline void merge_incident_faces_fp(Dart d)
 	{
 		using Map2 = typename Map3::Inherit;
 		map_.Map2::merge_incident_faces_of_edge_topo(d);
 	}
 
-	template <bool EnableBool = true>
-	inline auto cut_face_topo_fp(Dart d, Dart e)
-		-> typename std::enable_if<std::is_same<Map3, CMap3>::value && EnableBool, Dart>::type
+	inline Dart cut_face_topo_fp(Dart d, Dart e)
 	{
 		using Map2 = typename Map3::Inherit;
 		return map_.Map2::cut_face_topo(d,e);
 	}
 
-	template <bool EnableBool = true>
-	inline auto cut_edge_topo_fp(Dart d)
-		-> typename std::enable_if<std::is_same<Map3, CMap3>::value && EnableBool, Dart>::type
+	inline Dart cut_edge_topo_fp(Dart d)
 	{
 		using Map2 = typename Map3::Inherit;
 		return map_.Map2::cut_edge_topo(d);

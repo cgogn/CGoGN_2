@@ -31,8 +31,8 @@ target_sources(${PROJECT_NAME}
 		"${CMAKE_CURRENT_LIST_DIR}/cmap/attribute.h"
 		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap2_tri.h"
 		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap2_quad.h"
-		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap3_tetra.h"
-		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap3_hexa.h"
+#		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap3_tetra.h"
+#		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap3_hexa.h"
 
 		"${CMAKE_CURRENT_LIST_DIR}/container/chunk_array_container.h"
 		"${CMAKE_CURRENT_LIST_DIR}/container/chunk_array_factory.h"
