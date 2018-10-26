@@ -40,10 +40,14 @@ target_link_libraries(${PROJECT_NAME} cgogn::core cgogn::geometry)
 
 set(PKG_CONFIG_REQUIRES "cgogn_core cgogn_geometry")
 configure_file(${PROJECT_SOURCE_DIR}/cgogn_topology.pc.in ${CMAKE_CURRENT_BINARY_DIR}/cgogn_topology.pc @ONLY)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/cgogn_topology.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/cgogn_topology.pc
+	DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
+	COMPONENT cgogn_libraries
+)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
 	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cgogn/topology
+	COMPONENT cgogn_headers
 	FILES_MATCHING PATTERN "*.h"
 	REGEX "(examples|tests)" EXCLUDE
 )

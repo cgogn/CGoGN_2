@@ -39,6 +39,7 @@ target_sources(${PROJECT_NAME}
 		"${CMAKE_CURRENT_LIST_DIR}/formats/nastran.h"
 		"${CMAKE_CURRENT_LIST_DIR}/formats/obj.h"
 		"${CMAKE_CURRENT_LIST_DIR}/formats/off.h"
+		"${CMAKE_CURRENT_LIST_DIR}/formats/plo.h"
 		"${CMAKE_CURRENT_LIST_DIR}/formats/ply.h"
 		"${CMAKE_CURRENT_LIST_DIR}/formats/ply.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/formats/ply_data.h"
@@ -75,10 +76,14 @@ target_link_libraries(${PROJECT_NAME} cgogn::core cgogn::geometry ZLIB::ZLIB ply
 
 set(PKG_CONFIG_REQUIRES "cgogn_core cgogn_geometry")
 configure_file(${PROJECT_SOURCE_DIR}/cgogn_io.pc.in ${CMAKE_CURRENT_BINARY_DIR}/cgogn_io.pc @ONLY)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/cgogn_io.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/cgogn_io.pc
+	DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
+	COMPONENT cgogn_libraries
+)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
 	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cgogn/io
+	COMPONENT cgogn_headers
 	FILES_MATCHING PATTERN "*.h"
 	REGEX "(examples|tests)" EXCLUDE
 )
