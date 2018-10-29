@@ -70,19 +70,19 @@ install(TARGETS ${PROJECT_NAME}
 	EXPORT ${PROJECT_NAME}Targets
 	RUNTIME
 		DESTINATION ${CMAKE_INSTALL_BINDIR}
-		COMPONENT cgogn_applications
+		COMPONENT ${PROJECT_NAME}_applications
 	LIBRARY
 		DESTINATION ${CMAKE_INSTALL_LIBDIR}
-		COMPONENT cgogn_libraries
+		COMPONENT ${PROJECT_NAME}_libraries
 	ARCHIVE
 		DESTINATION ${CMAKE_INSTALL_LIBDIR}
-		COMPONENT cgogn_libraries
+		COMPONENT ${PROJECT_NAME}_libraries
 )
 
 install(EXPORT ${PROJECT_NAME}Targets
 		NAMESPACE cgogn::
 		DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
-		COMPONENT cgogn_libraries
+		COMPONENT ${PROJECT_NAME}_libraries
 )
 
 configure_package_config_file(
@@ -95,7 +95,7 @@ configure_package_config_file(
 
 install(FILES "${CMAKE_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}Config.cmake"
 	DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
-	COMPONENT cgogn_libraries
+	COMPONENT ${PROJECT_NAME}_libraries
 )
 
 write_basic_package_version_file(
@@ -106,7 +106,7 @@ write_basic_package_version_file(
 
 install(FILES "${CMAKE_BINARY_DIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}ConfigVersion.cmake"
 	DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
-	COMPONENT cgogn_libraries
+	COMPONENT ${PROJECT_NAME}_libraries
 )
 
 endmacro()

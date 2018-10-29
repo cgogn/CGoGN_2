@@ -81,6 +81,11 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/cgogn_io.pc
 	COMPONENT cgogn_libraries
 )
 
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/cgogn_io_export.h
+	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cgogn/io
+	COMPONENT cgogn_headers
+)
+
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
 	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cgogn/io
 	COMPONENT cgogn_headers
