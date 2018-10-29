@@ -2,6 +2,10 @@ project(cgogn_io
 	LANGUAGES CXX
 )
 
+# Hide symbols by default
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN YES)
+
 find_package(ply REQUIRED)
 find_package(Meshb REQUIRED)
 find_package(TinyXML2 REQUIRED)
@@ -13,7 +17,6 @@ add_library(cgogn::io ALIAS cgogn_io)
 
 target_sources(${PROJECT_NAME}
 	PRIVATE
-		"${CMAKE_CURRENT_LIST_DIR}/dll.h"
 		"${CMAKE_CURRENT_LIST_DIR}/data_io.h"
 		"${CMAKE_CURRENT_LIST_DIR}/surface_import.h"
 		"${CMAKE_CURRENT_LIST_DIR}/volume_import.h"
@@ -24,7 +27,6 @@ target_sources(${PROJECT_NAME}
 		"${CMAKE_CURRENT_LIST_DIR}/graph_export.h"
 		"${CMAKE_CURRENT_LIST_DIR}/io_utils.h"
 		"${CMAKE_CURRENT_LIST_DIR}/io_utils.cpp"
-		"${CMAKE_CURRENT_LIST_DIR}/dll.h"
 		"${CMAKE_CURRENT_LIST_DIR}/c_locale.h"
 		"${CMAKE_CURRENT_LIST_DIR}/mesh_io_gen.h"
 		"${CMAKE_CURRENT_LIST_DIR}/mesh_io_gen.cpp"
@@ -64,13 +66,16 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 										DEBUG_POSTFIX "_d"
 										EXPORT_NAME io)
 
-target_compile_definitions(${PROJECT_NAME} PRIVATE "-DCGOGN_IO_DLL_EXPORT")
-
 target_include_directories(${PROJECT_NAME} PUBLIC
+	$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
 	$<BUILD_INTERFACE:${CGOGN_SOURCE_DIR}>
 	$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 	$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/cgogn/thirdparty>
 )
+
+# Write out cgogn_io_export.h to the current binary directory
+include(GenerateExportHeader)
+generate_export_header(cgogn_io)
 
 target_link_libraries(${PROJECT_NAME} cgogn::core cgogn::geometry ZLIB::ZLIB ply Meshb TinyXML2::TinyXML2)
 
@@ -78,19 +83,19 @@ set(PKG_CONFIG_REQUIRES "cgogn_core cgogn_geometry")
 configure_file(${PROJECT_SOURCE_DIR}/cgogn_io.pc.in ${CMAKE_CURRENT_BINARY_DIR}/cgogn_io.pc @ONLY)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/cgogn_io.pc
 	DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
-	COMPONENT cgogn_libraries
-)
-
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/cgogn_io_export.h
-	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cgogn/io
-	COMPONENT cgogn_headers
+	COMPONENT cgogn_io_libraries
 )
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
 	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cgogn/io
-	COMPONENT cgogn_headers
+	COMPONENT cgogn_io_headers
 	FILES_MATCHING PATTERN "*.h"
 	REGEX "(examples|tests)" EXCLUDE
+)
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/cgogn_io_export.h
+	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cgogn/io
+	COMPONENT cgogn_io_headers
 )
 
 cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}")

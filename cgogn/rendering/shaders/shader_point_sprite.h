@@ -24,7 +24,7 @@
 #ifndef CGOGN_RENDERING_SHADER_POINT_SPRITE_H_
 #define CGOGN_RENDERING_SHADER_POINT_SPRITE_H_
 
-#include <cgogn/rendering/dll.h>
+#include <cgogn/rendering/cgogn_rendering_export.h>
 #include <cgogn/rendering/shaders/shader_program.h>
 #include <cgogn/rendering/shaders/vbo.h>
 
@@ -45,7 +45,7 @@ template <bool CPV, bool SPV>
 class ShaderParamPointSprite : public ShaderParam
 {};
 
-class CGOGN_RENDERING_API ShaderPointSpriteGen : public ShaderProgram
+class CGOGN_RENDERING_EXPORT ShaderPointSpriteGen : public ShaderProgram
 {
 	template <bool CPV, bool SPV> friend class ShaderParamPointSprite;
 
@@ -468,15 +468,15 @@ using ShaderPointSpriteSize = ShaderPointSpriteTpl<false, true>;
 using ShaderPointSpriteColorSize = ShaderPointSpriteTpl<true, true>;
 
 
-#if !defined(CGOGN_RENDER_SHADERS_POINT_SPRITE_CPP_)
-extern template class CGOGN_RENDERING_API  ShaderPointSpriteTpl<false, false>;
-extern template class CGOGN_RENDERING_API ShaderPointSpriteTpl<true, false>;
-extern template class CGOGN_RENDERING_API ShaderPointSpriteTpl<false, true>;
-extern template class CGOGN_RENDERING_API ShaderPointSpriteTpl<true, true>;
-extern template class CGOGN_RENDERING_API ShaderParamPointSprite<false, false>;
-extern template class CGOGN_RENDERING_API ShaderParamPointSprite<true, false>;
-extern template class CGOGN_RENDERING_API ShaderParamPointSprite<false, true>;
-extern template class CGOGN_RENDERING_API ShaderParamPointSprite<true, true>;
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && !defined(CGOGN_RENDER_SHADERS_POINT_SPRITE_CPP_)
+extern template class CGOGN_RENDERING_EXPORT  ShaderPointSpriteTpl<false, false>;
+extern template class CGOGN_RENDERING_EXPORT ShaderPointSpriteTpl<true, false>;
+extern template class CGOGN_RENDERING_EXPORT ShaderPointSpriteTpl<false, true>;
+extern template class CGOGN_RENDERING_EXPORT ShaderPointSpriteTpl<true, true>;
+extern template class CGOGN_RENDERING_EXPORT ShaderParamPointSprite<false, false>;
+extern template class CGOGN_RENDERING_EXPORT ShaderParamPointSprite<true, false>;
+extern template class CGOGN_RENDERING_EXPORT ShaderParamPointSprite<false, true>;
+extern template class CGOGN_RENDERING_EXPORT ShaderParamPointSprite<true, true>;
 #endif
 
 } // namespace rendering

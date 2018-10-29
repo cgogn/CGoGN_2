@@ -24,7 +24,7 @@
 #ifndef CGOGN_TOPOLOGY_TYPES_ADJACENCY_CACHE_H_
 #define CGOGN_TOPOLOGY_TYPES_ADJACENCY_CACHE_H_
 
-#include <cgogn/topology/dll.h>
+#include <cgogn/topology/cgogn_topology_export.h>
 #include <cgogn/core/cmap/cmap2.h>
 #include <cgogn/core/cmap/cmap3.h>
 
@@ -90,8 +90,8 @@ private:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_TOPOLOGY_EXTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_TOPOLOGY_API AdjacencyCache<CMap2>;
-extern template class CGOGN_TOPOLOGY_API AdjacencyCache<CMap3>;
+extern template class CGOGN_TOPOLOGY_EXPORT AdjacencyCache<CMap2>;
+extern template class CGOGN_TOPOLOGY_EXPORT AdjacencyCache<CMap3>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_TOPOLOGY_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace topology

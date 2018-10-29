@@ -703,17 +703,17 @@ struct CMap1Type
 using CMap1 = CMap1_T<CMap1Type>;
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_CORE_API CMap1_T<CMap1Type>;
-extern template class CGOGN_CORE_API DartMarker<CMap1>;
-extern template class CGOGN_CORE_API DartMarkerStore<CMap1>;
-extern template class CGOGN_CORE_API DartMarkerNoUnmark<CMap1>;
-extern template class CGOGN_CORE_API CellMarker<CMap1, CMap1::Vertex::ORBIT>;
-extern template class CGOGN_CORE_API CellMarker<CMap1, CMap1::Face::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap1, CMap1::Vertex::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap1, CMap1::Face::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap1, CMap1::Vertex::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap1, CMap1::Face::ORBIT>;
-extern template class CGOGN_CORE_API QuickTraversor<CMap1>;
+extern template class CGOGN_CORE_EXPORT CMap1_T<CMap1Type>;
+extern template class CGOGN_CORE_EXPORT DartMarker<CMap1>;
+extern template class CGOGN_CORE_EXPORT DartMarkerStore<CMap1>;
+extern template class CGOGN_CORE_EXPORT DartMarkerNoUnmark<CMap1>;
+extern template class CGOGN_CORE_EXPORT CellMarker<CMap1, CMap1::Vertex::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarker<CMap1, CMap1::Face::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerNoUnmark<CMap1, CMap1::Vertex::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerNoUnmark<CMap1, CMap1::Face::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerStore<CMap1, CMap1::Vertex::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerStore<CMap1, CMap1::Face::ORBIT>;
+extern template class CGOGN_CORE_EXPORT QuickTraversor<CMap1>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace cgogn

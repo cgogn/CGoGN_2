@@ -24,7 +24,7 @@
 #ifndef CGOGN_MODELING_ALGOS_CURVES_H_
 #define CGOGN_MODELING_ALGOS_CURVES_H_
 
-#include <cgogn/modeling/dll.h>
+#include <cgogn/modeling/cgogn_modeling_export.h>
 #include <cgogn/core/cmap/cmap1.h>
 
 namespace cgogn

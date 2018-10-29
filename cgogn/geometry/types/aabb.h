@@ -29,7 +29,7 @@
 
 #include <cgogn/core/utils/numerics.h>
 
-#include <cgogn/geometry/dll.h>
+#include <cgogn/geometry/cgogn_geometry_export.h>
 #include <cgogn/geometry/types/geometry_traits.h>
 
 namespace cgogn
@@ -350,10 +350,10 @@ inline void aabb_union(AABB<VEC_T>& target, const AABB<VEC_T>& b1, const AABB<VE
 }
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_EXTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_GEOMETRY_API AABB<Eigen::Vector3d>;
-extern template class CGOGN_GEOMETRY_API AABB<Eigen::Vector3f>;
-extern template class CGOGN_GEOMETRY_API AABB<Vec_T<std::array<float32, 3>>>;
-extern template class CGOGN_GEOMETRY_API AABB<Vec_T<std::array<float64,3>>>;
+extern template class CGOGN_GEOMETRY_EXPORT AABB<Eigen::Vector3d>;
+extern template class CGOGN_GEOMETRY_EXPORT AABB<Eigen::Vector3f>;
+extern template class CGOGN_GEOMETRY_EXPORT AABB<Vec_T<std::array<float32, 3>>>;
+extern template class CGOGN_GEOMETRY_EXPORT AABB<Vec_T<std::array<float64,3>>>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace geometry

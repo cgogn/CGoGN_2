@@ -37,7 +37,7 @@ namespace cgogn
 namespace io
 {
 
-CGOGN_IO_API std::vector<std::vector<unsigned char>> zlib_compress(const unsigned char* input, std::size_t size, std::size_t chunk_size)
+CGOGN_IO_EXPORT std::vector<std::vector<unsigned char>> zlib_compress(const unsigned char* input, std::size_t size, std::size_t chunk_size)
 {
 	chunk_size = std::min(size, chunk_size);
 	std::size_t buffer_size{0ul};
@@ -78,7 +78,7 @@ CGOGN_IO_API std::vector<std::vector<unsigned char>> zlib_compress(const unsigne
 	return res;
 }
 
-CGOGN_IO_API std::vector<unsigned char> zlib_decompress(const char* input, DataType header_type, std::size_t input_length)
+CGOGN_IO_EXPORT std::vector<unsigned char> zlib_decompress(const char* input, DataType header_type, std::size_t input_length)
 {
 
 	uint64 nb_blocks = UINT64_MAX;
@@ -167,7 +167,7 @@ CGOGN_IO_API std::vector<unsigned char> zlib_decompress(const char* input, DataT
 	return res;
 }
 
-CGOGN_IO_API std::vector<char> base64_encode(const char* input_buffer, std::size_t buffer_size)
+CGOGN_IO_EXPORT std::vector<char> base64_encode(const char* input_buffer, std::size_t buffer_size)
 {
 
 	const static char encode_lookup[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -217,7 +217,7 @@ CGOGN_IO_API std::vector<char> base64_encode(const char* input_buffer, std::size
 	return res;
 }
 
-CGOGN_IO_API std::vector<unsigned char> base64_decode(const char* input, std::size_t length)
+CGOGN_IO_EXPORT std::vector<unsigned char> base64_decode(const char* input, std::size_t length)
 {
 	const std::locale locale;
 
@@ -288,7 +288,7 @@ CGOGN_IO_API std::vector<unsigned char> base64_decode(const char* input, std::si
 	return decoded_chars;
 }
 
-CGOGN_IO_API FileType file_type(const std::string& filename)
+CGOGN_IO_EXPORT FileType file_type(const std::string& filename)
 {
 	const std::string& ext = to_lower(extension(filename));
 	static const std::map<std::string, FileType> file_type_map{
@@ -326,7 +326,7 @@ CGOGN_IO_API FileType file_type(const std::string& filename)
 		return FileType::FileType_UNKNOWN;
 }
 
-CGOGN_IO_API DataType data_type(const std::string& type_name)
+CGOGN_IO_EXPORT DataType data_type(const std::string& type_name)
 {
 	static const std::map<std::string, DataType> data_type_map{
 		{name_of_type(float32()), DataType::FLOAT},
@@ -353,12 +353,12 @@ CharArrayBuffer::~CharArrayBuffer() {}
 
 IMemoryStream::~IMemoryStream() {}
 
-CGOGN_IO_API bool file_exists(const std::string& filename)
+CGOGN_IO_EXPORT bool file_exists(const std::string& filename)
 {
 	return std::ifstream(filename).good();
 }
 
-CGOGN_IO_API std::unique_ptr<std::ofstream> create_file(const std::string& filename, bool binary, bool overwrite)
+CGOGN_IO_EXPORT std::unique_ptr<std::ofstream> create_file(const std::string& filename, bool binary, bool overwrite)
 {
 	std::unique_ptr<std::ofstream> output;
 
@@ -389,7 +389,7 @@ CGOGN_IO_API std::unique_ptr<std::ofstream> create_file(const std::string& filen
 	return output;
 }
 
-CGOGN_IO_API std::istream& getline_safe(std::istream& is, std::string& str)
+CGOGN_IO_EXPORT std::istream& getline_safe(std::istream& is, std::string& str)
 {
 	str.clear();
 	std::istream::sentry se(is, true); // http://en.cppreference.com/w/cpp/io/basic_istream/sentry
@@ -416,7 +416,7 @@ CGOGN_IO_API std::istream& getline_safe(std::istream& is, std::string& str)
 	}
 }
 
-CGOGN_IO_API std::istream& getline_safe(std::istream& is, std::string& str, char delim)
+CGOGN_IO_EXPORT std::istream& getline_safe(std::istream& is, std::string& str, char delim)
 {
 	str.clear();
 	std::istream::sentry se(is, true); // http://en.cppreference.com/w/cpp/io/basic_istream/sentry

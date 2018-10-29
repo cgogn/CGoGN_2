@@ -33,7 +33,7 @@ namespace io
 {
 
 
-CGOGN_IO_API std::string  vtk_data_type_to_cgogn_name_of_type(const std::string& vtk_type_str)
+CGOGN_IO_EXPORT std::string  vtk_data_type_to_cgogn_name_of_type(const std::string& vtk_type_str)
 {
 	const std::string& data_type = to_lower(vtk_type_str);
 	static const std::map<std::string, std::string> type_map{
@@ -66,7 +66,7 @@ CGOGN_IO_API std::string  vtk_data_type_to_cgogn_name_of_type(const std::string&
 	return std::string();
 }
 
-CGOGN_IO_API std::string cgogn_name_of_type_to_vtk_xml_data_type(const std::string& cgogn_type)
+CGOGN_IO_EXPORT std::string cgogn_name_of_type_to_vtk_xml_data_type(const std::string& cgogn_type)
 {
 	static const std::map<std::string, std::string> type_map{
 		{name_of_type(int8()), "Int8"},
@@ -89,7 +89,7 @@ CGOGN_IO_API std::string cgogn_name_of_type_to_vtk_xml_data_type(const std::stri
 	return std::string();
 }
 
-CGOGN_IO_API std::string cgogn_name_of_type_to_vtk_legacy_data_type(const std::string& cgogn_type)
+CGOGN_IO_EXPORT std::string cgogn_name_of_type_to_vtk_legacy_data_type(const std::string& cgogn_type)
 {
 	static const std::map<std::string, std::string> type_map{
 		{name_of_type(bool()), "bit"},
@@ -113,7 +113,7 @@ CGOGN_IO_API std::string cgogn_name_of_type_to_vtk_legacy_data_type(const std::s
 	return std::string();
 }
 
-CGOGN_IO_API std::vector<unsigned char> read_binary_xml_data(const char* data_str, bool is_compressed, DataType header_type)
+CGOGN_IO_EXPORT std::vector<unsigned char> read_binary_xml_data(const char* data_str, bool is_compressed, DataType header_type)
 {
 	const char* begin = data_str;
 
@@ -147,7 +147,7 @@ CGOGN_IO_API std::vector<unsigned char> read_binary_xml_data(const char* data_st
 		return zlib_decompress(begin, header_type, len);
 }
 
-CGOGN_IO_API void write_binary_xml_data(std::ostream& output, const char* data_str, std::size_t size, bool compress)
+CGOGN_IO_EXPORT void write_binary_xml_data(std::ostream& output, const char* data_str, std::size_t size, bool compress)
 {
 	std::vector<char> data;
 	std::vector<uint32> header;

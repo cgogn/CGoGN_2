@@ -24,7 +24,7 @@
 #ifndef CGOGN_RENDERING_TRANSP_VOLUME_DRAWER_H_
 #define CGOGN_RENDERING_TRANSP_VOLUME_DRAWER_H_
 
-#include <cgogn/rendering/dll.h>
+#include <cgogn/rendering/cgogn_rendering_export.h>
 
 #include <cgogn/rendering/shaders/vbo.h>
 #include <cgogn/rendering/transparency_shaders/shader_transparent_volumes.h>
@@ -44,7 +44,7 @@ namespace rendering
 {
 
 
-class CGOGN_RENDERING_API VolumeTransparencyDrawer
+class CGOGN_RENDERING_EXPORT VolumeTransparencyDrawer
 {
 protected:
 
@@ -54,7 +54,7 @@ protected:
 	float32 shrink_v_;
 
 public:
-	class CGOGN_RENDERING_API Renderer
+	class CGOGN_RENDERING_EXPORT Renderer
 	{
 		friend class VolumeTransparencyDrawer;
 		std::unique_ptr<ShaderTransparentVolumes::Param> param_transp_vol_;

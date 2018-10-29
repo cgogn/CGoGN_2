@@ -42,7 +42,7 @@ namespace internal
  * @param str, a type name
  * @return the demangled type name is succeded, otherwise a copy of str
  */
-CGOGN_CORE_API std::string demangle(const std::string& str)
+CGOGN_CORE_EXPORT std::string demangle(const std::string& str)
 {
 #ifndef __GNUG__
 	return str;
@@ -57,57 +57,57 @@ CGOGN_CORE_API std::string demangle(const std::string& str)
 #endif // __GNUG__
 }
 
-CGOGN_CORE_API std::string name_of_type_impl(const bool&)
+CGOGN_CORE_EXPORT std::string name_of_type_impl(const bool&)
 {
 	return "bool";
 }
 
-CGOGN_CORE_API std::string name_of_type_impl(const int8&)
+CGOGN_CORE_EXPORT std::string name_of_type_impl(const int8&)
 {
 	return "int8";
 }
 
-CGOGN_CORE_API std::string name_of_type_impl(const uint8&)
+CGOGN_CORE_EXPORT std::string name_of_type_impl(const uint8&)
 {
 	return "uint8";
 }
 
-CGOGN_CORE_API std::string name_of_type_impl(const int16&)
+CGOGN_CORE_EXPORT std::string name_of_type_impl(const int16&)
 {
 	return "int16";
 }
 
-CGOGN_CORE_API std::string name_of_type_impl(const uint16&)
+CGOGN_CORE_EXPORT std::string name_of_type_impl(const uint16&)
 {
 	return "uint16";
 }
 
-CGOGN_CORE_API std::string name_of_type_impl(const int32&)
+CGOGN_CORE_EXPORT std::string name_of_type_impl(const int32&)
 {
 	return "int32";
 }
 
-CGOGN_CORE_API std::string name_of_type_impl(const uint32&)
+CGOGN_CORE_EXPORT std::string name_of_type_impl(const uint32&)
 {
 	return "uint32";
 }
 
-CGOGN_CORE_API std::string name_of_type_impl(const int64&)
+CGOGN_CORE_EXPORT std::string name_of_type_impl(const int64&)
 {
 	return "int64";
 }
 
-CGOGN_CORE_API std::string name_of_type_impl(const uint64&)
+CGOGN_CORE_EXPORT std::string name_of_type_impl(const uint64&)
 {
 	return "uint64";
 }
 
-CGOGN_CORE_API std::string name_of_type_impl(const float32&)
+CGOGN_CORE_EXPORT std::string name_of_type_impl(const float32&)
 {
 	return "float32";
 }
 
-CGOGN_CORE_API std::string name_of_type_impl(const float64&)
+CGOGN_CORE_EXPORT std::string name_of_type_impl(const float64&)
 {
 	return "float64";
 }

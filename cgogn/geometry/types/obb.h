@@ -31,7 +31,7 @@
 #include <cgogn/core/cmap/attribute.h>
 #include <cgogn/core/utils/masks.h>
 
-#include <cgogn/geometry/dll.h>
+#include <cgogn/geometry/cgogn_geometry_export.h>
 #include <cgogn/geometry/types/geometry_traits.h>
 
 namespace cgogn
@@ -481,10 +481,10 @@ private:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_TYPES_OBB_CPP_))
-extern template class CGOGN_GEOMETRY_API OBB<Eigen::Vector3d>;
-extern template class CGOGN_GEOMETRY_API OBB<Eigen::Vector3f>;
-//extern template class CGOGN_GEOMETRY_API OBB<Vec_T<std::array<float32, 3>>>;
-//extern template class CGOGN_GEOMETRY_API OBB<Vec_T<std::array<float64,3>>>;
+extern template class CGOGN_GEOMETRY_EXPORT OBB<Eigen::Vector3d>;
+extern template class CGOGN_GEOMETRY_EXPORT OBB<Eigen::Vector3f>;
+//extern template class CGOGN_GEOMETRY_EXPORT OBB<Vec_T<std::array<float32, 3>>>;
+//extern template class CGOGN_GEOMETRY_EXPORT OBB<Vec_T<std::array<float64,3>>>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_TYPES_OBB_CPP_))
 
 } // namespace geometry

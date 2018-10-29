@@ -1623,22 +1623,22 @@ struct CMap3TetraType
 using CMap3Tetra = CMap3Tetra_T<CMap3TetraType>;
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_CORE_API CMap3Builder_T<CMap3Tetra>;
-extern template class CGOGN_CORE_API DartMarker<CMap3Tetra>;
-extern template class CGOGN_CORE_API DartMarkerStore<CMap3Tetra>;
-extern template class CGOGN_CORE_API DartMarkerNoUnmark<CMap3Tetra>;
-extern template class CGOGN_CORE_API CellMarker<CMap3Tetra, CMap3Tetra::Vertex::ORBIT>;
-extern template class CGOGN_CORE_API CellMarker<CMap3Tetra, CMap3Tetra::Edge::ORBIT>;
-extern template class CGOGN_CORE_API CellMarker<CMap3Tetra, CMap3Tetra::Face::ORBIT>;
-extern template class CGOGN_CORE_API CellMarker<CMap3Tetra, CMap3Tetra::Volume::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap3Tetra, CMap3Tetra::Vertex::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap3Tetra, CMap3Tetra::Edge::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap3Tetra, CMap3Tetra::Face::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap3Tetra, CMap3Tetra::Volume::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap3Tetra, CMap3Tetra::Vertex::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap3Tetra, CMap3Tetra::Edge::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap3Tetra, CMap3Tetra::Face::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap3Tetra, CMap3Tetra::Volume::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CMap3Builder_T<CMap3Tetra>;
+extern template class CGOGN_CORE_EXPORT DartMarker<CMap3Tetra>;
+extern template class CGOGN_CORE_EXPORT DartMarkerStore<CMap3Tetra>;
+extern template class CGOGN_CORE_EXPORT DartMarkerNoUnmark<CMap3Tetra>;
+extern template class CGOGN_CORE_EXPORT CellMarker<CMap3Tetra, CMap3Tetra::Vertex::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarker<CMap3Tetra, CMap3Tetra::Edge::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarker<CMap3Tetra, CMap3Tetra::Face::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarker<CMap3Tetra, CMap3Tetra::Volume::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerNoUnmark<CMap3Tetra, CMap3Tetra::Vertex::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerNoUnmark<CMap3Tetra, CMap3Tetra::Edge::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerNoUnmark<CMap3Tetra, CMap3Tetra::Face::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerNoUnmark<CMap3Tetra, CMap3Tetra::Volume::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerStore<CMap3Tetra, CMap3Tetra::Vertex::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerStore<CMap3Tetra, CMap3Tetra::Edge::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerStore<CMap3Tetra, CMap3Tetra::Face::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerStore<CMap3Tetra, CMap3Tetra::Volume::ORBIT>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace cgogn

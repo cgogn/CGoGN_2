@@ -24,7 +24,7 @@
 #ifndef CGOGN_RENDERING_SHADER_TRANSP_PHONG_H_
 #define CGOGN_RENDERING_SHADER_TRANSP_PHONG_H_
 
-#include <cgogn/rendering/dll.h>
+#include <cgogn/rendering/cgogn_rendering_export.h>
 #include <cgogn/rendering/shaders/shader_program.h>
 #include <cgogn/rendering/shaders/vbo.h>
 
@@ -41,7 +41,7 @@ namespace rendering
 // forward
 class ShaderPhongTransp;
 
-class CGOGN_RENDERING_API ShaderParamPhongTransp : public ShaderParam
+class CGOGN_RENDERING_EXPORT ShaderParamPhongTransp : public ShaderParam
 {
 protected:
 
@@ -71,7 +71,7 @@ public:
 
 
 
-class CGOGN_RENDERING_API ShaderPhongTransp : public ShaderProgram
+class CGOGN_RENDERING_EXPORT ShaderPhongTransp : public ShaderProgram
 {
 	friend class ShaderParamPhongTransp;
 

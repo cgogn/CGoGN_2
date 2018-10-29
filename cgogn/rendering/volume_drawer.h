@@ -24,7 +24,7 @@
 #ifndef CGOGN_RENDERING_VOLUME_DRAWER_H_
 #define CGOGN_RENDERING_VOLUME_DRAWER_H_
 
-#include <cgogn/rendering/dll.h>
+#include <cgogn/rendering/cgogn_rendering_export.h>
 
 #include <cgogn/rendering/shaders/shader_explode_volumes.h>
 #include <cgogn/rendering/shaders/shader_explode_volumes_line.h>
@@ -63,7 +63,7 @@ namespace rendering
  *  volu_rend_->draw_edges(proj, view);
  *
  */
-class CGOGN_RENDERING_API VolumeDrawerGen
+class CGOGN_RENDERING_EXPORT VolumeDrawerGen
 {
 protected:
 
@@ -86,7 +86,7 @@ protected:
 
 public:
 
-	class CGOGN_RENDERING_API Renderer
+	class CGOGN_RENDERING_EXPORT Renderer
 	{
 		friend class VolumeDrawerGen;
 
@@ -345,8 +345,8 @@ using VolumeDrawer = VolumeDrawerTpl<false>;
 using VolumeDrawerColor = VolumeDrawerTpl<true>;
 
 #if !defined(CGOGN_RENDERING_VOLUME_RENDER_CPP_)
-extern template class CGOGN_RENDERING_API VolumeDrawerTpl<false>;
-extern template class CGOGN_RENDERING_API VolumeDrawerTpl<true>;
+extern template class CGOGN_RENDERING_EXPORT VolumeDrawerTpl<false>;
+extern template class CGOGN_RENDERING_EXPORT VolumeDrawerTpl<true>;
 #endif // (!defined(CGOGN_RENDERING_VOLUME_RENDER_CPP_))
 
 } // namespace rendering

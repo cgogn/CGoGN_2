@@ -184,12 +184,12 @@ protected:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_IO_API CgGraphImport<Eigen::Vector3d>;
-extern template class CGOGN_IO_API CgGraphImport<Eigen::Vector3f>;
-extern template class CGOGN_IO_API CgGraphImport<geometry::Vec_T<std::array<float64,3>>>;
-extern template class CGOGN_IO_API CgGraphImport<geometry::Vec_T<std::array<float32,3>>>;
+extern template class CGOGN_IO_EXPORT CgGraphImport<Eigen::Vector3d>;
+extern template class CGOGN_IO_EXPORT CgGraphImport<Eigen::Vector3f>;
+extern template class CGOGN_IO_EXPORT CgGraphImport<geometry::Vec_T<std::array<float64,3>>>;
+extern template class CGOGN_IO_EXPORT CgGraphImport<geometry::Vec_T<std::array<float32,3>>>;
 
-extern template class CGOGN_IO_API CgGraphExport<UndirectedGraph>;
+extern template class CGOGN_IO_EXPORT CgGraphExport<UndirectedGraph>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
 
 

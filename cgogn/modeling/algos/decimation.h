@@ -24,7 +24,7 @@
 #ifndef CGOGN_MODELING_ALGOS_DECIMATION_H_
 #define CGOGN_MODELING_ALGOS_DECIMATION_H_
 
-#include <cgogn/modeling/dll.h>
+#include <cgogn/modeling/cgogn_modeling_export.h>
 
 #include <cgogn/geometry/functions/basics.h>
 #include <cgogn/geometry/types/geometry_traits.h>
@@ -142,8 +142,8 @@ void decimate(
 }
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_EXTERNAL_TEMPLATES_CPP_))
-extern template CGOGN_MODELING_API void decimate(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&, EdgeTraversorType, EdgeApproximatorType, uint32);
-extern template CGOGN_MODELING_API void decimate(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&, EdgeTraversorType, EdgeApproximatorType, uint32);
+extern template CGOGN_MODELING_EXPORT void decimate(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&, EdgeTraversorType, EdgeApproximatorType, uint32);
+extern template CGOGN_MODELING_EXPORT void decimate(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&, EdgeTraversorType, EdgeApproximatorType, uint32);
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace modeling

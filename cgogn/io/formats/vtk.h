@@ -31,7 +31,7 @@
 
 #include <cgogn/core/utils/logger.h>
 
-#include <cgogn/io/dll.h>
+#include <cgogn/io/cgogn_io_export.h>
 #include <cgogn/io/data_io.h>
 #include <cgogn/io/surface_import.h>
 #include <cgogn/io/surface_export.h>
@@ -71,11 +71,11 @@ enum VTK_CELL_TYPES
 	VTK_QUADRATIC_HEXAHEDRON = 25
 };
 
-CGOGN_IO_API std::string vtk_data_type_to_cgogn_name_of_type(const std::string& vtk_type_str);
-CGOGN_IO_API std::string cgogn_name_of_type_to_vtk_xml_data_type(const std::string& cgogn_type);
-CGOGN_IO_API std::string cgogn_name_of_type_to_vtk_legacy_data_type(const std::string& cgogn_type);
-CGOGN_IO_API std::vector<unsigned char> read_binary_xml_data(const char*data_str, bool is_compressed, DataType header_type);
-CGOGN_IO_API void write_binary_xml_data(std::ostream& output, const char* data_str, std::size_t size, bool compress = false);
+CGOGN_IO_EXPORT std::string vtk_data_type_to_cgogn_name_of_type(const std::string& vtk_type_str);
+CGOGN_IO_EXPORT std::string cgogn_name_of_type_to_vtk_xml_data_type(const std::string& cgogn_type);
+CGOGN_IO_EXPORT std::string cgogn_name_of_type_to_vtk_legacy_data_type(const std::string& cgogn_type);
+CGOGN_IO_EXPORT std::vector<unsigned char> read_binary_xml_data(const char*data_str, bool is_compressed, DataType header_type);
+CGOGN_IO_EXPORT void write_binary_xml_data(std::ostream& output, const char* data_str, std::size_t size, bool compress = false);
 
 template <typename T>
 inline std::string vtk_name_of_type(const T& t)
@@ -2176,21 +2176,21 @@ private:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_IO_API VtkIO<1, Eigen::Vector3d>;
-extern template class CGOGN_IO_API VtkIO<1, Eigen::Vector3f>;
+extern template class CGOGN_IO_EXPORT VtkIO<1, Eigen::Vector3d>;
+extern template class CGOGN_IO_EXPORT VtkIO<1, Eigen::Vector3f>;
 
-extern template class CGOGN_IO_API VtkSurfaceImport<CMap2, Eigen::Vector3d>;
-extern template class CGOGN_IO_API VtkSurfaceImport<CMap2, Eigen::Vector3f>;
+extern template class CGOGN_IO_EXPORT VtkSurfaceImport<CMap2, Eigen::Vector3d>;
+extern template class CGOGN_IO_EXPORT VtkSurfaceImport<CMap2, Eigen::Vector3f>;
 
-extern template class CGOGN_IO_API VtkVolumeImport<CMap3, Eigen::Vector3d>;
-extern template class CGOGN_IO_API VtkVolumeImport<CMap3, Eigen::Vector3f>;
+extern template class CGOGN_IO_EXPORT VtkVolumeImport<CMap3, Eigen::Vector3d>;
+extern template class CGOGN_IO_EXPORT VtkVolumeImport<CMap3, Eigen::Vector3f>;
 
-extern template class CGOGN_IO_API VtkVolumeExport<CMap3>;
-extern template class CGOGN_IO_API VtkSurfaceExport<CMap2>;
+extern template class CGOGN_IO_EXPORT VtkVolumeExport<CMap3>;
+extern template class CGOGN_IO_EXPORT VtkSurfaceExport<CMap2>;
 
-extern template class CGOGN_IO_API VtkGraphImport<Eigen::Vector3d>;
-extern template class CGOGN_IO_API VtkGraphImport<Eigen::Vector3f>;
-extern template class CGOGN_IO_API VtkGraphExport<UndirectedGraph>;
+extern template class CGOGN_IO_EXPORT VtkGraphImport<Eigen::Vector3d>;
+extern template class CGOGN_IO_EXPORT VtkGraphImport<Eigen::Vector3f>;
+extern template class CGOGN_IO_EXPORT VtkGraphExport<UndirectedGraph>;
 
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
 

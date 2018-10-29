@@ -582,19 +582,19 @@ protected:
 
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_IO_API ObjSurfaceImport<CMap2, Eigen::Vector3d>;
-extern template class CGOGN_IO_API ObjSurfaceImport<CMap2, Eigen::Vector3f>;
-extern template class CGOGN_IO_API ObjSurfaceImport<CMap2, geometry::Vec_T<std::array<float64, 3>>>;
-extern template class CGOGN_IO_API ObjSurfaceImport<CMap2, geometry::Vec_T<std::array<float32, 3>>>;
+extern template class CGOGN_IO_EXPORT ObjSurfaceImport<CMap2, Eigen::Vector3d>;
+extern template class CGOGN_IO_EXPORT ObjSurfaceImport<CMap2, Eigen::Vector3f>;
+extern template class CGOGN_IO_EXPORT ObjSurfaceImport<CMap2, geometry::Vec_T<std::array<float64, 3>>>;
+extern template class CGOGN_IO_EXPORT ObjSurfaceImport<CMap2, geometry::Vec_T<std::array<float32, 3>>>;
 
-extern template class CGOGN_IO_API ObjGraphImport<Eigen::Vector3d>;
-extern template class CGOGN_IO_API ObjGraphImport<Eigen::Vector3f>;
-extern template class CGOGN_IO_API ObjGraphImport<geometry::Vec_T<std::array<float64,3>>>;
-extern template class CGOGN_IO_API ObjGraphImport<geometry::Vec_T<std::array<float32,3>>>;
+extern template class CGOGN_IO_EXPORT ObjGraphImport<Eigen::Vector3d>;
+extern template class CGOGN_IO_EXPORT ObjGraphImport<Eigen::Vector3f>;
+extern template class CGOGN_IO_EXPORT ObjGraphImport<geometry::Vec_T<std::array<float64,3>>>;
+extern template class CGOGN_IO_EXPORT ObjGraphImport<geometry::Vec_T<std::array<float32,3>>>;
 
-extern template class CGOGN_IO_API ObjSurfaceExport<CMap2>;
+extern template class CGOGN_IO_EXPORT ObjSurfaceExport<CMap2>;
 
-extern template class CGOGN_IO_API ObjGraphExport<UndirectedGraph>;
+extern template class CGOGN_IO_EXPORT ObjGraphExport<UndirectedGraph>;
 
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
 
