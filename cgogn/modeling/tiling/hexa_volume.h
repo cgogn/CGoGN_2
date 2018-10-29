@@ -50,24 +50,25 @@ protected:
 	template <typename SCELL>
 	void embed_sub_cell_of_volume(std::vector<SCELL>* store)
 	{
-		if (map_.is_embedded<SCELL>())
-			for (Volume v : volume_table_)
-				if (v.is_valid())
-					map_.foreach_dart_of_orbit(v, [&](Dart e)
-					{
-						if (!map_.is_valid_embedding(SCELL(e)))
-							builder_.new_orbit_embedding(SCELL(e));
-						if (store)
-							store->push_back(SCELL(e));
-					});
-	}
-
-	template <>
-	void embed_sub_cell_of_volume<Volume>(std::vector<Volume>*)
-	{
-		if (map_.is_embedded<Volume>())
-			for (Volume v : volume_table_)
-				if (!v.is_valid()) builder_.new_orbit_embedding(v);
+		if (std::is_same<SCELL,Volume>::value)
+		{
+			if (map_.is_embedded<Volume>())
+				for (Volume v : volume_table_)
+					if (!v.is_valid()) builder_.new_orbit_embedding(v);
+		}
+		else
+		{
+			if (map_.is_embedded<SCELL>())
+				for (Volume v : volume_table_)
+					if (v.is_valid())
+						map_.foreach_dart_of_orbit(v, [&](Dart e)
+						{
+							if (!map_.is_valid_embedding(SCELL(e)))
+								builder_.new_orbit_embedding(SCELL(e));
+							if (store)
+								store->push_back(SCELL(e));
+						});
+		}
 	}
 
 	void compact_volume_table()
