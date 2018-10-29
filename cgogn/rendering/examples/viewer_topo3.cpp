@@ -40,6 +40,7 @@
 #include <cgogn/rendering/topo_drawer.h>
 #include <cgogn/geometry/algos/picking.h>
 #include <cgogn/rendering/frame_manipulator.h>
+#include <cgogn/modeling/tiling/hexa_volume.h>
 
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
@@ -53,6 +54,7 @@ using Vec3 = Eigen::Vector3d;
 
 template <typename T>
 using VertexAttribute = Map3::VertexAttribute<T>;
+
 
 
 class Viewer : public QOGLViewer
@@ -123,15 +125,67 @@ void Viewer::rayClick(QMouseEvent* event, qoglviewer::Vec& P, qoglviewer::Vec& Q
 	Q = camera()->unprojectedCoordinatesOf(qoglviewer::Vec(event->x(), event->y(), 1.0));
 }
 
+
+bool menger(uint32 l, uint32 i, uint32 j, uint32 k)
+{
+	if (l == 1)
+		return true;
+	l /= 3;
+	if ((i / l == 1) + (j / l == 1) + (k / l == 1) >= 2)
+		return false;
+	return menger(l, i % l, j % l, k % l);
+}
+
 void Viewer::import(const std::string& volumeMesh)
 {
-	cgogn::io::import_volume<Vec3>(map_, volumeMesh);
-
-	vertex_position_ = map_.template get_attribute<Vec3, Map3::Vertex>("position");
-	if (!vertex_position_.is_valid())
+	if (volumeMesh=="")
 	{
-		cgogn_log_error("Viewer::import") << "Missing attribute position. Aborting.";
-		std::exit(EXIT_FAILURE);
+		vertex_position_ = map_.template add_attribute<Vec3, Map3::Vertex>("position");
+
+		const uint N = 10;
+		cgogn::modeling::TilingHexa tile1(map_, 2*N,2*N,2*N);
+		tile1.embedded_grid3D([&](uint32 i, uint32 j, uint32 k)
+		{
+			i -= N;
+			j -= N;
+			k -= N;
+			auto r = i * i + j * j + k * k;
+			return ((r > N*N/4) && (r < N*N)) ||
+					(r < 2*2);
+		});
+		tile1.update_positions([&](cgogn::CMap3::Vertex v, double r, double s, double t)
+		{
+			vertex_position_[v] = Vec3(r-1.2 ,s ,t*1.5);
+		});
+
+		const uint32 NB = 27;
+		cgogn::modeling::TilingHexa tile2(map_,NB,NB,NB);
+		tile2.embedded_grid3D( [&](uint32 i, uint32 j, uint32 k)
+		{
+			return menger(NB, i, j, k);
+		});
+		tile2.update_positions([&](cgogn::CMap3::Vertex v, double r, double s, double t) {
+			vertex_position_[v] = Vec3(std::pow(1+2*r,2)/9,std::pow(1+2*s,2)/9,std::pow(1+2*t,2)/9);
+		});
+
+		cgogn::modeling::TilingHexa tile3(map_,3,3,50);
+		tile3.grid_topo( [](uint32,uint32,uint32){return true;});
+		tile3.self_sew_z();
+		tile3.close_grid();
+		tile3.embed();
+		tile3.update_positions([&](cgogn::CMap3::Vertex v, double r, double s, double t) {
+			vertex_position_[v] = Vec3((3+r)/2, 0.5+(1+s)/4*std::cos(t*6.283),0.5+(1+s)/4*std::sin(t*6.283));
+		});
+	}
+	else
+	{
+		cgogn::io::import_volume<Vec3>(map_, volumeMesh);
+		vertex_position_ = map_.template get_attribute<Vec3, Map3::Vertex>("position");
+		if (!vertex_position_.is_valid())
+		{
+			cgogn_log_error("Viewer::import") << "Missing attribute position. Aborting.";
+			std::exit(EXIT_FAILURE);
+		}
 	}
 
 	if (!map_.check_map_integrity())
@@ -435,8 +489,8 @@ int main(int argc, char** argv)
 	if (argc < 2)
 	{
 		cgogn_log_debug("viewer_topo3") << "USAGE: " << argv[0] << " [filename]";
-		volumeMesh = std::string(DEFAULT_MESH_PATH) + std::string("vtk/nine_hexas.vtu");
-		cgogn_log_debug("viewer_topo3") << "Using default mesh \"" << volumeMesh << "\".";
+		volumeMesh = "";//std::string(DEFAULT_MESH_PATH) + std::string("vtk/nine_hexas.vtu");
+		cgogn_log_debug("viewer_topo3") << "Using procedural.";
 	}
 	else
 		volumeMesh = std::string(argv[1]);

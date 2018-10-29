@@ -27,6 +27,7 @@ target_sources(${PROJECT_NAME}
 		"${CMAKE_CURRENT_LIST_DIR}/tiling/square_grid.h"
 		"${CMAKE_CURRENT_LIST_DIR}/tiling/square_cylinder.h"
 		"${CMAKE_CURRENT_LIST_DIR}/tiling/square_tore.h"
+		"${CMAKE_CURRENT_LIST_DIR}/tiling/hexa_volume.h"
 
 		"${CMAKE_CURRENT_LIST_DIR}/decimation/edge_approximator.h"
 		"${CMAKE_CURRENT_LIST_DIR}/decimation/edge_approximator_mid_edge.h"
