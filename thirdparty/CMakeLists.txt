@@ -5,6 +5,6 @@ if(CGOGN_USE_QT)
 endif(CGOGN_USE_QT)
 
 add_subdirectory(ply)
-add_subdirectory(OffBinConverter)
+#add_subdirectory(OffBinConverter)
 add_subdirectory(libMeshb)
 add_subdirectory(termcolor)
