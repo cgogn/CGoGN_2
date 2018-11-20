@@ -50,6 +50,8 @@ export(TARGETS ${PROJECT_NAME}
 	FILE "${CMAKE_BINARY_DIR}/lib/cmake/${PROJECT_NAME}/${PROJECT_NAME}Targets.cmake"
 )
 
+export(PACKAGE ${PROJECT_NAME})
+
 configure_package_config_file(
 	"${package_root_dir}/${PROJECT_NAME}Config.cmake.in"
 	"${CMAKE_BINARY_DIR}/lib/cmake/${PROJECT_NAME}/${PROJECT_NAME}Config.cmake"
