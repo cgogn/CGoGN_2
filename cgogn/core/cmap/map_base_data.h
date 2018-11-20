@@ -223,6 +223,14 @@ public:
 		return (*embeddings_[ORBIT])[c.dart.index];
 	}
 
+	template <Orbit ORBIT>
+	inline bool is_valid_embedding(Cell<ORBIT> c) const
+	{
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+		cgogn_message_assert(is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
+		return (*embeddings_[ORBIT])[c.dart.index] != INVALID_INDEX;
+	}
+
 	inline uint32 embedding(Dart d, Orbit orb) const
 	{
 		cgogn_message_assert(orb < NB_ORBITS, "Unknown orbit parameter");
