@@ -18,6 +18,8 @@ add_library(cgogn::io ALIAS cgogn_io)
 target_sources(${PROJECT_NAME}
 	PRIVATE
 		"${CMAKE_CURRENT_LIST_DIR}/data_io.h"
+		"${CMAKE_CURRENT_LIST_DIR}/point_set_import.h"
+		"${CMAKE_CURRENT_LIST_DIR}/polyline_import.h"
 		"${CMAKE_CURRENT_LIST_DIR}/surface_import.h"
 		"${CMAKE_CURRENT_LIST_DIR}/volume_import.h"
 		"${CMAKE_CURRENT_LIST_DIR}/map_import.h"
@@ -30,12 +32,15 @@ target_sources(${PROJECT_NAME}
 		"${CMAKE_CURRENT_LIST_DIR}/c_locale.h"
 		"${CMAKE_CURRENT_LIST_DIR}/mesh_io_gen.h"
 		"${CMAKE_CURRENT_LIST_DIR}/mesh_io_gen.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/point_set_export.h"
+		"${CMAKE_CURRENT_LIST_DIR}/polyline_export.h"
 		"${CMAKE_CURRENT_LIST_DIR}/surface_export.h"
-		"${CMAKE_CURRENT_LIST_DIR}/volume_export.h"
+		"${CMAKE_CURRENT_LIST_DIR}/volume_export.h"		
 		"${CMAKE_CURRENT_LIST_DIR}/formats/2dm.h"
 		"${CMAKE_CURRENT_LIST_DIR}/formats/dot.h"
 		"${CMAKE_CURRENT_LIST_DIR}/formats/cg.h"
 		"${CMAKE_CURRENT_LIST_DIR}/formats/cskel.h"
+		"${CMAKE_CURRENT_LIST_DIR}/formats/lin.h"
 		"${CMAKE_CURRENT_LIST_DIR}/formats/meshb.h"
 		"${CMAKE_CURRENT_LIST_DIR}/formats/msh.h"
 		"${CMAKE_CURRENT_LIST_DIR}/formats/nastran.h"
@@ -51,6 +56,7 @@ target_sources(${PROJECT_NAME}
 		"${CMAKE_CURRENT_LIST_DIR}/formats/tet.h"
 		"${CMAKE_CURRENT_LIST_DIR}/formats/tetgen.h"
 		"${CMAKE_CURRENT_LIST_DIR}/formats/tetmesh.h"
+		"${CMAKE_CURRENT_LIST_DIR}/formats/ts.h"
 		"${CMAKE_CURRENT_LIST_DIR}/formats/vtk.h"
 		"${CMAKE_CURRENT_LIST_DIR}/formats/vtk.cpp"
 )
