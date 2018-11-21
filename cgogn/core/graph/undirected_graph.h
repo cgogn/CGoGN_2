@@ -650,20 +650,20 @@ struct UndirectedGraphType
 using UndirectedGraph = UndirectedGraph_T<UndirectedGraphType>;
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_CORE_API UndirectedGraph_T<UndirectedGraphType>;
-extern template class CGOGN_CORE_API UndirectedGraphBuilder_T<UndirectedGraph>;
-extern template class CGOGN_CORE_API DartMarker<UndirectedGraph>;
-extern template class CGOGN_CORE_API DartMarkerStore<UndirectedGraph>;
-extern template class CGOGN_CORE_API DartMarkerNoUnmark<UndirectedGraph>;
-extern template class CGOGN_CORE_API CellMarker<UndirectedGraph, UndirectedGraph::Vertex::ORBIT>;
-extern template class CGOGN_CORE_API CellMarker<UndirectedGraph, UndirectedGraph::Edge::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerNoUnmark<UndirectedGraph, UndirectedGraph::Vertex::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerNoUnmark<UndirectedGraph, UndirectedGraph::Edge::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<UndirectedGraph, UndirectedGraph::Vertex::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<UndirectedGraph, UndirectedGraph::Edge::ORBIT>;
-extern template class CGOGN_CORE_API CellCache<UndirectedGraph>;
-extern template class CGOGN_CORE_API BoundaryCache<UndirectedGraph>;
-extern template class CGOGN_CORE_API QuickTraversor<UndirectedGraph>;
+extern template class CGOGN_CORE_EXPORT UndirectedGraph_T<UndirectedGraphType>;
+extern template class CGOGN_CORE_EXPORT UndirectedGraphBuilder_T<UndirectedGraph>;
+extern template class CGOGN_CORE_EXPORT DartMarker<UndirectedGraph>;
+extern template class CGOGN_CORE_EXPORT DartMarkerStore<UndirectedGraph>;
+extern template class CGOGN_CORE_EXPORT DartMarkerNoUnmark<UndirectedGraph>;
+extern template class CGOGN_CORE_EXPORT CellMarker<UndirectedGraph, UndirectedGraph::Vertex::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarker<UndirectedGraph, UndirectedGraph::Edge::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerNoUnmark<UndirectedGraph, UndirectedGraph::Vertex::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerNoUnmark<UndirectedGraph, UndirectedGraph::Edge::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerStore<UndirectedGraph, UndirectedGraph::Vertex::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerStore<UndirectedGraph, UndirectedGraph::Edge::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellCache<UndirectedGraph>;
+extern template class CGOGN_CORE_EXPORT BoundaryCache<UndirectedGraph>;
+extern template class CGOGN_CORE_EXPORT QuickTraversor<UndirectedGraph>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
 
 } // end namespace cgogn

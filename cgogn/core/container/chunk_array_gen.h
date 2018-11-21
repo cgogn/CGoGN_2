@@ -25,7 +25,7 @@
 #define CGOGN_CORE_CONTAINER_CHUNK_ARRAY_GEN_H_
 
 #include <cgogn/core/utils/serialization.h>
-#include <cgogn/core/dll.h>
+#include <cgogn/core/cgogn_core_export.h>
 
 #include <cgogn/core/cmap/map_traits.h>
 
@@ -253,7 +253,7 @@ public:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_CORE_API ChunkArrayGen<CGOGN_CHUNK_SIZE>;
+extern template class CGOGN_CORE_EXPORT ChunkArrayGen<CGOGN_CHUNK_SIZE>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace cgogn

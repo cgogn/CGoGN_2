@@ -26,7 +26,7 @@
 
 #include <cgogn/rendering/shaders/shader_program.h>
 #include <cgogn/rendering/shaders/vbo.h>
-#include <cgogn/rendering/dll.h>
+#include <cgogn/rendering/cgogn_rendering_export.h>
 #include <QOpenGLTexture>
 
 class QOpenGLTexture;
@@ -39,7 +39,7 @@ namespace rendering
 
 class ShaderText;
 
-class CGOGN_RENDERING_API ShaderParamText : public ShaderParam
+class CGOGN_RENDERING_EXPORT ShaderParamText : public ShaderParam
 {
 protected:
 
@@ -57,7 +57,7 @@ public:
 	void set_vbo(VBO* vbo_pos, VBO* vbo_str, VBO* vbo_colsize);
 };
 
-class CGOGN_RENDERING_API ShaderText : public ShaderProgram
+class CGOGN_RENDERING_EXPORT ShaderText : public ShaderProgram
 {
 	static const char* vertex_shader_source_;
 	static const char* fragment_shader_source_;

@@ -32,7 +32,7 @@ namespace io
 {
 
 
-CGOGN_IO_API std::string cgogn_name_of_type_to_ply_data_type(const std::string& cgogn_type)
+CGOGN_IO_EXPORT std::string cgogn_name_of_type_to_ply_data_type(const std::string& cgogn_type)
 {
 	static const std::map<std::string, std::string> type_map{
 		{name_of_type(int8()), "int8"},

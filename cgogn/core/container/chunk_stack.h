@@ -26,7 +26,7 @@
 
 #include <cgogn/core/container/chunk_array.h>
 #include <cgogn/core/utils/assert.h>
-#include <cgogn/core/dll.h>
+#include <cgogn/core/cgogn_core_export.h>
 
 #include <cgogn/core/cmap/map_traits.h>
 
@@ -177,7 +177,7 @@ public:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_CORE_API ChunkStack<CGOGN_CHUNK_SIZE, uint32>;
+extern template class CGOGN_CORE_EXPORT ChunkStack<CGOGN_CHUNK_SIZE, uint32>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace cgogn

@@ -40,7 +40,7 @@ namespace logger
 namespace internal
 {
 
-CGOGN_CORE_API std::string loglevel_to_string(LogLevel lvl)
+CGOGN_CORE_EXPORT std::string loglevel_to_string(LogLevel lvl)
 {
 	switch (lvl)
 	{

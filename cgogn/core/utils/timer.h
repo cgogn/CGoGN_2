@@ -25,12 +25,12 @@
 #define CGOGN_CORE_UTILS_TIMER_H_
 
 #include <chrono>
-#include <cgogn/core/dll.h>
+#include <cgogn/core/cgogn_core_export.h>
 
 namespace cgogn
 {
 
-class CGOGN_CORE_API AutoTimer final
+class CGOGN_CORE_EXPORT AutoTimer final
 {
 public:
 	AutoTimer(const char* name = "unnamed_timer");

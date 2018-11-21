@@ -24,13 +24,13 @@
 #ifndef CGOGN_TOPOLOGY_ADAPTIVE_TRI_QUAD_CMAP2_H_
 #define CGOGN_TOPOLOGY_ADAPTIVE_TRI_QUAD_CMAP2_H_
 
-#include <cgogn/topology/dll.h>
+#include <cgogn/topology/cgogn_topology_export.h>
 #include <cgogn/core/cmap/cmap2.h>
 
 namespace cgogn
 {
 
-class CGOGN_TOPOLOGY_API AdaptiveTriQuadCMap2
+class CGOGN_TOPOLOGY_EXPORT AdaptiveTriQuadCMap2
 {
 public:
 

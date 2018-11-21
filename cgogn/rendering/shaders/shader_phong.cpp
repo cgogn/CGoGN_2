@@ -228,10 +228,10 @@ void ShaderPhongGen::set_double_side(bool ts)
 	prg_.setUniformValue(unif_double_side_, ts);
 }
 
-template class CGOGN_RENDERING_API ShaderPhongTpl<false>;
-template class CGOGN_RENDERING_API ShaderPhongTpl<true>;
-template class CGOGN_RENDERING_API ShaderParamPhong<false>;
-template class CGOGN_RENDERING_API ShaderParamPhong<true>;
+template class CGOGN_RENDERING_EXPORT ShaderPhongTpl<false>;
+template class CGOGN_RENDERING_EXPORT ShaderPhongTpl<true>;
+template class CGOGN_RENDERING_EXPORT ShaderParamPhong<false>;
+template class CGOGN_RENDERING_EXPORT ShaderParamPhong<true>;
 
 } // namespace rendering
 

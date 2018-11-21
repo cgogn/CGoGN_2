@@ -25,7 +25,7 @@
 #define CGOGN_MODELING_ALGOS_DUAL_H_
 
 #include <vector>
-#include <cgogn/modeling/dll.h>
+#include <cgogn/modeling/cgogn_modeling_export.h>
 #include<cgogn/core/cmap/cmap2.h>
 #include<cgogn/core/utils/type_traits.h>
 

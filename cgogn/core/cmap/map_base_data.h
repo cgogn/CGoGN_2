@@ -59,7 +59,7 @@ template <typename T, Orbit ORBIT> class Attribute;
 /**
  * @brief The MapBaseData class
  */
-class CGOGN_CORE_API MapBaseData
+class CGOGN_CORE_EXPORT MapBaseData
 {
 public:
 

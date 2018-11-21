@@ -24,7 +24,7 @@
 #ifndef CGOGN_CORE_UTILS_STRING_H_
 #define CGOGN_CORE_UTILS_STRING_H_
 
-#include <cgogn/core/dll.h>
+#include <cgogn/core/cgogn_core_export.h>
 #include <string>
 #include <locale>
 #include <iostream>
@@ -32,21 +32,21 @@
 namespace cgogn
 {
 
-CGOGN_CORE_API std::string trim_left(const std::string& str);
+CGOGN_CORE_EXPORT std::string trim_left(const std::string& str);
 
-CGOGN_CORE_API std::string trim_right(const std::string& str);
+CGOGN_CORE_EXPORT std::string trim_right(const std::string& str);
 
-CGOGN_CORE_API std::string trim(const std::string& str);
+CGOGN_CORE_EXPORT std::string trim(const std::string& str);
 
-CGOGN_CORE_API std::string to_upper(const std::string& str);
+CGOGN_CORE_EXPORT std::string to_upper(const std::string& str);
 
-CGOGN_CORE_API std::string to_lower(const std::string& str);
+CGOGN_CORE_EXPORT std::string to_lower(const std::string& str);
 
-CGOGN_CORE_API std::string extension(const std::string& str);
+CGOGN_CORE_EXPORT std::string extension(const std::string& str);
 
-CGOGN_CORE_API std::string remove_extension(const std::string& str);
+CGOGN_CORE_EXPORT std::string remove_extension(const std::string& str);
 
-CGOGN_CORE_API bool i_equals(const std::string& str1, const std::string& str2);
+CGOGN_CORE_EXPORT bool i_equals(const std::string& str1, const std::string& str2);
 
 } // namespace cgogn
 

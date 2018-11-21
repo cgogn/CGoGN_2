@@ -24,7 +24,7 @@
 #ifndef CGOGN_RENDERING_SHADERS_ROUND_POINT_H_
 #define CGOGN_RENDERING_SHADERS_ROUND_POINT_H_
 
-#include <cgogn/rendering/dll.h>
+#include <cgogn/rendering/cgogn_rendering_export.h>
 #include <cgogn/rendering/shaders/shader_program.h>
 #include <cgogn/rendering/shaders/vbo.h>
 
@@ -42,7 +42,7 @@ template <bool CPV>
 class ShaderParamRoundPoint: public ShaderParam
 {};
 
-class CGOGN_RENDERING_API ShaderRoundPointGen : public ShaderProgram
+class CGOGN_RENDERING_EXPORT ShaderRoundPointGen : public ShaderProgram
 {
 	template <bool CPV> friend class ShaderParamRoundPoint;
 
@@ -263,11 +263,11 @@ using ShaderRoundPoint = ShaderRoundPointTpl<false>;
 using ShaderRoundPointColor = ShaderRoundPointTpl<true>;
 
 
-#if !defined(CGOGN_RENDER_SHADERS_ROUND_POINT_CPP_)
-extern template class CGOGN_RENDERING_API ShaderRoundPointTpl<false>;
-extern template class CGOGN_RENDERING_API ShaderRoundPointTpl<true>;
-extern template class CGOGN_RENDERING_API ShaderParamRoundPoint<false>;
-extern template class CGOGN_RENDERING_API ShaderParamRoundPoint<true>;
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && !defined(CGOGN_RENDER_SHADERS_ROUND_POINT_CPP_)
+extern template class CGOGN_RENDERING_EXPORT ShaderRoundPointTpl<false>;
+extern template class CGOGN_RENDERING_EXPORT ShaderRoundPointTpl<true>;
+extern template class CGOGN_RENDERING_EXPORT ShaderParamRoundPoint<false>;
+extern template class CGOGN_RENDERING_EXPORT ShaderParamRoundPoint<true>;
 #endif
 
 } // namespace rendering

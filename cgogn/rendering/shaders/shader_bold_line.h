@@ -24,7 +24,7 @@
 #ifndef CGOGN_RENDERING_SHADERS_BOLDLINE_H_
 #define CGOGN_RENDERING_SHADERS_BOLDLINE_H_
 
-#include <cgogn/rendering/dll.h>
+#include <cgogn/rendering/cgogn_rendering_export.h>
 #include <cgogn/rendering/shaders/shader_program.h>
 #include <cgogn/rendering/shaders/vbo.h>
 
@@ -42,7 +42,7 @@ template <bool CPV>
 class ShaderParamBoldLine : public ShaderParam
 {};
 
-class CGOGN_RENDERING_API ShaderBoldLineGen : public ShaderProgram
+class CGOGN_RENDERING_EXPORT ShaderBoldLineGen : public ShaderProgram
 {
 	template <bool CPV> friend class ShaderParamBoldLine;
 
@@ -261,11 +261,11 @@ using ShaderBoldLine = ShaderBoldLineTpl<false>;
 using ShaderBoldLineColor = ShaderBoldLineTpl<true>;
 
 
-#if !defined(CGOGN_RENDER_SHADERS_BOLD_LINE_CPP_)
-extern template class CGOGN_RENDERING_API ShaderBoldLineTpl<false>;
-extern template class CGOGN_RENDERING_API ShaderBoldLineTpl<true>;
-extern template class CGOGN_RENDERING_API ShaderParamBoldLine<false>;
-extern template class CGOGN_RENDERING_API ShaderParamBoldLine<true>;
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && !defined(CGOGN_RENDER_SHADERS_BOLD_LINE_CPP_)
+extern template class CGOGN_RENDERING_EXPORT ShaderBoldLineTpl<false>;
+extern template class CGOGN_RENDERING_EXPORT ShaderBoldLineTpl<true>;
+extern template class CGOGN_RENDERING_EXPORT ShaderParamBoldLine<false>;
+extern template class CGOGN_RENDERING_EXPORT ShaderParamBoldLine<true>;
 #endif
 
 } // namespace rendering

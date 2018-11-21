@@ -30,7 +30,7 @@
 #include <string>
 #include <cstring>
 
-#include <cgogn/core/dll.h>
+#include <cgogn/core/cgogn_core_export.h>
 #include <cgogn/core/container/chunk_array_gen.h>
 #include <cgogn/core/utils/name_types.h>
 #include <cgogn/core/utils/serialization.h>
@@ -826,12 +826,12 @@ public:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
-//extern template class CGOGN_CORE_API ChunkArray<CGOGN_CHUNK_SIZE, bool>;
-extern template class CGOGN_CORE_API ChunkArray<CGOGN_CHUNK_SIZE, uint32>;
-extern template class CGOGN_CORE_API ChunkArray<CGOGN_CHUNK_SIZE, uint8>;
-extern template class CGOGN_CORE_API ChunkArray<CGOGN_CHUNK_SIZE, std::array<float32, 3>>;
-extern template class CGOGN_CORE_API ChunkArray<CGOGN_CHUNK_SIZE, std::array<float64, 3>>;
-extern template class CGOGN_CORE_API ChunkArrayBool<CGOGN_CHUNK_SIZE>;
+//extern template class CGOGN_CORE_EXPORT ChunkArray<CGOGN_CHUNK_SIZE, bool>;
+extern template class CGOGN_CORE_EXPORT ChunkArray<CGOGN_CHUNK_SIZE, uint32>;
+extern template class CGOGN_CORE_EXPORT ChunkArray<CGOGN_CHUNK_SIZE, uint8>;
+extern template class CGOGN_CORE_EXPORT ChunkArray<CGOGN_CHUNK_SIZE, std::array<float32, 3>>;
+extern template class CGOGN_CORE_EXPORT ChunkArray<CGOGN_CHUNK_SIZE, std::array<float64, 3>>;
+extern template class CGOGN_CORE_EXPORT ChunkArrayBool<CGOGN_CHUNK_SIZE>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace cgogn

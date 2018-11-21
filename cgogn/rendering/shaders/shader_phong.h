@@ -24,7 +24,7 @@
 #ifndef CGOGN_RENDERING_SHADERS_PHONG_H_
 #define CGOGN_RENDERING_SHADERS_PHONG_H_
 
-#include <cgogn/rendering/dll.h>
+#include <cgogn/rendering/cgogn_rendering_export.h>
 #include <cgogn/rendering/shaders/shader_program.h>
 #include <cgogn/rendering/shaders/vbo.h>
 
@@ -43,7 +43,7 @@ template <bool CPV>
 class ShaderParamPhong: public ShaderParam
 {};
 
-class CGOGN_RENDERING_API ShaderPhongGen : public ShaderProgram
+class CGOGN_RENDERING_EXPORT ShaderPhongGen : public ShaderProgram
 {
 	template <bool CPV> friend class ShaderParamPhong;
 
@@ -350,11 +350,11 @@ using ShaderPhong = ShaderPhongTpl<false>;
 using ShaderPhongColor = ShaderPhongTpl<true>;
 
 
-#if !defined(CGOGN_RENDER_SHADERS_PHONG_CPP_)
-extern template class CGOGN_RENDERING_API ShaderPhongTpl<false>;
-extern template class CGOGN_RENDERING_API ShaderPhongTpl<true>;
-extern template class CGOGN_RENDERING_API ShaderParamPhong<false>;
-extern template class CGOGN_RENDERING_API ShaderParamPhong<true>;
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && !defined(CGOGN_RENDER_SHADERS_PHONG_CPP_)
+extern template class CGOGN_RENDERING_EXPORT ShaderPhongTpl<false>;
+extern template class CGOGN_RENDERING_EXPORT ShaderPhongTpl<true>;
+extern template class CGOGN_RENDERING_EXPORT ShaderParamPhong<false>;
+extern template class CGOGN_RENDERING_EXPORT ShaderParamPhong<true>;
 #endif
 } // namespace rendering
 

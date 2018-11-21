@@ -22,7 +22,6 @@
 *******************************************************************************/
 
 
-#include <cgogn/core/dll.h>
 #include <cgogn/core/utils/assert.h>
 #include <iostream>
 #include <sstream>
@@ -31,7 +30,7 @@
 namespace cgogn
 {
 
-CGOGN_CORE_API CGOGN_NORETURN void assertion_failed(
+void assertion_failed(
 	const std::string& expression,
 	const std::string& message,
 	const std::string& file_name,
@@ -51,7 +50,7 @@ CGOGN_CORE_API CGOGN_NORETURN void assertion_failed(
 	std::abort();
 }
 
-CGOGN_CORE_API CGOGN_NORETURN void should_not_have_reached(
+void should_not_have_reached(
 	const std::string& message,
 	const std::string& file_name,
 	const std::string& function_name,

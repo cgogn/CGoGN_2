@@ -35,7 +35,7 @@
 #include <cgogn/core/cmap/cmap1.h>
 #include <cgogn/core/cmap/cmap1_builder.h>
 
-#include <cgogn/io/dll.h>
+#include <cgogn/io/cgogn_io_export.h>
 #include <cgogn/io/c_locale.h>
 #include <cgogn/io/mesh_io_gen.h>
 #include <cgogn/io/data_io.h>
@@ -193,8 +193,8 @@ public:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_IO_API PolylineImport<CMap1>;
-extern template class CGOGN_IO_API PolylineFileImport<CMap1>;
+extern template class CGOGN_IO_EXPORT PolylineImport<CMap1>;
+extern template class CGOGN_IO_EXPORT PolylineFileImport<CMap1>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
 
 } // end namespace io

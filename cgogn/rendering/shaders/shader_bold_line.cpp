@@ -254,10 +254,10 @@ void ShaderBoldLineGen::set_plane_clip2(const QVector4D& plane)
 }
 
 
-template class CGOGN_RENDERING_API ShaderBoldLineTpl<false>;
-template class CGOGN_RENDERING_API ShaderBoldLineTpl<true>;
-template class CGOGN_RENDERING_API ShaderParamBoldLine<false>;
-template class CGOGN_RENDERING_API ShaderParamBoldLine<true>;
+template class CGOGN_RENDERING_EXPORT ShaderBoldLineTpl<false>;
+template class CGOGN_RENDERING_EXPORT ShaderBoldLineTpl<true>;
+template class CGOGN_RENDERING_EXPORT ShaderParamBoldLine<false>;
+template class CGOGN_RENDERING_EXPORT ShaderParamBoldLine<true>;
 
 } // namespace rendering
 

@@ -31,10 +31,10 @@ namespace cgogn
 namespace geometry
 {
 
-template class CGOGN_GEOMETRY_API AABB<Eigen::Vector3d>;
-template class CGOGN_GEOMETRY_API AABB<Eigen::Vector3f>;
-template class CGOGN_GEOMETRY_API AABB<Vec_T<std::array<float32,3>>>;
-template class CGOGN_GEOMETRY_API AABB<Vec_T<std::array<float64,3>>>;
+template class CGOGN_GEOMETRY_EXPORT AABB<Eigen::Vector3d>;
+template class CGOGN_GEOMETRY_EXPORT AABB<Eigen::Vector3f>;
+template class CGOGN_GEOMETRY_EXPORT AABB<Vec_T<std::array<float32,3>>>;
+template class CGOGN_GEOMETRY_EXPORT AABB<Vec_T<std::array<float64,3>>>;
 
 
 } // namespace geometry

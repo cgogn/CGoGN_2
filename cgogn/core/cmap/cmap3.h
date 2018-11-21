@@ -2628,26 +2628,25 @@ struct CMap3Type
 using CMap3 = CMap3_T<CMap3Type>;
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_CORE_API CMap3_T<CMap3Type>;
-extern template class CGOGN_CORE_API CMap3Builder_T<CMap3>;
-extern template class CGOGN_CORE_API DartMarker<CMap3>;
-extern template class CGOGN_CORE_API DartMarkerStore<CMap3>;
-extern template class CGOGN_CORE_API DartMarkerNoUnmark<CMap3>;
-extern template class CGOGN_CORE_API CellMarker<CMap3, CMap3::Vertex::ORBIT>;
-extern template class CGOGN_CORE_API CellMarker<CMap3, CMap3::Edge::ORBIT>;
-extern template class CGOGN_CORE_API CellMarker<CMap3, CMap3::Face::ORBIT>;
-extern template class CGOGN_CORE_API CellMarker<CMap3, CMap3::Volume::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap3, CMap3::Vertex::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap3, CMap3::Edge::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap3, CMap3::Face::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap3, CMap3::Volume::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap3, CMap3::Vertex::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap3, CMap3::Edge::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap3, CMap3::Face::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap3, CMap3::Volume::ORBIT>;
-extern template class CGOGN_CORE_API CellCache<CMap3>;
-extern template class CGOGN_CORE_API BoundaryCache<CMap3>;
-extern template class CGOGN_CORE_API QuickTraversor<CMap3>;
+extern template class CGOGN_CORE_EXPORT CMap3_T<CMap3Type>;
+extern template class CGOGN_CORE_EXPORT DartMarker<CMap3>;
+extern template class CGOGN_CORE_EXPORT DartMarkerStore<CMap3>;
+extern template class CGOGN_CORE_EXPORT DartMarkerNoUnmark<CMap3>;
+extern template class CGOGN_CORE_EXPORT CellMarker<CMap3, CMap3::Vertex::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarker<CMap3, CMap3::Edge::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarker<CMap3, CMap3::Face::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarker<CMap3, CMap3::Volume::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerNoUnmark<CMap3, CMap3::Vertex::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerNoUnmark<CMap3, CMap3::Edge::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerNoUnmark<CMap3, CMap3::Face::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerNoUnmark<CMap3, CMap3::Volume::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerStore<CMap3, CMap3::Vertex::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerStore<CMap3, CMap3::Edge::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerStore<CMap3, CMap3::Face::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerStore<CMap3, CMap3::Volume::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellCache<CMap3>;
+extern template class CGOGN_CORE_EXPORT BoundaryCache<CMap3>;
+extern template class CGOGN_CORE_EXPORT QuickTraversor<CMap3>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace cgogn

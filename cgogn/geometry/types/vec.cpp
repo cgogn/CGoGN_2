@@ -31,8 +31,8 @@ namespace cgogn
 namespace geometry
 {
 
-template class CGOGN_GEOMETRY_API Vec_T<std::array<float32,3>>;
-template class CGOGN_GEOMETRY_API Vec_T<std::array<float64,3>>;
+template class CGOGN_GEOMETRY_EXPORT Vec_T<std::array<float32,3>>;
+template class CGOGN_GEOMETRY_EXPORT Vec_T<std::array<float64,3>>;
 
 } // namespace geometry
 
