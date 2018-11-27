@@ -135,13 +135,16 @@ public:
 		return std::unique_ptr<Renderer>(new Renderer(this));
 	}
 
+	template <typename MAP, typename MASK, typename VERTEX_ATTR>
+	void update_edge(const MAP& m, const MASK& mask, const VERTEX_ATTR& position);
+
 	template <typename MAP, typename VERTEX_ATTR>
 	void update_edge(const MAP& m, const VERTEX_ATTR& position);
 };
 
 
-template <typename MAP, typename VERTEX_ATTR>
-void VolumeDrawerGen::update_edge(const MAP& m, const VERTEX_ATTR& position)
+template <typename MAP, typename MASK, typename VERTEX_ATTR>
+void VolumeDrawerGen::update_edge(const MAP& m, const MASK& mask, const VERTEX_ATTR& position)
 {
 	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
 
@@ -167,13 +170,20 @@ void VolumeDrawerGen::update_edge(const MAP& m, const VERTEX_ATTR& position)
 			out_pos.push_back({float32(P1[0]), float32(P1[1]), float32(P1[2])});
 			out_pos.push_back({float32(P2[0]), float32(P2[1]), float32(P2[2])});
 		});
-	});
+	},
+	mask);
 
 	uint32 nbvec = uint32(out_pos.size());
 	vbo_pos2_->allocate(nbvec, 3);
 	vbo_pos2_->bind();
 	vbo_pos2_->copy_data(0, nbvec * 12, out_pos[0].data());
 	vbo_pos2_->release();
+}
+
+template <typename MAP, typename VERTEX_ATTR>
+void VolumeDrawerGen::update_edge(const MAP& m, const VERTEX_ATTR& position)
+{
+	update_edge(m, AllCellsFilter(), position);
 }
 
 
@@ -191,8 +201,8 @@ public:
 	VolumeDrawerTpl() : VolumeDrawerGen(false)
 	{}
 
-	template <typename MAP, typename VERTEX_ATTR>
-	void update_face(const MAP& m, const VERTEX_ATTR& position)
+	template <typename MAP, typename MASK, typename VERTEX_ATTR>
+	void update_face(const MAP& m, const MASK& mask, const VERTEX_ATTR& position)
 	{
 		static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
 
@@ -238,7 +248,8 @@ public:
 					}
 				}
 			});
-		});
+		},
+		mask);
 
 		uint32 nbvec = uint32(out_pos.size());
 
@@ -246,6 +257,12 @@ public:
 		vbo_pos_->bind();
 		vbo_pos_->copy_data(0, nbvec * 12, out_pos[0].data());
 		vbo_pos_->release();
+	}
+
+	template <typename MAP, typename VERTEX_ATTR>
+	void update_face(const MAP& m, const VERTEX_ATTR& position)
+	{
+		update_face(m, AllCellsFilter(), position);
 	}
 };
 
@@ -258,8 +275,8 @@ public:
 	VolumeDrawerTpl() : VolumeDrawerGen(true)
 	{}
 
-	template <typename MAP, typename VERTEX_ATTR>
-	void update_face(const MAP& m, const VERTEX_ATTR& position, const VERTEX_ATTR& color)
+	template <typename MAP, typename MASK, typename VERTEX_ATTR>
+	void update_face(const MAP& m, const MASK& mask, const VERTEX_ATTR& position, const VERTEX_ATTR& color)
 	{
 		static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
 
@@ -324,8 +341,10 @@ public:
 						out_color.push_back({float32(C3[0]), float32(C3[1]), float32(C3[2])});
 					}
 				}
-			});
-		});
+			},
+			mask);
+		},
+		mask);
 
 		std::size_t nbvec = out_pos.size();
 
@@ -338,6 +357,12 @@ public:
 		vbo_col_->bind();
 		vbo_col_->copy_data(0, nbvec * 12, out_color[0].data());
 		vbo_col_->release();
+	}
+
+	template <typename MAP, typename VERTEX_ATTR>
+	void update_face(const MAP& m, const VERTEX_ATTR& position, const VERTEX_ATTR& color)
+	{
+		update_face(m, AllCellsFilter(), position, color);
 	}
 };
 
