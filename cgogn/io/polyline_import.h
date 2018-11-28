@@ -137,11 +137,6 @@ public:
 			darts_out_vertex[idx2] = d;
 		}
 
-		Dart last = mbuild_.add_topology_element();
-		uint32 idx = edges_vertex_indices_[edges_vertex_indices_.size()-1];
-		mbuild_.template set_orbit_embedding<Vertex>(Vertex(last), idx);
-		darts_out_vertex[idx] = first;
-
 		uint32 nb_boundary_vertex = 0;
 
 		map_.foreach_dart([&] (Dart d)
@@ -157,8 +152,6 @@ public:
 					mbuild_.phi1_sew(d, prev_vertex_darts);
 			}
 		});
-
-		mbuild_.boundary_mark(Vertex(last));
 
 		if(nb_boundary_vertex > 0)
 		{
