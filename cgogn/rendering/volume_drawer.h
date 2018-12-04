@@ -24,7 +24,7 @@
 #ifndef CGOGN_RENDERING_VOLUME_DRAWER_H_
 #define CGOGN_RENDERING_VOLUME_DRAWER_H_
 
-#include <cgogn/rendering/dll.h>
+#include <cgogn/rendering/cgogn_rendering_export.h>
 
 #include <cgogn/rendering/shaders/shader_explode_volumes.h>
 #include <cgogn/rendering/shaders/shader_explode_volumes_line.h>
@@ -63,7 +63,7 @@ namespace rendering
  *  volu_rend_->draw_edges(proj, view);
  *
  */
-class CGOGN_RENDERING_API VolumeDrawerGen
+class CGOGN_RENDERING_EXPORT VolumeDrawerGen
 {
 protected:
 
@@ -86,7 +86,7 @@ protected:
 
 public:
 
-	class CGOGN_RENDERING_API Renderer
+	class CGOGN_RENDERING_EXPORT Renderer
 	{
 		friend class VolumeDrawerGen;
 
@@ -135,13 +135,16 @@ public:
 		return std::unique_ptr<Renderer>(new Renderer(this));
 	}
 
+	template <typename MAP, typename MASK, typename VERTEX_ATTR>
+	void update_edge(const MAP& m, const MASK& mask, const VERTEX_ATTR& position);
+
 	template <typename MAP, typename VERTEX_ATTR>
 	void update_edge(const MAP& m, const VERTEX_ATTR& position);
 };
 
 
-template <typename MAP, typename VERTEX_ATTR>
-void VolumeDrawerGen::update_edge(const MAP& m, const VERTEX_ATTR& position)
+template <typename MAP, typename MASK, typename VERTEX_ATTR>
+void VolumeDrawerGen::update_edge(const MAP& m, const MASK& mask, const VERTEX_ATTR& position)
 {
 	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
 
@@ -167,13 +170,20 @@ void VolumeDrawerGen::update_edge(const MAP& m, const VERTEX_ATTR& position)
 			out_pos.push_back({float32(P1[0]), float32(P1[1]), float32(P1[2])});
 			out_pos.push_back({float32(P2[0]), float32(P2[1]), float32(P2[2])});
 		});
-	});
+	},
+	mask);
 
 	uint32 nbvec = uint32(out_pos.size());
 	vbo_pos2_->allocate(nbvec, 3);
 	vbo_pos2_->bind();
 	vbo_pos2_->copy_data(0, nbvec * 12, out_pos[0].data());
 	vbo_pos2_->release();
+}
+
+template <typename MAP, typename VERTEX_ATTR>
+void VolumeDrawerGen::update_edge(const MAP& m, const VERTEX_ATTR& position)
+{
+	update_edge(m, AllCellsFilter(), position);
 }
 
 
@@ -191,8 +201,8 @@ public:
 	VolumeDrawerTpl() : VolumeDrawerGen(false)
 	{}
 
-	template <typename MAP, typename VERTEX_ATTR>
-	void update_face(const MAP& m, const VERTEX_ATTR& position)
+	template <typename MAP, typename MASK, typename VERTEX_ATTR>
+	void update_face(const MAP& m, const MASK& mask, const VERTEX_ATTR& position)
 	{
 		static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
 
@@ -238,7 +248,8 @@ public:
 					}
 				}
 			});
-		});
+		},
+		mask);
 
 		uint32 nbvec = uint32(out_pos.size());
 
@@ -246,6 +257,12 @@ public:
 		vbo_pos_->bind();
 		vbo_pos_->copy_data(0, nbvec * 12, out_pos[0].data());
 		vbo_pos_->release();
+	}
+
+	template <typename MAP, typename VERTEX_ATTR>
+	void update_face(const MAP& m, const VERTEX_ATTR& position)
+	{
+		update_face(m, AllCellsFilter(), position);
 	}
 };
 
@@ -258,8 +275,8 @@ public:
 	VolumeDrawerTpl() : VolumeDrawerGen(true)
 	{}
 
-	template <typename MAP, typename VERTEX_ATTR>
-	void update_face(const MAP& m, const VERTEX_ATTR& position, const VERTEX_ATTR& color)
+	template <typename MAP, typename MASK, typename VERTEX_ATTR>
+	void update_face(const MAP& m, const MASK& mask, const VERTEX_ATTR& position, const VERTEX_ATTR& color)
 	{
 		static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
 
@@ -324,8 +341,10 @@ public:
 						out_color.push_back({float32(C3[0]), float32(C3[1]), float32(C3[2])});
 					}
 				}
-			});
-		});
+			},
+			mask);
+		},
+		mask);
 
 		std::size_t nbvec = out_pos.size();
 
@@ -339,14 +358,20 @@ public:
 		vbo_col_->copy_data(0, nbvec * 12, out_color[0].data());
 		vbo_col_->release();
 	}
+
+	template <typename MAP, typename VERTEX_ATTR>
+	void update_face(const MAP& m, const VERTEX_ATTR& position, const VERTEX_ATTR& color)
+	{
+		update_face(m, AllCellsFilter(), position, color);
+	}
 };
 
 using VolumeDrawer = VolumeDrawerTpl<false>;
 using VolumeDrawerColor = VolumeDrawerTpl<true>;
 
 #if !defined(CGOGN_RENDERING_VOLUME_RENDER_CPP_)
-extern template class CGOGN_RENDERING_API VolumeDrawerTpl<false>;
-extern template class CGOGN_RENDERING_API VolumeDrawerTpl<true>;
+extern template class CGOGN_RENDERING_EXPORT VolumeDrawerTpl<false>;
+extern template class CGOGN_RENDERING_EXPORT VolumeDrawerTpl<true>;
 #endif // (!defined(CGOGN_RENDERING_VOLUME_RENDER_CPP_))
 
 } // namespace rendering

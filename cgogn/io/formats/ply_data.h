@@ -30,8 +30,9 @@
 #include <string>
 
 #include <ply.h>
+#include <cgogn/core/utils/definitions.h>
 #include <cgogn/core/utils/numerics.h>
-#include <cgogn/io/dll.h>
+#include <cgogn/io/cgogn_io_export.h>
 
 namespace cgogn
 {
@@ -39,7 +40,7 @@ namespace cgogn
 namespace io
 {
 
-class CGOGN_IO_API PlyImportData
+class CGOGN_IO_EXPORT PlyImportData
 {
 public:
 

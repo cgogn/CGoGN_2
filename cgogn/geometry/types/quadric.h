@@ -26,7 +26,7 @@
 
 #include <cgogn/core/utils/numerics.h>
 
-#include <cgogn/geometry/dll.h>
+#include <cgogn/geometry/cgogn_geometry_export.h>
 #include <cgogn/geometry/types/geometry_traits.h>
 #include <cgogn/geometry/types/plane_3d.h>
 

@@ -24,7 +24,7 @@
 #ifndef CGOGN_RENDERING_DRAWER_H_
 #define CGOGN_RENDERING_DRAWER_H_
 
-#include <cgogn/rendering/dll.h>
+#include <cgogn/rendering/cgogn_rendering_export.h>
 
 #include <cgogn/rendering/shaders/shader_color_per_vertex.h>
 #include <cgogn/rendering/shaders/shader_flat.h>
@@ -63,7 +63,7 @@ namespace rendering
  * draw:
  *  drawer_rend_->draw(proj,view,this);
  */
-class CGOGN_RENDERING_API DisplayListDrawer
+class CGOGN_RENDERING_EXPORT DisplayListDrawer
 {
 	struct PrimParam
 	{
@@ -104,7 +104,7 @@ protected:
 
 public:
 
-	class CGOGN_RENDERING_API Renderer
+	class CGOGN_RENDERING_EXPORT Renderer
 	{
 		friend class DisplayListDrawer;
 

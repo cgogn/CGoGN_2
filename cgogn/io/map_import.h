@@ -201,14 +201,14 @@ inline void import_volume(MAP& map, const std::string& filename)
 }
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
-extern template CGOGN_IO_API void import_point_set<Eigen::Vector3f>(CMap0&, const std::string&);
-extern template CGOGN_IO_API void import_point_set<Eigen::Vector3d>(CMap0&, const std::string&);
-extern template CGOGN_IO_API void import_graph<Eigen::Vector3f>(UndirectedGraph&, const std::string&);
-extern template CGOGN_IO_API void import_graph<Eigen::Vector3d>(UndirectedGraph&, const std::string&);
-extern template CGOGN_IO_API void import_surface<Eigen::Vector3f>(CMap2&, const std::string&);
-extern template CGOGN_IO_API void import_surface<Eigen::Vector3d>(CMap2&, const std::string&);
-extern template CGOGN_IO_API void import_volume<Eigen::Vector3f>(CMap3&, const std::string&);
-extern template CGOGN_IO_API void import_volume<Eigen::Vector3d>(CMap3&, const std::string&);
+extern template CGOGN_IO_EXPORT void import_point_set<Eigen::Vector3f>(CMap0&, const std::string&);
+extern template CGOGN_IO_EXPORT void import_point_set<Eigen::Vector3d>(CMap0&, const std::string&);
+extern template CGOGN_IO_EXPORT void import_graph<Eigen::Vector3f>(UndirectedGraph&, const std::string&);
+extern template CGOGN_IO_EXPORT void import_graph<Eigen::Vector3d>(UndirectedGraph&, const std::string&);
+extern template CGOGN_IO_EXPORT void import_surface<Eigen::Vector3f>(CMap2&, const std::string&);
+extern template CGOGN_IO_EXPORT void import_surface<Eigen::Vector3d>(CMap2&, const std::string&);
+extern template CGOGN_IO_EXPORT void import_volume<Eigen::Vector3f>(CMap3&, const std::string&);
+extern template CGOGN_IO_EXPORT void import_volume<Eigen::Vector3d>(CMap3&, const std::string&);
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace io

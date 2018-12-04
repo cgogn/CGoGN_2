@@ -29,7 +29,7 @@
 
 #include <cgogn/core/utils/numerics.h>
 
-#include <cgogn/geometry/dll.h>
+#include <cgogn/geometry/cgogn_geometry_export.h>
 #include <cgogn/geometry/types/eigen.h>
 #include <cgogn/geometry/types/geometry_traits.h>
 
@@ -50,7 +50,7 @@ enum Orientation3D
 
 // TODO specialize template function for Eigen::Vector3d
 
-class CGOGN_GEOMETRY_API Plane3D
+class CGOGN_GEOMETRY_EXPORT Plane3D
 {
 	template <typename VEC3>
 	inline Eigen::Vector3d to_eigen(const VEC3& v) const

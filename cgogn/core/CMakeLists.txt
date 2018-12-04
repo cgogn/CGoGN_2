@@ -2,6 +2,10 @@ project(cgogn_core
 	LANGUAGES CXX
 )
 
+# Hide symbols by default
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN YES)
+
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
@@ -10,7 +14,6 @@ add_library(cgogn::core ALIAS cgogn_core)
 
 target_sources(${PROJECT_NAME}
 	PRIVATE
-		"${CMAKE_CURRENT_LIST_DIR}/dll.h"
 		"${CMAKE_CURRENT_LIST_DIR}/basic/dart.h"
 		"${CMAKE_CURRENT_LIST_DIR}/basic/dart_marker.h"
 		"${CMAKE_CURRENT_LIST_DIR}/basic/cell.h"
@@ -31,8 +34,8 @@ target_sources(${PROJECT_NAME}
 		"${CMAKE_CURRENT_LIST_DIR}/cmap/attribute.h"
 		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap2_tri.h"
 		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap2_quad.h"
-#		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap3_tetra.h"
-#		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap3_hexa.h"
+		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap3_tetra.h"
+		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap3_hexa.h"
 
 		"${CMAKE_CURRENT_LIST_DIR}/container/chunk_array_container.h"
 		"${CMAKE_CURRENT_LIST_DIR}/container/chunk_array_factory.h"
@@ -247,16 +250,19 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 										DEBUG_POSTFIX "_d"
 										EXPORT_NAME core)
 
-target_compile_definitions(${PROJECT_NAME} PRIVATE "CGOGN_CORE_DLL_EXPORT")
-
 target_link_libraries(${PROJECT_NAME} PUBLIC Threads::Threads)
 
 target_include_directories(${PROJECT_NAME} PUBLIC
+	$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
 	$<BUILD_INTERFACE:${CGOGN_SOURCE_DIR}>
 	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_TERMCOLOR_INCLUDE_DIR}>
 	$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 	$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/cgogn/thirdparty>
 )
+
+# Write out cgogn_core_export.h to the current binary directory
+include(GenerateExportHeader)
+generate_export_header(cgogn_core)
 
 if(${CGOGN_EXTERNAL_TEMPLATES})
 	target_compile_definitions(${PROJECT_NAME} PUBLIC "CGOGN_USE_EXTERNAL_TEMPLATES")
@@ -272,12 +278,21 @@ else()
 endif()
 
 configure_file(${PROJECT_SOURCE_DIR}/cgogn_core.pc.in ${CMAKE_CURRENT_BINARY_DIR}/cgogn_core.pc @ONLY)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/cgogn_core.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/cgogn_core.pc
+	DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
+	COMPONENT cgogn_core_libraries
+)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
 	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cgogn/core
+	COMPONENT cgogn_core_headers
 	FILES_MATCHING PATTERN "*.h"
 	REGEX "(examples|tests)" EXCLUDE
+)
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/cgogn_core_export.h
+	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cgogn/core
+	COMPONENT cgogn_core_headers
 )
 
 cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}")

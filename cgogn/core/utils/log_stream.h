@@ -35,7 +35,7 @@ namespace cgogn
 namespace logger
 {
 
-class CGOGN_CORE_API LogStream final
+class CGOGN_CORE_EXPORT LogStream final
 {
 public:
 	using FileInfo = internal::FileInfo;

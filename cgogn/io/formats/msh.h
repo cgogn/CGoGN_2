@@ -27,7 +27,7 @@
 #include <map>
 
 #include <cgogn/core/utils/logger.h>
-#include <cgogn/io/dll.h>
+#include <cgogn/io/cgogn_io_export.h>
 #include <cgogn/io/data_io.h>
 #include <cgogn/io/volume_import.h>
 #include <cgogn/io/volume_export.h>
@@ -744,21 +744,21 @@ protected:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_IO_API MshIO<Eigen::Vector3d>;
-extern template class CGOGN_IO_API MshIO<Eigen::Vector3f>;
-extern template class CGOGN_IO_API MshIO<geometry::Vec_T<std::array<float64,3>>>;
-extern template class CGOGN_IO_API MshIO<geometry::Vec_T<std::array<float32,3>>>;
+extern template class CGOGN_IO_EXPORT MshIO<Eigen::Vector3d>;
+extern template class CGOGN_IO_EXPORT MshIO<Eigen::Vector3f>;
+extern template class CGOGN_IO_EXPORT MshIO<geometry::Vec_T<std::array<float64,3>>>;
+extern template class CGOGN_IO_EXPORT MshIO<geometry::Vec_T<std::array<float32,3>>>;
 
-extern template class CGOGN_IO_API MshSurfaceImport<CMap2, Eigen::Vector3d>;
-extern template class CGOGN_IO_API MshSurfaceImport<CMap2, Eigen::Vector3f>;
+extern template class CGOGN_IO_EXPORT MshSurfaceImport<CMap2, Eigen::Vector3d>;
+extern template class CGOGN_IO_EXPORT MshSurfaceImport<CMap2, Eigen::Vector3f>;
 
-extern template class CGOGN_IO_API MshVolumeImport<CMap3, Eigen::Vector3d>;
-extern template class CGOGN_IO_API MshVolumeImport<CMap3, Eigen::Vector3f>;
-extern template class CGOGN_IO_API MshVolumeImport<CMap3, geometry::Vec_T<std::array<float64,3>>>;
-extern template class CGOGN_IO_API MshVolumeImport<CMap3, geometry::Vec_T<std::array<float32,3>>>;
+extern template class CGOGN_IO_EXPORT MshVolumeImport<CMap3, Eigen::Vector3d>;
+extern template class CGOGN_IO_EXPORT MshVolumeImport<CMap3, Eigen::Vector3f>;
+extern template class CGOGN_IO_EXPORT MshVolumeImport<CMap3, geometry::Vec_T<std::array<float64,3>>>;
+extern template class CGOGN_IO_EXPORT MshVolumeImport<CMap3, geometry::Vec_T<std::array<float32,3>>>;
 
-extern template class CGOGN_IO_API MshSurfaceExport<CMap2>;
-extern template class CGOGN_IO_API MshVolumeExport<CMap3>;
+extern template class CGOGN_IO_EXPORT MshSurfaceExport<CMap2>;
+extern template class CGOGN_IO_EXPORT MshVolumeExport<CMap3>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace io

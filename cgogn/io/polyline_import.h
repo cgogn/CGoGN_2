@@ -35,7 +35,7 @@
 #include <cgogn/core/cmap/cmap1.h>
 #include <cgogn/core/cmap/cmap1_builder.h>
 
-#include <cgogn/io/dll.h>
+#include <cgogn/io/cgogn_io_export.h>
 #include <cgogn/io/c_locale.h>
 #include <cgogn/io/mesh_io_gen.h>
 #include <cgogn/io/data_io.h>
@@ -137,11 +137,6 @@ public:
 			darts_out_vertex[idx2] = d;
 		}
 
-		Dart last = mbuild_.add_topology_element();
-		uint32 idx = edges_vertex_indices_[edges_vertex_indices_.size()-1];
-		mbuild_.template set_orbit_embedding<Vertex>(Vertex(last), idx);
-		darts_out_vertex[idx] = first;
-
 		uint32 nb_boundary_vertex = 0;
 
 		map_.foreach_dart([&] (Dart d)
@@ -157,8 +152,6 @@ public:
 					mbuild_.phi1_sew(d, prev_vertex_darts);
 			}
 		});
-
-		mbuild_.boundary_mark(Vertex(last));
 
 		if(nb_boundary_vertex > 0)
 		{
@@ -193,8 +186,8 @@ public:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_IO_API PolylineImport<CMap1>;
-extern template class CGOGN_IO_API PolylineFileImport<CMap1>;
+extern template class CGOGN_IO_EXPORT PolylineImport<CMap1>;
+extern template class CGOGN_IO_EXPORT PolylineFileImport<CMap1>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
 
 } // end namespace io

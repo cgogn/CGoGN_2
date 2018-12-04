@@ -25,9 +25,8 @@
 #define CGOGN_CORE_UTILS_ASSERT_H_
 
 #include <string>
-#include <tuple>
 
-#include <cgogn/core/dll.h>
+#include <cgogn/core/cgogn_core_export.h>
 #include <cgogn/core/utils/definitions.h>
 
 #if defined (WIN32) && !defined(__func__)
@@ -53,7 +52,7 @@ namespace cgogn
  * \param[in] function_name function where the assertion failed.
  * \param[in] line_number line where the assertion failed.
  */
-CGOGN_CORE_API CGOGN_NORETURN void assertion_failed(
+CGOGN_NORETURN CGOGN_CORE_EXPORT void assertion_failed(
 	const std::string& expression,
 	const std::string& message,
 	const std::string& file_name,
@@ -71,7 +70,7 @@ CGOGN_CORE_API CGOGN_NORETURN void assertion_failed(
  * \param[in] function_name function where the assertion failed.
  * \param[in] line_number line where the assertion failed.
  */
-CGOGN_CORE_API CGOGN_NORETURN void should_not_have_reached(
+CGOGN_NORETURN CGOGN_CORE_EXPORT void should_not_have_reached(
 	const std::string& message,
 	const std::string& file_name,
 	const std::string& function_name,

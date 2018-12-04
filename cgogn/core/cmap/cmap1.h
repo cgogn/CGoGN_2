@@ -457,24 +457,17 @@ protected:
 	{
 		cgogn_message_assert(phi1(d) == d || phi_1(d) == d, "CMap1: close hole called on a dart that is not a phi1 fix point");
 
-		Dart first = this->add_topology_element();	// dart that will fill the hole
-
-		if (phi_1(d) == d)
+		Dart d_prev = d;
+		Dart d_phi_1 = d;
+		do
 		{
-			phi1_sew(first, d);							// 1-sew the new dart to the hole
+			d_prev = d_phi_1;
+			d_phi_1=phi_1(d_prev);
+		}while(d_prev != d_phi_1);
 
-			Dart d_next = d;
-			Dart d_phi1 = d;
-			do
-			{
-				d_next = d_phi1;
-				d_phi1 = phi1(d_next);
-			} while(d_next != d_phi1);
+		phi1_sew(d, d_phi_1);
 
-			phi1_sew(d_phi1, first);
-		}
-
-		return first;
+		return d;
 	}
 
 	/*!
@@ -493,13 +486,10 @@ protected:
 
 		const Vertex v(close_hole_topo(d));
 
-//		if (this->template is_embedded<Vertex>())
-//		{
-//			foreach_dart_of_orbit(ConnectedComponent(v), [this] (Dart it)
-//			{
-//				this->template copy_embedding<Vertex>(it, this->phi1(phi2(it)));
-//			});
-//		}
+		if (this->template is_embedded<Vertex>())
+		{
+			this->template copy_embedding<Vertex>(v.dart, this->phi_1(v.dart));
+		}
 
 		return v;
 	}
@@ -521,24 +511,24 @@ protected:
 
 		uint32 nb_holes = 0u;
 
-//		std::vector<Dart>* fix_point_darts = dart_buffers()->buffer();
-//		this->foreach_dart([&] (Dart d)
-//		{
-//			if (phi1(d) == d)
-//				fix_point_darts->push_back(d);
-//		});
+		std::vector<Dart>* fix_point_darts = dart_buffers()->buffer();
+		this->foreach_dart([&] (Dart d)
+		{
+			if (phi1(d) == d)
+				fix_point_darts->push_back(d);
+		});
 
-//		for (Dart d : (*fix_point_darts))
-//		{
-//			if (phi1(d) == d)
-//			{
-//				Vertex f = close_hole(d);
-//				this->boundary_mark(f);
-//				++nb_holes;
-//			}
-//		}
+		for (Dart d : (*fix_point_darts))
+		{
+			if (phi1(d) == d)
+			{
+				Vertex v = close_hole(d);
+				this->boundary_mark(v);
+				++nb_holes;
+			}
+		}
 
-//		dart_buffers()->release_buffer(fix_point_darts);
+		dart_buffers()->release_buffer(fix_point_darts);
 
 		return nb_holes;
 	}
@@ -703,17 +693,17 @@ struct CMap1Type
 using CMap1 = CMap1_T<CMap1Type>;
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_CORE_API CMap1_T<CMap1Type>;
-extern template class CGOGN_CORE_API DartMarker<CMap1>;
-extern template class CGOGN_CORE_API DartMarkerStore<CMap1>;
-extern template class CGOGN_CORE_API DartMarkerNoUnmark<CMap1>;
-extern template class CGOGN_CORE_API CellMarker<CMap1, CMap1::Vertex::ORBIT>;
-extern template class CGOGN_CORE_API CellMarker<CMap1, CMap1::Face::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap1, CMap1::Vertex::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap1, CMap1::Face::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap1, CMap1::Vertex::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap1, CMap1::Face::ORBIT>;
-extern template class CGOGN_CORE_API QuickTraversor<CMap1>;
+extern template class CGOGN_CORE_EXPORT CMap1_T<CMap1Type>;
+extern template class CGOGN_CORE_EXPORT DartMarker<CMap1>;
+extern template class CGOGN_CORE_EXPORT DartMarkerStore<CMap1>;
+extern template class CGOGN_CORE_EXPORT DartMarkerNoUnmark<CMap1>;
+extern template class CGOGN_CORE_EXPORT CellMarker<CMap1, CMap1::Vertex::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarker<CMap1, CMap1::Face::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerNoUnmark<CMap1, CMap1::Vertex::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerNoUnmark<CMap1, CMap1::Face::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerStore<CMap1, CMap1::Vertex::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerStore<CMap1, CMap1::Face::ORBIT>;
+extern template class CGOGN_CORE_EXPORT QuickTraversor<CMap1>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace cgogn

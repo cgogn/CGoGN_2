@@ -29,7 +29,7 @@
 #include <iomanip>
 
 #include <cgogn/core/utils/logger.h>
-#include <cgogn/io/dll.h>
+#include <cgogn/io/cgogn_io_export.h>
 #include <cgogn/io/data_io.h>
 #include <cgogn/io/volume_import.h>
 #include <cgogn/io/volume_export.h>
@@ -325,17 +325,17 @@ private:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_IO_API NastranIO<Eigen::Vector3d>;
-extern template class CGOGN_IO_API NastranIO<Eigen::Vector3f>;
-extern template class CGOGN_IO_API NastranIO<geometry::Vec_T<std::array<float64, 3>>>;
-extern template class CGOGN_IO_API NastranIO<geometry::Vec_T<std::array<float32, 3>>>;
+extern template class CGOGN_IO_EXPORT NastranIO<Eigen::Vector3d>;
+extern template class CGOGN_IO_EXPORT NastranIO<Eigen::Vector3f>;
+extern template class CGOGN_IO_EXPORT NastranIO<geometry::Vec_T<std::array<float64, 3>>>;
+extern template class CGOGN_IO_EXPORT NastranIO<geometry::Vec_T<std::array<float32, 3>>>;
 
-extern template class CGOGN_IO_API NastranVolumeImport<CMap3, Eigen::Vector3d>;
-extern template class CGOGN_IO_API NastranVolumeImport<CMap3, Eigen::Vector3f>;
-extern template class CGOGN_IO_API NastranVolumeImport<CMap3, geometry::Vec_T<std::array<float64, 3>>>;
-extern template class CGOGN_IO_API NastranVolumeImport<CMap3, geometry::Vec_T<std::array<float32, 3>>>;
+extern template class CGOGN_IO_EXPORT NastranVolumeImport<CMap3, Eigen::Vector3d>;
+extern template class CGOGN_IO_EXPORT NastranVolumeImport<CMap3, Eigen::Vector3f>;
+extern template class CGOGN_IO_EXPORT NastranVolumeImport<CMap3, geometry::Vec_T<std::array<float64, 3>>>;
+extern template class CGOGN_IO_EXPORT NastranVolumeImport<CMap3, geometry::Vec_T<std::array<float32, 3>>>;
 
-extern template class CGOGN_IO_API NastranVolumeExport<CMap3>;
+extern template class CGOGN_IO_EXPORT NastranVolumeExport<CMap3>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace io

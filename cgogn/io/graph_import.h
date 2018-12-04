@@ -26,11 +26,11 @@
 
 #include <cgogn/core/cmap/map_base_data.h>
 
-#include <cgogn/io/dll.h>
+#include <cgogn/io/cgogn_io_export.h>
 
 #include <cgogn/io/mesh_io_gen.h>
 #include <cgogn/io/data_io.h>
-#include <cgogn/io/dll.h>
+#include <cgogn/io/cgogn_io_export.h>
 
 namespace cgogn
 {
@@ -38,7 +38,7 @@ namespace cgogn
 namespace io
 {
 
-class CGOGN_IO_API GraphImport
+class CGOGN_IO_EXPORT GraphImport
 {
 public:
 
@@ -170,7 +170,7 @@ protected:
 /// \class GraphFileImport
 /// Imports a skeleton from a file
 ///
-class CGOGN_IO_API GraphFileImport : public GraphImport, public FileImport
+class CGOGN_IO_EXPORT GraphFileImport : public GraphImport, public FileImport
 {
 	using Self = GraphFileImport;
 	using Inherit1 = GraphImport;

@@ -2,6 +2,10 @@ project(cgogn_rendering
 	LANGUAGES CXX
 )
 
+# Hide symbols by default
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN YES)
+
 find_package(Qt5 5.4.0 COMPONENTS Gui REQUIRED)
 find_package(QOGLViewer REQUIRED)
 
@@ -14,7 +18,6 @@ add_library(cgogn::rendering ALIAS cgogn_rendering)
 
 target_sources(${PROJECT_NAME}
 	PRIVATE
-		"${CMAKE_CURRENT_LIST_DIR}/dll.h"
 		"${CMAKE_CURRENT_LIST_DIR}/drawer.h"
 		"${CMAKE_CURRENT_LIST_DIR}/drawer.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/topo_drawer.h"
@@ -88,25 +91,37 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 										DEBUG_POSTFIX "_d"
 										EXPORT_NAME rendering)
 
-target_compile_definitions(${PROJECT_NAME} PRIVATE "-DCGOGN_RENDERING_DLL_EXPORT")
-
 target_include_directories(${PROJECT_NAME} PUBLIC
+	$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
 	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_QOGLVIEWER_INCLUDE_DIR}>
 	$<BUILD_INTERFACE:${CGOGN_SOURCE_DIR}>
 	$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 	$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/cgogn/thirdparty>
 )
 
+# Write out cgogn_rendering_export.h to the current binary directory
+include(GenerateExportHeader)
+generate_export_header(cgogn_rendering)
+
 target_link_libraries(${PROJECT_NAME} cgogn::core cgogn::geometry Qt5::Gui QOGLViewer)
 
 set(PKG_CONFIG_REQUIRES "cgogn_core cgogn_geometry")
 configure_file(${PROJECT_SOURCE_DIR}/cgogn_rendering.pc.in ${CMAKE_CURRENT_BINARY_DIR}/cgogn_rendering.pc @ONLY)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/cgogn_rendering.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/cgogn_rendering.pc
+	DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
+	COMPONENT cgogn_rendering_libraries
+)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
 	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cgogn/rendering
+	COMPONENT cgogn_rendering_headers
 	FILES_MATCHING PATTERN "*.h"
 	REGEX "(examples|tests)" EXCLUDE
+)
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/cgogn_rendering_export.h
+	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cgogn/rendering
+	COMPONENT cgogn_rendering_headers
 )
 
 cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}")

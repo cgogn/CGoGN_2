@@ -24,7 +24,7 @@
 #ifndef CGOGN_RENDERING_TEXT_DRAWER_H_
 #define CGOGN_RENDERING_TEXT_DRAWER_H_
 
-#include <cgogn/rendering/dll.h>
+#include <cgogn/rendering/cgogn_rendering_export.h>
 
 #include <cgogn/rendering/shaders/shader_text.h>
 #include <cgogn/rendering/shaders/vbo.h>
@@ -40,7 +40,7 @@ namespace cgogn
 namespace rendering
 {
 
-//class CGOGN_RENDERING_API TextDrawerEnd {};
+//class CGOGN_RENDERING_EXPORT TextDrawerEnd {};
 
 /**
  * @brief Rendering of volumes
@@ -64,7 +64,7 @@ namespace rendering
  *  text_rend_->draw(proj, view, this);
  *
  */
-class CGOGN_RENDERING_API TextDrawer
+class CGOGN_RENDERING_EXPORT TextDrawer
 {
 protected:
 
@@ -136,7 +136,7 @@ public:
 
 
 
-	class CGOGN_RENDERING_API Renderer
+	class CGOGN_RENDERING_EXPORT Renderer
 	{
 		friend class TextDrawer;
 		std::unique_ptr<ShaderText::Param> param_text_;

@@ -207,10 +207,10 @@ void ShaderExplodeVolumesGen::set_plane_clip2(const QVector4D& plane)
 }
 
 
-template class CGOGN_RENDERING_API ShaderExplodeVolumesTpl<false>;
-template class CGOGN_RENDERING_API ShaderExplodeVolumesTpl<true>;
-template class CGOGN_RENDERING_API ShaderParamExplodeVolumes<false>;
-template class CGOGN_RENDERING_API ShaderParamExplodeVolumes<true>;
+template class CGOGN_RENDERING_EXPORT ShaderExplodeVolumesTpl<false>;
+template class CGOGN_RENDERING_EXPORT ShaderExplodeVolumesTpl<true>;
+template class CGOGN_RENDERING_EXPORT ShaderParamExplodeVolumes<false>;
+template class CGOGN_RENDERING_EXPORT ShaderParamExplodeVolumes<true>;
 
 } // namespace rendering
 

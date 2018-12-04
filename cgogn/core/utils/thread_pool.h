@@ -72,7 +72,7 @@
 namespace cgogn
 {
 
-class CGOGN_CORE_API ThreadPool final
+class CGOGN_CORE_EXPORT ThreadPool final
 {
 public:
 

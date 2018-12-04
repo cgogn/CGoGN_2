@@ -308,14 +308,14 @@ void ShaderPointSpriteGen::set_plane_clip2(const QVector4D& plane)
 }
 
 
-template class CGOGN_RENDERING_API ShaderPointSpriteTpl<false, false>;
-template class CGOGN_RENDERING_API ShaderPointSpriteTpl<true, false>;
-template class CGOGN_RENDERING_API ShaderPointSpriteTpl<false, true>;
-template class CGOGN_RENDERING_API ShaderPointSpriteTpl<true, true>;
-template class CGOGN_RENDERING_API ShaderParamPointSprite<false, false>;
-template class CGOGN_RENDERING_API ShaderParamPointSprite<true, false>;
-template class CGOGN_RENDERING_API ShaderParamPointSprite<false, true>;
-template class CGOGN_RENDERING_API ShaderParamPointSprite<true, true>;
+template class CGOGN_RENDERING_EXPORT ShaderPointSpriteTpl<false, false>;
+template class CGOGN_RENDERING_EXPORT ShaderPointSpriteTpl<true, false>;
+template class CGOGN_RENDERING_EXPORT ShaderPointSpriteTpl<false, true>;
+template class CGOGN_RENDERING_EXPORT ShaderPointSpriteTpl<true, true>;
+template class CGOGN_RENDERING_EXPORT ShaderParamPointSprite<false, false>;
+template class CGOGN_RENDERING_EXPORT ShaderParamPointSprite<true, false>;
+template class CGOGN_RENDERING_EXPORT ShaderParamPointSprite<false, true>;
+template class CGOGN_RENDERING_EXPORT ShaderParamPointSprite<true, true>;
 
 } // namespace rendering
 
