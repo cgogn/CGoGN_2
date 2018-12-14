@@ -26,6 +26,7 @@
 
 #include <type_traits>
 #include <array>
+#include <initializer_list>
 
 #include <cgogn/core/utils/numerics.h>
 
@@ -56,7 +57,6 @@ public:
 
 private:
 
-	bool initialized_;
 	Vec p_min_;
 	Vec p_max_;
 
@@ -65,15 +65,25 @@ public:
 	/*                CONSTRUCTORS                */
 	/**********************************************/
 
-	AABB() :
-		initialized_(false)
-	{}
+	AABB()
+	{
+		for(uint32 i = 0; i < dim_; ++i)
+		{
+			p_min_[i] = std::numeric_limits<Scalar>::max();
+			p_max_[i] = std::numeric_limits<Scalar>::lowest();
+		}
+	}
 
 	// initialize the bounding box with one first point
 	AABB(const Vec& p) :
-		initialized_(true),
 		p_min_(p),
 		p_max_(p)
+	{}
+
+	// initialize the bounding box with bounding points
+	AABB(const Vec& min, const Vec& max) :
+		p_min_(min),
+		p_max_(max)
 	{}
 
 	/**********************************************/
@@ -82,51 +92,37 @@ public:
 
 	inline Vec& min()
 	{
-		cgogn_message_assert(initialized_, "Axis-Aligned Bounding box not initialized");
+		cgogn_message_assert(is_initialized(), "Axis-Aligned Bounding box not initialized");
 		return p_min_;
 	}
 
 	inline const Vec& min() const
 	{
-		cgogn_message_assert(initialized_, "Axis-Aligned Bounding box not initialized");
+		cgogn_message_assert(is_initialized(), "Axis-Aligned Bounding box not initialized");
 		return p_min_;
-	}
-
-	inline void set_min(uint32 d, Scalar v)
-	{
-		cgogn_message_assert(initialized_, "Axis-Aligned Bounding box not initialized");
-		cgogn_assert(d < dim_);
-		p_min_[d] = v;
 	}
 
 	inline Vec& max()
 	{
-		cgogn_message_assert(initialized_, "Axis-Aligned Bounding box not initialized");
+		cgogn_message_assert(is_initialized(), "Axis-Aligned Bounding box not initialized");
 		return p_max_;
 	}
 
 	inline const Vec& max() const
 	{
-		cgogn_message_assert(initialized_, "Axis-Aligned Bounding box not initialized");
+		cgogn_message_assert(is_initialized(), "Axis-Aligned Bounding box not initialized");
 		return p_max_;
-	}
-
-	inline void set_max(uint32 d, Scalar v)
-	{
-		cgogn_message_assert(initialized_, "Axis-Aligned Bounding box not initialized");
-		cgogn_assert(d < dim_);
-		p_max_[d] = v;
 	}
 
 	inline Scalar size(uint32 coord) const
 	{
-		cgogn_assert(initialized_ && coord < dim_);
+		cgogn_assert(is_initialized() && coord < dim_);
 		return p_max_[coord] - p_min_[coord];
 	}
 
 	inline Scalar max_size() const
 	{
-		cgogn_message_assert(initialized_, "Axis-Aligned Bounding box not initialized");
+		cgogn_message_assert(is_initialized(), "Axis-Aligned Bounding box not initialized");
 		Scalar max = p_max_[0] - p_min_[0];
 		for(uint32 i = 1; i < dim_; ++i)
 		{
@@ -139,7 +135,7 @@ public:
 
 	inline Scalar min_size() const
 	{
-		cgogn_message_assert(initialized_, "Axis-Aligned Bounding box not initialized");
+		cgogn_message_assert(is_initialized(), "Axis-Aligned Bounding box not initialized");
 		Scalar min = p_max_[0] - p_min_[0];
 		for(uint32 i = 1; i < dim_; ++i)
 		{
@@ -152,60 +148,76 @@ public:
 
 	inline Vec diag() const
 	{
-		cgogn_message_assert(initialized_, "Axis-Aligned Bounding box not initialized");
+		cgogn_message_assert(is_initialized(), "Axis-Aligned Bounding box not initialized");
 		return p_max_ - p_min_;
 	}
 
 	inline Scalar diag_size()  const
 	{
-		cgogn_message_assert(initialized_, "Axis-Aligned Bounding box not initialized");
+		cgogn_message_assert(is_initialized(), "Axis-Aligned Bounding box not initialized");
 		return Scalar(diag().norm());
 	}
 
 	inline Vec center() const
 	{
-		cgogn_message_assert(initialized_, "Axis-Aligned Bounding box not initialized");
+		cgogn_message_assert(is_initialized(), "Axis-Aligned Bounding box not initialized");
 		Vec center = (p_max_ + p_min_) / Scalar(2);
 		return center;
 	}
 
 	inline bool is_initialized() const
 	{
-		return initialized_;
+		bool is_init = false;
+		for(uint32 i = 0; !is_init && i < dim_; ++i)
+		{
+			is_init = p_min_[i] != std::numeric_limits<Scalar>::max() ||
+					p_max_[i] != std::numeric_limits<Scalar>::lowest();
+		}
 
+		return is_init;
 	}
 
 	// reinitialize the axis-aligned bounding box
 	inline void reset()
-	{
-		initialized_ = false;
+	{	
+		for(uint32 i = 0; i < dim_; ++i)
+		{
+			p_min_[i] = std::numeric_limits<Scalar>::max();
+			p_max_[i] = std::numeric_limits<Scalar>::lowest();
+		}
 	}
 
 	// add a point to the axis-aligned bounding box
 	inline void add_point(const Vec& p)
 	{
-		if(!initialized_)
+		for(uint32 i = 0; i < dim_; ++i)
 		{
-			p_min_ = p;
-			p_max_ = p;
-			initialized_ = true;
+			if(p[i] < p_min_[i])
+				p_min_[i] = p[i];
+			if(p[i] > p_max_[i])
+				p_max_[i] = p[i];
 		}
-		else
+	}
+
+	inline void add_point(std::initializer_list<Scalar> list)
+	{
+		cgogn_message_assert(list.size() <= dim_, "Dimension of point greaer tyhan Axis-Aligned Bounding box dimension");
+		uint32 i = 0;
+		for(const Scalar elem : list )
 		{
-			for(uint32 i = 0; i < dim_; ++i)
-			{
-				if(p[i] < p_min_[i])
-					p_min_[i] = p[i];
-				if(p[i] > p_max_[i])
-					p_max_[i] = p[i];
-			}
+			if(elem < p_min_[i])
+				p_min_[i] = elem;
+			if(elem > p_max_[i])
+				p_max_[i] = elem;
+
+			++i;
 		}
 	}
 
 	// return true if bb intersects the axis-aligned bounding box
 	bool intersects(const AABB<Vec>& bb) const
 	{
-		cgogn_message_assert(initialized_, "Axis-Aligned Bounding box not initialized");
+		cgogn_message_assert(is_initialized(), "Axis-Aligned Bounding box not initialized");
 		Vec bbmin = bb.min();
 		Vec bbmax = bb.max();
 		for(uint32 i = 0; i < dim_; ++i)
@@ -221,7 +233,7 @@ public:
 	// fusion with the given bounding box
 	void fusion(const AABB<Vec>& bb)
 	{
-		cgogn_message_assert(initialized_, "Axis-Aligned Bounding box not initialized");
+		cgogn_message_assert(is_initialized(), "Axis-Aligned Bounding box not initialized");
 		Vec bbmin = bb.min();
 		Vec bbmax = bb.max();
 		for (uint32 i = 0; i < dim_; ++i)
@@ -236,7 +248,7 @@ public:
 	// return true if the point belongs strictly to a bounding box
 	bool contains(const Vec& p) const
 	{
-		cgogn_message_assert(initialized_, "Axis-Aligned Bounding box not initialized");
+		cgogn_message_assert(is_initialized(), "Axis-Aligned Bounding box not initialized");
 		for (uint32 i = 0; i < dim_; ++i)
 		{
 			if (p_min_[i] > p[i])
@@ -244,21 +256,36 @@ public:
 			if (p[i] > p_max_[i])
 				return false;
 		}
-			return true;
+		return true;
 	}
 
+	bool contains(std::initializer_list<Scalar> list) const
+	{
+		cgogn_message_assert(is_initialized(), "Axis-Aligned Bounding box not initialized");
+		cgogn_message_assert(list.size() <= dim_, "Dimension of point greaer tyhan Axis-Aligned Bounding box dimension");
+		uint32 i = 0;
+		for(const Scalar elem : list )
+		{
+			if (p_min_[i] > elem)
+				return false;
+			if (elem > p_max_[i])
+				return false;
+			++i;
+		}
+		return true;
+	}
 
 	// return true if the bounding box belongs strictly to a bounding box
 	bool contains(const AABB<Vec>& bb) const
 	{
-		cgogn_message_assert(initialized_, "Axis-Aligned Bounding box not initialized");
+		cgogn_message_assert(is_initialized(), "Axis-Aligned Bounding box not initialized");
 		return this->contains(bb.min()) && this->contains(bb.max());
 	}
 
 	// scale the bounding box
 	void scale(Scalar size)
 	{
-		cgogn_message_assert(initialized_, "Axis-Aligned Bounding box not initialized");
+		cgogn_message_assert(is_initialized(), "Axis-Aligned Bounding box not initialized");
 		p_min_ *= size;
 		p_max_ *= size;
 	}
@@ -266,7 +293,7 @@ public:
 	// 0-centered scale of the bounding box
 	void centered_scale(Scalar size)
 	{
-		cgogn_message_assert(initialized_, "Axis-Aligned Bounding box not initialized");
+		cgogn_message_assert(is_initialized(), "Axis-Aligned Bounding box not initialized");
 		Vec center = (p_min_ + p_max_) / Scalar(2);
 		p_min_ = ((p_min_ - center) * size) + center;
 		p_max_ = ((p_max_ - center) * size) + center;
@@ -276,7 +303,7 @@ public:
 	/// \tparam VEC3 the domain of the box. Has to be of dimension 3
 	template <bool B = true>
 	auto ray_intersect(const Vec& P, const Vec& V) const
-	  -> typename std::enable_if<B && is_dim_of<Vec, 3>::value, bool>::type
+	-> typename std::enable_if<B && is_dim_of<Vec, 3>::value, bool>::type
 	{
 		if (!cgogn::almost_equal_relative(V[2], Scalar(0)))
 		{
@@ -329,6 +356,27 @@ std::istream& operator>>(std::istream& in, AABB<VEC_T>& bb)
 {
 	in >> bb.min() >> bb.max();
 	return in;
+}
+
+
+template <typename VEC_T, typename std::enable_if<is_dim_of<VEC_T, 3>::value, VEC_T>::type* = nullptr>
+auto corner(const AABB<VEC_T>& aabb, uint32 id)
+{
+	VEC_T min = aabb.min();
+	VEC_T max = aabb.max();
+
+	switch(id)
+	{
+		case 0: return min; break;
+		case 1: return VEC_T(min[0], min[1], max[2]); break;
+		case 2: return VEC_T(min[0], max[1], min[2]); break;
+		case 3: return VEC_T(min[0], max[1], max[2]); break;
+		case 4: return VEC_T(max[0], min[1], min[2]); break;
+		case 5: return VEC_T(max[0], min[1], max[2]); break;
+		case 6: return VEC_T(max[0], max[1], min[2]); break;
+		case 7: return max; break;
+		default: cgogn_assert_not_reached("id not in range [0-7]"); break;
+	}
 }
 
 /// \brief Computes the smallest axis-aligned box that encloses two AABBs.
