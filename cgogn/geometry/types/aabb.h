@@ -360,7 +360,7 @@ std::istream& operator>>(std::istream& in, AABB<VEC_T>& bb)
 
 
 template <typename VEC_T, typename std::enable_if<is_dim_of<VEC_T, 3>::value, VEC_T>::type* = nullptr>
-auto corner(const AABB<VEC_T>& aabb, uint32 id)
+VEC_T corner(const AABB<VEC_T>& aabb, uint32 id)
 {
 	VEC_T min = aabb.min();
 	VEC_T max = aabb.max();
