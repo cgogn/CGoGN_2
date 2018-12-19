@@ -273,7 +273,7 @@ void corner_vertices(const OBB<T, 3>& obb, std::array<typename OBB<T, 3>::Vector
 
 //! Check whether a point given as Homogeneous coordinate in the (D+1) dimension is inside the OBB.
 template<typename T, uint32 D>
-bool is_inside(const OBB<T,D>& other, const typename OBB<T,D>::HomeVector& point)
+bool contains(const OBB<T,D>& other, const typename OBB<T,D>::HomeVector& point)
 {
 	typename OBB<T,D>::HomeVector p = other.inverse_transformation()*point;
 
