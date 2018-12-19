@@ -64,8 +64,8 @@ TYPED_TEST(AABB_TEST, Basics)
 	EXPECT_EQ(this->bb_.max(), TypeParam({Scalar(1), Scalar(2), Scalar(3)}));
 	EXPECT_EQ(this->bb_.max_size(), Scalar(6));
 	EXPECT_EQ(this->bb_.min_size(), Scalar(2));
-	EXPECT_TRUE(cgogn::almost_equal_relative(this->bb_.diag_size(), std::sqrt(Scalar(2*2+4*4+6*6))));
-	EXPECT_EQ(this->bb_.center(), TypeParam({Scalar(0), Scalar(0), Scalar(0)}));
+	EXPECT_TRUE(cgogn::almost_equal_relative(cgogn::geometry::diagonal(this->bb_).norm(), std::sqrt(Scalar(2*2+4*4+6*6))));
+	EXPECT_EQ(cgogn::geometry::center(this->bb_), TypeParam({Scalar(0), Scalar(0), Scalar(0)}));
 }
 
 TYPED_TEST(AABB_TEST, testing)
@@ -76,20 +76,20 @@ TYPED_TEST(AABB_TEST, testing)
 	this->bb_.add_point(TypeParam({Scalar(-1), Scalar(-2), Scalar(-3)}));
 	this->bb_.add_point(TypeParam({Scalar(1), Scalar(2), Scalar(3)}));
 
-	EXPECT_TRUE(this->bb_.contains(TypeParam({Scalar(1), Scalar(1), Scalar(1)})));
+	EXPECT_TRUE(cgogn::geometry::contains(this->bb_, TypeParam({Scalar(1), Scalar(1), Scalar(1)})));
 
 	cgogn::geometry::AABB<TypeParam> bb2;
 	bb2.add_point(TypeParam({Scalar(0), Scalar(0), Scalar(0)}));
 	bb2.add_point(TypeParam({Scalar(4), Scalar(5), Scalar(2)}));
 
-	EXPECT_TRUE(this->bb_.intersects(bb2));
+	EXPECT_TRUE(cgogn::geometry::intersects(this->bb_, bb2));
 
 	cgogn::geometry::AABB<TypeParam> bb3;
 	bb3.add_point(TypeParam({Scalar(0), Scalar(0), Scalar(0)}));
 	bb3.add_point(TypeParam({Scalar(1), Scalar(1), Scalar(1)}));
 
-	EXPECT_TRUE(this->bb_.contains(bb3));
+	EXPECT_TRUE(cgogn::geometry::contains(this->bb_, bb3));
 
-//	EXPECT_TRUE(this->bb_.ray_intersect(TypeParam({Scalar(-9), Scalar(-9), Scalar(-9)}), TypeParam({Scalar(1), Scalar(1), Scalar(1)})));
-//	EXPECT_FALSE(this->bb_.ray_intersect(TypeParam({Scalar(-9), Scalar(-9), Scalar(-9)}), TypeParam({Scalar(1), Scalar(-1), Scalar(0)})));
+//	EXPECT_TRUE(cgogn::geometry::ray_intersect(this->bb_, TypeParam({Scalar(-9), Scalar(-9), Scalar(-9)}), TypeParam({Scalar(1), Scalar(1), Scalar(1)})));
+//	EXPECT_FALSE(cgogn::geometry::ray_intersect(this->bb_, TypeParam({Scalar(-9), Scalar(-9), Scalar(-9)}), TypeParam({Scalar(1), Scalar(-1), Scalar(0)})));
 }

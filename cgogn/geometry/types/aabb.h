@@ -146,25 +146,6 @@ public:
 		return min;
 	}
 
-	inline Vec diag() const
-	{
-		cgogn_message_assert(is_initialized(), "Axis-Aligned Bounding box not initialized");
-		return p_max_ - p_min_;
-	}
-
-	inline Scalar diag_size()  const
-	{
-		cgogn_message_assert(is_initialized(), "Axis-Aligned Bounding box not initialized");
-		return Scalar(diag().norm());
-	}
-
-	inline Vec center() const
-	{
-		cgogn_message_assert(is_initialized(), "Axis-Aligned Bounding box not initialized");
-		Vec center = (p_max_ + p_min_) / Scalar(2);
-		return center;
-	}
-
 	inline bool is_initialized() const
 	{
 		bool is_init = false;
@@ -199,37 +180,6 @@ public:
 		}
 	}
 
-	inline void add_point(std::initializer_list<Scalar> list)
-	{
-		cgogn_message_assert(list.size() <= dim_, "Dimension of point greaer tyhan Axis-Aligned Bounding box dimension");
-		uint32 i = 0;
-		for(const Scalar elem : list )
-		{
-			if(elem < p_min_[i])
-				p_min_[i] = elem;
-			if(elem > p_max_[i])
-				p_max_[i] = elem;
-
-			++i;
-		}
-	}
-
-	// return true if bb intersects the axis-aligned bounding box
-	bool intersects(const AABB<Vec>& bb) const
-	{
-		cgogn_message_assert(is_initialized(), "Axis-Aligned Bounding box not initialized");
-		Vec bbmin = bb.min();
-		Vec bbmax = bb.max();
-		for(uint32 i = 0; i < dim_; ++i)
-		{
-			if(p_max_[i] < bbmin[i])
-				return false;
-			if(p_min_[i] > bbmax[i])
-				return false;
-		}
-		return true;
-	}
-
 	// fusion with the given bounding box
 	void fusion(const AABB<Vec>& bb)
 	{
@@ -243,43 +193,6 @@ public:
 			if (bbmax[i] > p_max_[i])
 				p_max_[i] = bbmax[i];
 		}
-	}
-
-	// return true if the point belongs strictly to a bounding box
-	bool contains(const Vec& p) const
-	{
-		cgogn_message_assert(is_initialized(), "Axis-Aligned Bounding box not initialized");
-		for (uint32 i = 0; i < dim_; ++i)
-		{
-			if (p_min_[i] > p[i])
-				return false;
-			if (p[i] > p_max_[i])
-				return false;
-		}
-		return true;
-	}
-
-	bool contains(std::initializer_list<Scalar> list) const
-	{
-		cgogn_message_assert(is_initialized(), "Axis-Aligned Bounding box not initialized");
-		cgogn_message_assert(list.size() <= dim_, "Dimension of point greaer tyhan Axis-Aligned Bounding box dimension");
-		uint32 i = 0;
-		for(const Scalar elem : list )
-		{
-			if (p_min_[i] > elem)
-				return false;
-			if (elem > p_max_[i])
-				return false;
-			++i;
-		}
-		return true;
-	}
-
-	// return true if the bounding box belongs strictly to a bounding box
-	bool contains(const AABB<Vec>& bb) const
-	{
-		cgogn_message_assert(is_initialized(), "Axis-Aligned Bounding box not initialized");
-		return this->contains(bb.min()) && this->contains(bb.max());
 	}
 
 	// scale the bounding box
@@ -297,45 +210,6 @@ public:
 		Vec center = (p_min_ + p_max_) / Scalar(2);
 		p_min_ = ((p_min_ - center) * size) + center;
 		p_max_ = ((p_max_ - center) * size) + center;
-	}
-
-	/// \brief Test if a ray intersects an axis-aligned box
-	/// \tparam VEC3 the domain of the box. Has to be of dimension 3
-	template <bool B = true>
-	auto ray_intersect(const Vec& P, const Vec& V) const
-	-> typename std::enable_if<B && is_dim_of<Vec, 3>::value, bool>::type
-	{
-		if (!cgogn::almost_equal_relative(V[2], Scalar(0)))
-		{
-			Vec Q = P + ((p_min_[2] - P[2]) / V[2]) * V;
-			if ((Q[0] < p_max_[0]) && (Q[0] > p_min_[0]) && (Q[1] < p_max_[1]) && (Q[1] > p_min_[1]))
-				return true;
-			Q = P + ((p_max_[2] - P[2]) / V[2]) * V;
-			if ((Q[0] < p_max_[0]) && (Q[0] > p_min_[0]) && (Q[1] < p_max_[1]) && (Q[1] > p_min_[1]))
-				return true;
-		}
-
-		if (!cgogn::almost_equal_relative(V[1], Scalar(0)))
-		{
-			Vec Q = P + ((p_min_[1] - P[1]) / V[1]) * V;
-			if ((Q[0] < p_max_[0]) && (Q[0] > p_min_[0]) && (Q[2] < p_max_[2]) && (Q[2] > p_min_[2]))
-				return true;
-			Q = P + ((p_max_[1] - P[1]) / V[1]) * V;
-			if ((Q[0] < p_max_[0]) && (Q[0] > p_min_[0]) && (Q[2] < p_max_[2]) && (Q[2] > p_min_[2]))
-				return true;
-		}
-
-		if (!cgogn::almost_equal_relative(V[0], Scalar(0)))
-		{
-			Vec Q = P + ((p_min_[0] - P[0]) / V[0]) * V;
-			if ((Q[1] < p_max_[1]) && (Q[1] > p_min_[1]) && (Q[2] < p_max_[2]) && (Q[2] > p_min_[2]))
-				return true;
-			Q = P + ((p_max_[0] - P[0]) / V[0]) * V;
-			if ((Q[1] < p_max_[1]) && (Q[1] > p_min_[1]) && (Q[2] < p_max_[2]) && (Q[2] > p_min_[2]))
-				return true;
-		}
-
-		return false;
 	}
 
 	static std::string cgogn_name_of_type()
@@ -358,6 +232,110 @@ std::istream& operator>>(std::istream& in, AABB<VEC_T>& bb)
 	return in;
 }
 
+template <typename VEC_T>
+VEC_T diagonal(const AABB<VEC_T>& bb)
+{
+	cgogn_message_assert(bb.is_initialized(), "Axis-Aligned Bounding box not initialized");
+	return bb.max() - bb.min();
+}
+
+template <typename VEC_T>
+VEC_T center(const AABB<VEC_T>& bb)
+{
+	cgogn_message_assert(bb.is_initialized(), "Axis-Aligned Bounding box not initialized");
+	VEC_T center = (bb.max() + bb.min()) / typename VEC_T::Scalar(2);
+	return center;
+}
+
+// return true if bb intersects the axis-aligned bounding box
+template <typename VEC_T>
+bool intersects(const AABB<VEC_T>& lhs, const AABB<VEC_T>& rhs)
+{
+	cgogn_message_assert(lhs.is_initialized(), "lhs Axis-Aligned Bounding box not initialized");
+	cgogn_message_assert(rhs.is_initialized(), "rhs Axis-Aligned Bounding box not initialized");
+
+	VEC_T lhsmin = lhs.min();
+	VEC_T lhsmax = lhs.max();
+	VEC_T rhsmin = rhs.min();
+	VEC_T rhsmax = rhs.max();
+	for(uint32 i = 0; i < lhs.dim_; ++i)
+	{
+		if(lhsmax[i] < rhsmin[i])
+			return false;
+		if(lhsmin[i] > rhsmax[i])
+			return false;
+	}
+	return true;
+}
+
+// return true if the point belongs strictly to a bounding box
+template <typename VEC_T>
+bool contains(const AABB<VEC_T>& bb, const VEC_T p)
+{
+	cgogn_message_assert(bb.is_initialized(), "Axis-Aligned Bounding box not initialized");
+
+	VEC_T bbmin = bb.min();
+	VEC_T bbmax = bb.max();
+	for (uint32 i = 0; i < bb.dim_; ++i)
+	{
+		if (bbmin[i] > p[i])
+			return false;
+		if (p[i] > bbmax[i])
+			return false;
+	}
+	return true;
+}
+
+// return true if the bounding box belongs strictly to a bounding box
+template <typename VEC_T>
+bool contains(const AABB<VEC_T>& lhs, const AABB<VEC_T>& rhs)
+{
+	cgogn_message_assert(lhs.is_initialized(), "lhs Axis-Aligned Bounding box not initialized");
+	cgogn_message_assert(rhs.is_initialized(), "rhs Axis-Aligned Bounding box not initialized");
+
+	return contains(lhs, rhs.min()) && contains(rhs, rhs.max());
+}
+
+/// \brief Test if a ray intersects an axis-aligned box
+/// \tparam VEC3 the domain of the box. Has to be of dimension 3
+template <typename VEC_T, typename std::enable_if<is_dim_of<VEC_T, 3>::value, VEC_T>::type* = nullptr>
+bool ray_intersect(const AABB<VEC_T>& bb, const VEC_T& P, const VEC_T& V)
+{
+	VEC_T bbmin = bb.min();
+	VEC_T bbmax = bb.max();
+	using Scalar = typename VEC_T::Scalar;
+	if (!cgogn::almost_equal_relative(V[2], Scalar(0)))
+	{
+		VEC_T Q = P + ((bbmin[2] - P[2]) / V[2]) * V;
+		if ((Q[0] < bbmax[0]) && (Q[0] > bbmin[0]) && (Q[1] < bbmax[1]) && (Q[1] > bbmin[1]))
+			return true;
+		Q = P + ((bbmax[2] - P[2]) / V[2]) * V;
+		if ((Q[0] < bbmax[0]) && (Q[0] > bbmin[0]) && (Q[1] < bbmax[1]) && (Q[1] > bbmin[1]))
+			return true;
+	}
+
+	if (!cgogn::almost_equal_relative(V[1], Scalar(0)))
+	{
+		VEC_T Q = P + ((bbmin[1] - P[1]) / V[1]) * V;
+		if ((Q[0] < bbmax[0]) && (Q[0] > bbmin[0]) && (Q[2] < bbmax[2]) && (Q[2] > bbmin[2]))
+			return true;
+		Q = P + ((bbmax[1] - P[1]) / V[1]) * V;
+		if ((Q[0] < bbmax[0]) && (Q[0] > bbmin[0]) && (Q[2] < bbmax[2]) && (Q[2] > bbmin[2]))
+			return true;
+	}
+
+	if (!cgogn::almost_equal_relative(V[0], Scalar(0)))
+	{
+		VEC_T Q = P + ((bbmin[0] - P[0]) / V[0]) * V;
+		if ((Q[1] < bbmax[1]) && (Q[1] > bbmin[1]) && (Q[2] < bbmax[2]) && (Q[2] > bbmin[2]))
+			return true;
+		Q = P + ((bbmax[0] - P[0]) / V[0]) * V;
+		if ((Q[1] < bbmax[1]) && (Q[1] > bbmin[1]) && (Q[2] < bbmax[2]) && (Q[2] > bbmin[2]))
+			return true;
+	}
+
+	return false;
+}
 
 template <typename VEC_T, typename std::enable_if<is_dim_of<VEC_T, 3>::value, VEC_T>::type* = nullptr>
 VEC_T corner(const AABB<VEC_T>& aabb, uint32 id)
