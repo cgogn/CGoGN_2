@@ -109,10 +109,6 @@ struct Dart
 	 */
 	inline bool operator!=(Dart rhs) const { return index != rhs.index; }
 
-// To remove
-// operator < is needed if we want to use std::set<Dart>
-//	inline bool operator<(Dart rhs) const { return index < rhs.index; }
-
 	/**
 	 * \brief Prints a dart to a stream.
 	 * \param[out] out the stream to print on
@@ -140,6 +136,20 @@ struct Dart
 	}
 };
 
+
 } // namespace cgogn
+
+// hash function to use with the std (i.e unordered set)
+namespace std {
+	template <>
+	struct hash<cgogn::Dart>
+	{
+		size_t operator()(const cgogn::Dart & x) const
+		{
+			std::hash<cgogn::numerics::uint32> h;
+			return h(x.index);
+		}
+	};
+}
 
 #endif // CGOGN_CORE_BASIC_DART_H_
