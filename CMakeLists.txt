@@ -12,11 +12,13 @@ project(CGoGN
 foreach(p
 		CMP0048 # version
 		CMP0054 # CMake 3.1
+		CMP0072 # opengl
 		)
 	if(POLICY ${p})
 		cmake_policy(SET ${p} NEW)
 	endif()
 endforeach()
+
 
 #### Default build type
 if(NOT CMAKE_BUILD_TYPE)
