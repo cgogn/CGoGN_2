@@ -40,6 +40,7 @@ namespace io
 template class CGOGN_IO_EXPORT GraphExport<UndirectedGraph>;
 
 template CGOGN_IO_EXPORT void export_point_set(CMap0& , const ExportOptions&);
+template CGOGN_IO_EXPORT void export_polyline(CMap1& , const ExportOptions&);
 template CGOGN_IO_EXPORT void export_graph(UndirectedGraph& , const ExportOptions&);
 template CGOGN_IO_EXPORT void export_surface(CMap2& , const ExportOptions&);
 template CGOGN_IO_EXPORT void export_volume(CMap3& , const ExportOptions&);
