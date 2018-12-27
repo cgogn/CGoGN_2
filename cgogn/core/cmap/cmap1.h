@@ -29,8 +29,8 @@
 namespace cgogn
 {
 
-template <typename MAP2>
-class CMap1Builder_T;
+template <typename>
+class CMap1Builder_T; // forward declaration
 
 template <typename MAP_TYPE>
 class CMap1_T : public CMap0_T<MAP_TYPE>

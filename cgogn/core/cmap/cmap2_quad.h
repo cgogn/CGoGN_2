@@ -25,10 +25,13 @@
 #define CGOGN_CORE_CMAP_CMAP2_QUAD_H_
 
 #include <cgogn/core/cmap/map_base.h>
-#include <cgogn/core/cmap/cmap2_builder.h>
+#include <cgogn/core/cmap/cmap2.h>
 
 namespace cgogn
 {
+
+template <typename>
+class CMap2Builder_T; // forward declaration
 
 template <typename MAP_TYPE>
 class CMap2Quad_T : public MapBase<MAP_TYPE>
@@ -1194,7 +1197,7 @@ struct CMap2QuadType
 using CMap2Quad = CMap2Quad_T<CMap2QuadType>;
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_CORE_EXPORT CMap2Builder_T<CMap2Quad>;
+extern template class CGOGN_CORE_EXPORT CMap2_T<CMap2Type>;
 extern template class CGOGN_CORE_EXPORT DartMarker<CMap2Quad>;
 extern template class CGOGN_CORE_EXPORT DartMarkerStore<CMap2Quad>;
 extern template class CGOGN_CORE_EXPORT DartMarkerNoUnmark<CMap2Quad>;
