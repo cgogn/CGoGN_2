@@ -42,24 +42,24 @@ class LinPolylineImport : public PolylineFileImport<MAP>
 {
 public:
 
-    using Self = LinPolylineImport<MAP, VEC3>;
+	using Self = LinPolylineImport<MAP, VEC3>;
 	using Inherit = PolylineFileImport<MAP>;
-    using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
-    template <typename T>
-    using ChunkArray = typename Inherit::template ChunkArray<T>;
+	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
+	template <typename T>
+	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
-    inline LinPolylineImport(MAP& map) : Inherit(map) {}
-    CGOGN_NOT_COPYABLE_NOR_MOVABLE(LinPolylineImport);
-    virtual ~LinPolylineImport() override {}
+	inline LinPolylineImport(MAP& map) : Inherit(map) {}
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(LinPolylineImport);
+	virtual ~LinPolylineImport() override {}
 
 protected:
-    virtual bool import_file_impl(const std::string& filename) override
-    {
-        std::ifstream fp(filename.c_str(), std::ios::in);
+	virtual bool import_file_impl(const std::string& filename) override
+	{
+		std::ifstream fp(filename.c_str(), std::ios::in);
 
-        ChunkArray<VEC3>* position = this->template add_vertex_attribute<VEC3>("position");
+		ChunkArray<VEC3>* position = this->template add_vertex_attribute<VEC3>("position");
 
-        std::string line, tag;
+		std::string line, tag;
 
 		do
 		{
