@@ -36,6 +36,13 @@ namespace cgogn
 namespace rendering
 {
 
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES)
+template class CGOGN_RENDERING_EXPORT ShaderPointSpriteTpl<false, false>;
+template class CGOGN_RENDERING_EXPORT ShaderPointSpriteTpl<true, false>;
+template class CGOGN_RENDERING_EXPORT ShaderPointSpriteTpl<false, true>;
+template class CGOGN_RENDERING_EXPORT ShaderPointSpriteTpl<true, true>;
+#endif
+
 const char* ShaderPointSpriteGen::vertex_shader_source_ =
 "in vec3 vertex_pos;\n"
 "#if WITH_COLOR == 1\n"
@@ -307,15 +314,18 @@ void ShaderPointSpriteGen::set_plane_clip2(const QVector4D& plane)
 	prg_.setUniformValue(unif_plane_clip2_, plane);
 }
 
+ShaderParamPointSprite<false,false>::~ShaderParamPointSprite()
+{}
 
-template class CGOGN_RENDERING_EXPORT ShaderPointSpriteTpl<false, false>;
-template class CGOGN_RENDERING_EXPORT ShaderPointSpriteTpl<true, false>;
-template class CGOGN_RENDERING_EXPORT ShaderPointSpriteTpl<false, true>;
-template class CGOGN_RENDERING_EXPORT ShaderPointSpriteTpl<true, true>;
-template class CGOGN_RENDERING_EXPORT ShaderParamPointSprite<false, false>;
-template class CGOGN_RENDERING_EXPORT ShaderParamPointSprite<true, false>;
-template class CGOGN_RENDERING_EXPORT ShaderParamPointSprite<false, true>;
-template class CGOGN_RENDERING_EXPORT ShaderParamPointSprite<true, true>;
+ShaderParamPointSprite<false,true>::~ShaderParamPointSprite()
+{}
+
+ShaderParamPointSprite<true,false>::~ShaderParamPointSprite()
+{}
+
+ShaderParamPointSprite<true, true>::~ShaderParamPointSprite()
+{}
+
 
 } // namespace rendering
 

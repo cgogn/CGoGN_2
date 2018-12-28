@@ -113,17 +113,12 @@ public:
 
 private:
 
-	ShaderBoldLineTpl() : ShaderBoldLineGen(CPV) {}
-	static ShaderBoldLineTpl* instance_;
+	inline ShaderBoldLineTpl() : ShaderBoldLineGen(CPV) {}
 };
-
-template <bool CPV>
-ShaderBoldLineTpl<CPV>* ShaderBoldLineTpl<CPV>::instance_ = nullptr;
-
 
 // COLOR UNIFORM VERSION
 template <>
-class ShaderParamBoldLine<false> : public ShaderParam
+class CGOGN_RENDERING_EXPORT ShaderParamBoldLine<false> : public ShaderParam
 {
 protected:
 
@@ -137,20 +132,21 @@ protected:
 	}
 
 public:
-	using ShaderType = ShaderBoldLineTpl<false>;
 
 	QColor color_;
 	float32 width_;
 	QVector4D plane_clip_;
 	QVector4D plane_clip2_;
 
-	ShaderParamBoldLine(ShaderBoldLineTpl<false>* sh) :
+	inline ShaderParamBoldLine(ShaderBoldLineGen* sh) :
 		ShaderParam(sh),
 		color_(255, 255, 255),
 		width_(2.0f),
 		plane_clip_(0,0,0,0),
 		plane_clip2_(0,0,0,0)
 	{}
+
+	virtual ~ShaderParamBoldLine() override;
 
 	void set_position_vbo(VBO* vbo_pos)
 	{
@@ -169,11 +165,11 @@ public:
 
 // COLOR PER VERTEX VERSION
 template <>
-class ShaderParamBoldLine<true> : public ShaderParam
+class CGOGN_RENDERING_EXPORT ShaderParamBoldLine<true> : public ShaderParam
 {
 protected:
 
-	void set_uniforms() override
+	inline void set_uniforms() override
 	{
 		ShaderBoldLineGen* sh = static_cast<ShaderBoldLineGen*>(this->shader_);
 		sh->set_width(width_);
@@ -183,7 +179,6 @@ protected:
 
 public:
 
-	using ShaderType = ShaderBoldLineTpl<true>;
 	using Self = ShaderParamBoldLine<true>;
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderParamBoldLine);
 
@@ -191,14 +186,16 @@ public:
 	QVector4D plane_clip_;
 	QVector4D plane_clip2_;
 
-	ShaderParamBoldLine(ShaderBoldLineTpl<true>* sh) :
+	inline ShaderParamBoldLine(ShaderBoldLineGen* sh) :
 		ShaderParam(sh),
 		width_(2.0f),
 		plane_clip_(0,0,0,0),
 		plane_clip2_(0,0,0,0)
 	{}
 
-	void set_all_vbos(VBO* vbo_pos, VBO* vbo_color)
+	virtual ~ShaderParamBoldLine() override;
+
+	inline void set_all_vbos(VBO* vbo_pos, VBO* vbo_color)
 	{
 		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
 		shader_->bind();
@@ -217,7 +214,7 @@ public:
 		shader_->release();
 	}
 
-	void set_position_vbo(VBO* vbo_pos)
+	inline void set_position_vbo(VBO* vbo_pos)
 	{
 		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
 		shader_->bind();
@@ -230,7 +227,7 @@ public:
 		shader_->release();
 	}
 
-	void set_color_vbo(VBO* vbo_color)
+	inline void set_color_vbo(VBO* vbo_color)
 	{
 		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
 		shader_->bind();
@@ -248,6 +245,7 @@ public:
 template <bool CPV>
 std::unique_ptr<typename ShaderBoldLineTpl<CPV>::Param> ShaderBoldLineTpl<CPV>::generate_param()
 {
+	static ShaderBoldLineTpl* instance_ = nullptr;
 	if (!instance_)
 	{
 		instance_ = new ShaderBoldLineTpl<CPV>;
@@ -256,7 +254,6 @@ std::unique_ptr<typename ShaderBoldLineTpl<CPV>::Param> ShaderBoldLineTpl<CPV>::
 	return cgogn::make_unique<Param>(instance_);
 }
 
-
 using ShaderBoldLine = ShaderBoldLineTpl<false>;
 using ShaderBoldLineColor = ShaderBoldLineTpl<true>;
 
@@ -264,9 +261,7 @@ using ShaderBoldLineColor = ShaderBoldLineTpl<true>;
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && !defined(CGOGN_RENDER_SHADERS_BOLD_LINE_CPP_)
 extern template class CGOGN_RENDERING_EXPORT ShaderBoldLineTpl<false>;
 extern template class CGOGN_RENDERING_EXPORT ShaderBoldLineTpl<true>;
-extern template class CGOGN_RENDERING_EXPORT ShaderParamBoldLine<false>;
-extern template class CGOGN_RENDERING_EXPORT ShaderParamBoldLine<true>;
-#endif
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && !defined(CGOGN_RENDER_SHADERS_BOLD_LINE_CPP_)
 
 } // namespace rendering
 

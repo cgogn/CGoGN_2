@@ -122,7 +122,7 @@ public:
 	/**
 	 * release buffers and shader
 	 */
-	~VolumeDrawerGen();
+	virtual ~VolumeDrawerGen();
 
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(VolumeDrawerGen);
 
@@ -189,17 +189,18 @@ void VolumeDrawerGen::update_edge(const MAP& m, const VERTEX_ATTR& position)
 
 template <bool CPV>
 class VolumeDrawerTpl : public VolumeDrawerGen
-{
-};
+{};
 
 
 template <>
-class VolumeDrawerTpl<false> : public VolumeDrawerGen
+class CGOGN_RENDERING_EXPORT VolumeDrawerTpl<false> : public VolumeDrawerGen
 {
 public:
 
 	VolumeDrawerTpl() : VolumeDrawerGen(false)
 	{}
+
+	~VolumeDrawerTpl() override;
 
 	template <typename MAP, typename MASK, typename VERTEX_ATTR>
 	void update_face(const MAP& m, const MASK& mask, const VERTEX_ATTR& position)
@@ -268,12 +269,14 @@ public:
 
 
 template <>
-class VolumeDrawerTpl<true> : public VolumeDrawerGen
+class CGOGN_RENDERING_EXPORT VolumeDrawerTpl<true> : public VolumeDrawerGen
 {
 public:
 
 	VolumeDrawerTpl() : VolumeDrawerGen(true)
 	{}
+
+	~VolumeDrawerTpl() override;
 
 	template <typename MAP, typename MASK, typename VERTEX_ATTR>
 	void update_face(const MAP& m, const MASK& mask, const VERTEX_ATTR& position, const VERTEX_ATTR& color)
@@ -368,11 +371,6 @@ public:
 
 using VolumeDrawer = VolumeDrawerTpl<false>;
 using VolumeDrawerColor = VolumeDrawerTpl<true>;
-
-#if !defined(CGOGN_RENDERING_VOLUME_RENDER_CPP_)
-extern template class CGOGN_RENDERING_EXPORT VolumeDrawerTpl<false>;
-extern template class CGOGN_RENDERING_EXPORT VolumeDrawerTpl<true>;
-#endif // (!defined(CGOGN_RENDERING_VOLUME_RENDER_CPP_))
 
 } // namespace rendering
 
