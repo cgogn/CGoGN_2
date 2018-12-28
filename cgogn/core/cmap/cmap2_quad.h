@@ -1197,7 +1197,7 @@ struct CMap2QuadType
 using CMap2Quad = CMap2Quad_T<CMap2QuadType>;
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_CORE_EXPORT CMap2_T<CMap2Type>;
+extern template class CGOGN_CORE_EXPORT CMap2_T<CMap2QuadType>;
 extern template class CGOGN_CORE_EXPORT DartMarker<CMap2Quad>;
 extern template class CGOGN_CORE_EXPORT DartMarkerStore<CMap2Quad>;
 extern template class CGOGN_CORE_EXPORT DartMarkerNoUnmark<CMap2Quad>;
