@@ -91,7 +91,7 @@ public:
 	OBB(const AABB<Vector>& aabb)
 	{
 		transformation_inv_=Eigen::Matrix<T,D+1,D+1>::Identity();
-		transformation_inv_.block(0,D,D,1)=-aabb.center();
+		transformation_inv_.block(0,D,D,1)=-center(aabb);
 	}
 
 	//! Assignment
