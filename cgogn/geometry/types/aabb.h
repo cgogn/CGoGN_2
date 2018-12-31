@@ -254,10 +254,10 @@ bool intersects(const AABB<VEC_T>& lhs, const AABB<VEC_T>& rhs)
 	cgogn_message_assert(lhs.is_initialized(), "lhs Axis-Aligned Bounding box not initialized");
 	cgogn_message_assert(rhs.is_initialized(), "rhs Axis-Aligned Bounding box not initialized");
 
-	VEC_T lhsmin = lhs.min();
-	VEC_T lhsmax = lhs.max();
-	VEC_T rhsmin = rhs.min();
-	VEC_T rhsmax = rhs.max();
+	const VEC_T& lhsmin = lhs.min();
+	const VEC_T& lhsmax = lhs.max();
+	const VEC_T& rhsmin = rhs.min();
+	const VEC_T& rhsmax = rhs.max();
 	for(uint32 i = 0; i < lhs.dim_; ++i)
 	{
 		if(lhsmax[i] < rhsmin[i])
@@ -274,8 +274,8 @@ bool contains(const AABB<VEC_T>& bb, const VEC_T p)
 {
 	cgogn_message_assert(bb.is_initialized(), "Axis-Aligned Bounding box not initialized");
 
-	VEC_T bbmin = bb.min();
-	VEC_T bbmax = bb.max();
+	const VEC_T& bbmin = bb.min();
+	const VEC_T& bbmax = bb.max();
 	for (uint32 i = 0; i < bb.dim_; ++i)
 	{
 		if (bbmin[i] > p[i])
@@ -301,8 +301,8 @@ bool contains(const AABB<VEC_T>& lhs, const AABB<VEC_T>& rhs)
 template <typename VEC_T, typename std::enable_if<is_dim_of<VEC_T, 3>::value, VEC_T>::type* = nullptr>
 bool ray_intersect(const AABB<VEC_T>& bb, const VEC_T& P, const VEC_T& V)
 {
-	VEC_T bbmin = bb.min();
-	VEC_T bbmax = bb.max();
+	const VEC_T& bbmin = bb.min();
+	const VEC_T& bbmax = bb.max();
 	using Scalar = typename VEC_T::Scalar;
 	if (!cgogn::almost_equal_relative(V[2], Scalar(0)))
 	{
@@ -340,8 +340,8 @@ bool ray_intersect(const AABB<VEC_T>& bb, const VEC_T& P, const VEC_T& V)
 template <typename VEC_T, typename std::enable_if<is_dim_of<VEC_T, 3>::value, VEC_T>::type* = nullptr>
 VEC_T corner(const AABB<VEC_T>& aabb, uint32 id)
 {
-	VEC_T min = aabb.min();
-	VEC_T max = aabb.max();
+	const VEC_T& min = aabb.min();
+	const VEC_T& max = aabb.max();
 
 	switch(id)
 	{
@@ -363,16 +363,24 @@ VEC_T corner(const AABB<VEC_T>& aabb, uint32 id)
 /// \param[in] b1 first box
 /// \param[in] b2 second box
 template <typename VEC_T>
-inline void aabb_union(AABB<VEC_T>& target, const AABB<VEC_T>& b1, const AABB<VEC_T>& b2)
+inline AABB<VEC_T> merge(const AABB<VEC_T>& lhs, const AABB<VEC_T>& rhs)
 {
-	cgogn_assert(target.dim_ == b1.dim_);
-	cgogn_assert(b1.dim_ == b2.dim_);
+	cgogn_message_assert(lhs.is_initialized(), "lhs Axis-Aligned Bounding box not initialized");
+	cgogn_message_assert(rhs.is_initialized(), "rhs Axis-Aligned Bounding box not initialized");
+	cgogn_assert(lhs.dim_ == rhs.dim_);
 
-	for(uint32 i = 0; i < b1.dim_; ++i)
+	VEC_T min, max;
+	const VEC_T& lhsmin = lhs.min();
+	const VEC_T& lhsmax = lhs.max();
+	const VEC_T& rhsmin = rhs.min();
+	const VEC_T& rhsmax = rhs.max();
+	for(uint32 i = 0; i < rhs.dim_; ++i)
 	{
-		target.min(i, std::min(b1.min()[i], b2.min()[i]));
-		target.max(i, std::max(b1.max()[i], b2.max()[i]));
+		min[i] = std::min(lhsmin[i], rhsmin[i]);
+		max[i] = std::max(lhsmax[i], rhsmax[i]);
 	}
+
+	return AABB<VEC_T>(min, max);
 }
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_EXTERNAL_TEMPLATES_CPP_))
