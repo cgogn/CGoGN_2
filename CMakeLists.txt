@@ -69,6 +69,10 @@ else(CGOGN_CPP_STD STREQUAL "11")
 	set(CMAKE_CXX_STANDARD 17)
 endif(CGOGN_CPP_STD STREQUAL "11")
 
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+
 #### ThirdParty options
 set(CGOGN_THIRDPARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty)
 option(CGOGN_BUILD_TESTS "Build cgogn unit tests using google test framework." OFF)
