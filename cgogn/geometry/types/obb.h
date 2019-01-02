@@ -62,8 +62,8 @@ public:
 	//! Copy constructor
 	OBB(const OBB<T,D>& other)
 	{
-		transformation_inv_=other.transformation_inv_;
-		eigen_values_=other.eigen_values_;
+		transformation_inv_ = other.transformation_inv_;
+		eigen_values_ = other.eigen_values_;
 	}
 
 	//! Construct a N-dimensional box from its center, semi-axes, and eigenvectors ()
@@ -72,26 +72,26 @@ public:
 	{
 		// Define the inverse scale matrix from the eigenvalues
 		Eigen::DiagonalMatrix<T,D+1> Sinv;
-		for (uint32 i=0; i<D; ++i)
-			Sinv.diagonal()[i]=1.0/eigenvalues[i];
-		Sinv.diagonal()[D]=1.0;
+		for (uint32 i = 0; i < D; ++i)
+			Sinv.diagonal()[i] = 1.0 / eigenvalues[i];
+		Sinv.diagonal()[D] = 1.0;
 
 		// Now prepare the R^-1.T^-1 (rotation,translation)
-		transformation_inv_=Eigen::Matrix<T,D+1,D+1>::Constant(0.0);
-		transformation_inv_(D,D)=1.0;
-		for (unsigned int i=0;i<D;++i)
-			transformation_inv_.block(i,0,1,D)=eigenvectors.col(i).transpose().normalized();
-		transformation_inv_.block(0,D,D,1)=-transformation_inv_.block(0,0,D,D)*center;
+		transformation_inv_ = Eigen::Matrix<T,D+1,D+1>::Constant(0.0);
+		transformation_inv_(D,D) = 1.0;
+		for (uint32 i = 0; i < D; ++i)
+			transformation_inv_.block(i,0,1,D) = eigenvectors.col(i).transpose().normalized();
+		transformation_inv_.block(0,D,D,1) = -transformation_inv_.block(0,0,D,D) * center;
 
 		// Finally compute (TRS)^-1 by left-multiplying (TR)^-1 by S^-1
-		transformation_inv_=Sinv*transformation_inv_;
+		transformation_inv_ = Sinv * transformation_inv_;
 	}
 
 	//! Construct a OBB from a AABB
 	OBB(const AABB<Vector>& aabb)
 	{
-		transformation_inv_=Eigen::Matrix<T,D+1,D+1>::Identity();
-		transformation_inv_.block(0,D,D,1)=-center(aabb);
+		transformation_inv_ = Eigen::Matrix<T,D+1,D+1>::Identity();
+		transformation_inv_.block(0,D,D,1) = -center(aabb);
 	}
 
 	//! Assignment
@@ -99,8 +99,8 @@ public:
 	{
 		if(this!=&other)
 		{
-			eigen_values_=other.eigen_values_;
-			transformation_inv_=other.transformation_inv_;
+			eigen_values_ = other.eigen_values_;
+			transformation_inv_ = other.transformation_inv_;
 		}
 		return *this;
 	}
@@ -126,85 +126,58 @@ public:
 	{
 		// Reconstruct S
 		Eigen::DiagonalMatrix<T,D+1> S;
-		for(uint32 i=0; i<D; ++i)
-			S.diagonal()[i]=eigen_values_[i];
-		S.diagonal()[D]=1.0;
+		for(uint32 i = 0; i < D; ++i)
+			S.diagonal()[i] = eigen_values_[i];
+		S.diagonal()[D] = 1.0;
 
-		transformation_inv_=S*transformation_inv_;
+		transformation_inv_ = S * transformation_inv_;
 
 		// Construct the inverse of the new rotation matrix
-		HomeMatrix Rnewinv=HomeMatrix::Zero();
+		HomeMatrix Rnewinv = HomeMatrix::Zero();
 		Rnewinv(D,D) = 1.0;
-		for (uint32 i=0;i<D;++i)
-			Rnewinv.block(i,0,1,D)=eigenvectors.col(i).transpose().normalized();
-		transformation_inv_=Rnewinv*transformation_inv_;
+		for (uint32 i = 0; i < D; ++i)
+			Rnewinv.block(i,0,1,D) = eigenvectors.col(i).transpose().normalized();
+		transformation_inv_ = Rnewinv * transformation_inv_;
 
 		// Reconstruct Sinv
-		for (uint32 i=0; i<D; ++i)
-			S.diagonal()[i]=1.0/eigen_values_[i];
-		S.diagonal()[D]=1.0;
+		for (uint32 i = 0; i < D; ++i)
+			S.diagonal()[i] = 1.0 / eigen_values_[i];
+		S.diagonal()[D] = 1.0;
 
 		// Reconstruct the complete TRS inverse
-		transformation_inv_ = S*transformation_inv_;
+		transformation_inv_ = S * transformation_inv_;
 	}
 
 	//! Scale isotropically the OBB.
 	void scale(T value)
 	{
-		eigen_values_*=value;
+		eigen_values_ *= value;
 		Eigen::DiagonalMatrix<T,D+1> Sinv;
-		for (uint32 i=0; i<D; ++i)
-			Sinv.diagonal()[i]=1.0/value;
-		Sinv.diagonal()[D]=1.0;
-		transformation_inv_=Sinv*transformation_inv_;
+		for (uint32 i = 0; i < D; ++i)
+			Sinv.diagonal()[i] = 1.0 / value;
+		Sinv.diagonal()[D] = 1.0;
+		transformation_inv_ = Sinv * transformation_inv_;
 	}
 
 	//! Scale anisotropically the OBB.
 	void scale(const Vector& v)
 	{
-		eigen_values_=eigen_values_.cwiseProduct(v);
+		eigen_values_ = eigen_values_.cwiseProduct(v);
 		Eigen::DiagonalMatrix<T,D+1> Sinv;
-		for (uint32 i=0;i<D;++i)
-			Sinv.diagonal()[i]=1.0/v[i];
-		Sinv.diagonal()[D]=1.0;
-		transformation_inv_=Sinv*transformation_inv_;
+		for (uint32 i = 0; i < D; ++i)
+			Sinv.diagonal()[i] = 1.0 / v[i];
+		Sinv.diagonal()[D] = 1.0;
+		transformation_inv_ = Sinv * transformation_inv_;
 	}
 
 	//! Translate the OBB.
 	void translate(const Vector& t)
 	{
 		HomeMatrix tinv = HomeMatrix::Zero();
-		for (uint32 i=0; i<D+1; ++i)
-			tinv(i,i)=1.0;
-		tinv.block(0,D,D,1)=-t;
-		transformation_inv_=transformation_inv_*tinv;
-	}
-
-	std::tuple<Vector,Vector> bounds()
-	{
-		// Reconstruct S
-		Eigen::DiagonalMatrix<T,D+1> S;
-		for (uint32 i=0;i<D;++i)
-			S.diagonal()[i]=eigen_values_[i];
-		S.diagonal()[D]=1.0;
-
-		// Reconstruct R from TRinv
-		HomeMatrix TRinv=S*transformation_inv_;
-		Matrix R=TRinv.block(0,0,D,D).transpose();
-
-		// Extract T matrix from TRinv
-		Vector Tmat=-R*TRinv.block(0,D,D,1);
-
-		// Calculate the width of the bounding box
-		Vector width=Vector::Constant(0.0);
-		for (uint32 i=0;i<D;++i)
-		{
-			for (uint32 j=0;j<D;++j)
-				width[i] += std::abs(eigen_values_[j]*R(j,i));
-		}
-
-		// Update the upper and lower bound of the AABB
-		return {Tmat-width,Tmat+width};
+		for (uint32 i = 0; i < D+1; ++i)
+			tinv(i,i) = 1.0;
+		tinv.block(0,D,D,1) = -t;
+		transformation_inv_ = transformation_inv_*tinv;
 	}
 
 private:
@@ -226,6 +199,39 @@ typename OBB<T,D>::Vector diagonal(const OBB<T, D>& obb)
 	typename OBB<T,D>::Vector min, max;
 	std::tie(min, max) = obb.bounds();
 	return max - min;
+}
+
+template <typename T, uint32 D>
+std::tuple<typename OBB<T, 3>::Vector, typename OBB<T, 3>::Vector> bounds(const OBB<T, D>& obb)
+{
+	using HomeMatrix = typename OBB<T, 3>::HomeMatrix;
+	using Matrix = typename OBB<T, 3>::Matrix;
+	using Vector = typename OBB<T, 3>::Vector;
+
+	Vector eigen_values = obb.extents();
+	HomeMatrix transformation_inv = obb.inverse_transformation();
+
+	// Reconstruct S
+	Eigen::DiagonalMatrix<T,D+1> S;
+	for (uint32 i = 0; i < D; ++i)
+		S.diagonal()[i] = eigen_values[i];
+	S.diagonal()[D] = 1.0;
+
+	// Reconstruct R from TRinv
+	HomeMatrix TRinv = S * transformation_inv;
+	Matrix R = TRinv.block(0,0,D,D).transpose();
+
+	// Extract T matrix from TRinv
+	Vector Tmat = -R * TRinv.block(0,D,D,1);
+
+	// Calculate the width of the bounding box
+	Vector width = Vector::Constant(0.0);
+	for (uint32 i = 0; i < D; ++i)
+		for (uint32 j = 0; j < D; ++j)
+			width[i] += std::abs(eigen_values[j]*R(j,i));
+
+	// Update the upper and lower bound of the AABB
+	return {Tmat-width, Tmat+width};
 }
 
 
@@ -278,10 +284,8 @@ bool contains(const OBB<T,D>& other, const typename OBB<T,D>::HomeVector& point)
 	typename OBB<T,D>::HomeVector p = other.inverse_transformation()*point;
 
 	for(uint32 i=0; i<D; ++i)
-	{
 		if (p[i] < -1 || p[i] > 1)
 			return false;
-	}
 
 	return true;
 }
