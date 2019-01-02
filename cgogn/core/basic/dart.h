@@ -144,10 +144,9 @@ namespace std {
 	template <>
 	struct hash<cgogn::Dart>
 	{
-		size_t operator()(const cgogn::Dart & x) const
+		size_t operator()(const cgogn::Dart& x) const
 		{
-			std::hash<cgogn::numerics::uint32> h;
-			return h(x.index);
+			return std::hash<cgogn::numerics::uint32>()(x.index);
 		}
 	};
 }
