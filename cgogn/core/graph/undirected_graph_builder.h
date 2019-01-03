@@ -32,9 +32,10 @@ namespace cgogn
 template <typename GRAPH>
 class UndirectedGraphBuilder_T
 {
-	static_assert(GRAPH::DIMENSION == 2, "UndirectedGraphBuilder_T works only with 1D Graphs.");
+	static_assert(GRAPH::DIMENSION == 1, "UndirectedGraphBuilder_T works only with 1D Graphs.");
 
 public:
+
 	using Self = UndirectedGraphBuilder_T<GRAPH>;
 	using Graph = GRAPH;
 	using CDart = typename Graph::CDart;
@@ -51,8 +52,6 @@ public:
 
 	inline ~UndirectedGraphBuilder_T()
     {}
-
-public:
 
     template <Orbit ORBIT>
     inline void create_embedding()
@@ -104,14 +103,14 @@ public:
         map_.alpha1_unsew(d);
     }
 
-    inline Dart add_edge_topo()
+	inline Dart add_vertex_topo()
     {
-        return map_.add_edge_topo();
+		return map_.add_vertex_topo();
     }
 
-	inline Dart add_vertex_topo(uint32 nb_edges)
+	inline Dart connect_vertices_topo(Dart d, Dart e)
     {
-		return map_.add_vertex_topo(nb_edges);
+		return map_.connect_vertices_topo(d, e);
     }
 
 private:
