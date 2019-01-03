@@ -52,30 +52,6 @@ void compute_AABB(const ATTR& attr, const MAP& map, AABB<array_data_type<ATTR>>&
 	});
 }
 
-template <typename ATTR>
-void compute_OBB(const ATTR& attr, OBB<array_data_type<ATTR>>& bb)
-{
-	bb.reset();
-	bb.build(attr);
-}
-
-
-template <typename MAP, typename VERTEX_ATTR>
-void compute_OBB(const MAP& map, const VERTEX_ATTR& attr, OBB<InsideTypeOf<VERTEX_ATTR>>& bb)
-{
-	bb.reset();
-	bb.build_from_vertices(map, attr);
-}
-
-
-template <typename MAP, typename VERTEX_ATTR>
-void compute_OBB(const MAP& map, const VERTEX_ATTR& attr, typename MAP::ConnectedComponent cc, OBB<InsideTypeOf<VERTEX_ATTR>>& bb)
-{
-	bb.reset();
-	bb.build_from_triangles(map, attr, cc);
-}
-
-
 } // namespace geometry
 
 } // namespace cgogn

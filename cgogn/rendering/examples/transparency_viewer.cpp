@@ -123,8 +123,8 @@ void ViewerTransparency::import(const std::string& surface_mesh)
 
 
 	cgogn::geometry::compute_AABB(vertex_position_, bb_);
-	setSceneRadius(bb_.diag_size()/2.0);
-	Vec3 center = bb_.center();
+	setSceneRadius(cgogn::geometry::diagonal(bb_).norm()/2.0);
+	Vec3 center = cgogn::geometry::center(bb_);
 	setSceneCenter(qoglviewer::Vec(center[0], center[1], center[2]));
 	showEntireScene();
 }
@@ -251,7 +251,7 @@ void ViewerTransparency::init()
 
 	param_point_sprite_ = cgogn::rendering::ShaderPointSprite::generate_param();
 	param_point_sprite_->set_position_vbo(vbo_pos_.get());
-	param_point_sprite_->size_ = bb_.diag_size()/1000;
+	param_point_sprite_->size_ = cgogn::geometry::diagonal(bb_).norm()/1000;
 	param_point_sprite_->color_ = QColor(200,200,0);
 
 	transp_drawer_ = cgogn::make_unique<cgogn::rendering::SurfaceTransparencyDrawer>();

@@ -34,8 +34,6 @@
 
 #include <cgogn/io/io_utils.h>
 
-#include <Eigen/StdVector>
-
 namespace cgogn
 {
 
