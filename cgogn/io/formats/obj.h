@@ -449,26 +449,26 @@ protected:
 ///
 ///
 ///
-template <typename VEC3>
-class ObjGraphImport : public GraphFileImport
+template <typename MAP, typename VEC3>
+class ObjGraphImport : public GraphFileImport<MAP>
 {
-
 public:
-	using Self = ObjGraphImport<VEC3>;
-	using Inherit = GraphFileImport;
+
+	using Self = ObjGraphImport<MAP, VEC3>;
+	using Inherit = GraphFileImport<MAP>;
     using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
     template <typename T>
     using ChunkArray = typename Inherit::template ChunkArray<T>;
 
-	inline ObjGraphImport() {}
+	inline ObjGraphImport(MAP& map) : Inherit(map) {}
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ObjGraphImport);
 	virtual ~ObjGraphImport() override {}
 
 protected:
+
     virtual bool import_file_impl(const std::string& filename) override
     {
         std::ifstream fp(filename.c_str(), std::ios::in);
-
 
 		ChunkArray<VEC3>* position = this->template add_vertex_attribute<VEC3>("position");
 		ChunkArray<Scalar>* radius = this->template add_vertex_attribute<Scalar>("radius");
@@ -483,7 +483,7 @@ protected:
 
 		// lecture des sommets
 		std::vector<uint32> vertices_id;
-		vertices_id.reserve(102400);
+		vertices_id.reserve(65536);
 
 		uint32 i = 0;
 		do
@@ -514,7 +514,7 @@ protected:
 		fp.clear();
 		fp.seekg(0, std::ios::beg);
 
-		this->edges_nb_vertices_.reserve(vertices_id.size() * 2);
+		this->reserve(vertices_id.size() * 2);
 
 		do
 		{
@@ -528,13 +528,11 @@ protected:
 			{
 				std::stringstream oss(line);
 
-				uint32  a, b;
+				uint32 a, b;
 				oss >> a;
 				oss >> b;
 
-				this->edges_nb_vertices_.push_back(2);
-				this->edges_vertex_indices_.push_back(a);
-				this->edges_vertex_indices_.push_back(b);
+				this->add_edge(vertices_id[a], vertices_id[b]);
 			}
 
 			fp >> tag;
@@ -549,6 +547,7 @@ template <typename MAP>
 class ObjGraphExport : public GraphExport<MAP>
 {
 public:
+
     using Inherit = GraphExport<MAP>;
 	using Self = ObjGraphExport<MAP>;
     using Map = typename Inherit::Map;
@@ -560,6 +559,7 @@ public:
     using ChunkArrayContainer = typename Inherit::ChunkArrayContainer;
 
 protected:
+
     virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& ) override
     {
         // set precision for float output
@@ -580,21 +580,20 @@ protected:
     }
 };
 
-
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_IO_API ObjSurfaceImport<CMap2, Eigen::Vector3d>;
-extern template class CGOGN_IO_API ObjSurfaceImport<CMap2, Eigen::Vector3f>;
-extern template class CGOGN_IO_API ObjSurfaceImport<CMap2, geometry::Vec_T<std::array<float64, 3>>>;
-extern template class CGOGN_IO_API ObjSurfaceImport<CMap2, geometry::Vec_T<std::array<float32, 3>>>;
+extern template class CGOGN_IO_EXPORT ObjSurfaceImport<CMap2, Eigen::Vector3d>;
+extern template class CGOGN_IO_EXPORT ObjSurfaceImport<CMap2, Eigen::Vector3f>;
+extern template class CGOGN_IO_EXPORT ObjSurfaceImport<CMap2, geometry::Vec_T<std::array<float64, 3>>>;
+extern template class CGOGN_IO_EXPORT ObjSurfaceImport<CMap2, geometry::Vec_T<std::array<float32, 3>>>;
 
-extern template class CGOGN_IO_API ObjGraphImport<Eigen::Vector3d>;
-extern template class CGOGN_IO_API ObjGraphImport<Eigen::Vector3f>;
-extern template class CGOGN_IO_API ObjGraphImport<geometry::Vec_T<std::array<float64,3>>>;
-extern template class CGOGN_IO_API ObjGraphImport<geometry::Vec_T<std::array<float32,3>>>;
+extern template class CGOGN_IO_EXPORT ObjGraphImport<Eigen::Vector3d>;
+extern template class CGOGN_IO_EXPORT ObjGraphImport<Eigen::Vector3f>;
+extern template class CGOGN_IO_EXPORT ObjGraphImport<geometry::Vec_T<std::array<float64,3>>>;
+extern template class CGOGN_IO_EXPORT ObjGraphImport<geometry::Vec_T<std::array<float32,3>>>;
 
-extern template class CGOGN_IO_API ObjSurfaceExport<CMap2>;
+extern template class CGOGN_IO_EXPORT ObjSurfaceExport<CMap2>;
 
-extern template class CGOGN_IO_API ObjGraphExport<UndirectedGraph>;
+extern template class CGOGN_IO_EXPORT ObjGraphExport<UndirectedGraph>;
 
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
 

@@ -32,7 +32,7 @@
 #include <cgogn/core/cmap/attribute.h>
 #include <cgogn/core/basic/cell.h>
 #include <cgogn/geometry/types/geometry_traits.h>
-#include <cgogn/io/dll.h>
+#include <cgogn/io/cgogn_io_export.h>
 
 namespace cgogn
 {
@@ -67,7 +67,7 @@ inline std::istream& operator>>(std::istream& in, Attribute_T<T>& att)
 namespace io
 {
 
-class CGOGN_IO_API ExportOptions final
+class CGOGN_IO_EXPORT ExportOptions final
 {
 private:
 
@@ -154,10 +154,10 @@ enum VolumeType
 	Connector
 };
 
-CGOGN_IO_API bool                           file_exists(const std::string& filename);
-CGOGN_IO_API std::unique_ptr<std::ofstream> create_file(const std::string& filename, bool binary, bool overwrite);
-CGOGN_IO_API FileType                       file_type(const std::string& filename);
-CGOGN_IO_API DataType                       data_type(const std::string& type_name);
+CGOGN_IO_EXPORT bool                           file_exists(const std::string& filename);
+CGOGN_IO_EXPORT std::unique_ptr<std::ofstream> create_file(const std::string& filename, bool binary, bool overwrite);
+CGOGN_IO_EXPORT FileType                       file_type(const std::string& filename);
+CGOGN_IO_EXPORT DataType                       data_type(const std::string& type_name);
 
 /**
  * @brief base64_encode
@@ -165,7 +165,7 @@ CGOGN_IO_API DataType                       data_type(const std::string& type_na
  * @param buffer_size, the number of bytes we want to encode ( with buffer_size <= strlen(input_buffer) )
  * @return a vector containing the encoded data.
  */
-CGOGN_IO_API std::vector<char> base64_encode(const char* input_buffer, std::size_t buffer_size);
+CGOGN_IO_EXPORT std::vector<char> base64_encode(const char* input_buffer, std::size_t buffer_size);
 
 /**
  * @brief base64_decode
@@ -173,7 +173,7 @@ CGOGN_IO_API std::vector<char> base64_encode(const char* input_buffer, std::size
  * @param length, the number of bytes we want to process
  * @return an empty vector if the process failed. The decoded data if successful.
  */
-CGOGN_IO_API std::vector<unsigned char> base64_decode(const char* const input, std::size_t length);
+CGOGN_IO_EXPORT std::vector<unsigned char> base64_decode(const char* const input, std::size_t length);
 
 /**
  * @brief zlib_decompress
@@ -182,7 +182,7 @@ CGOGN_IO_API std::vector<unsigned char> base64_decode(const char* const input, s
  * @param length, the length of the data we want to decompress.
  * @return  the decompressed data if successful, otherwise an empty vector.
  */
-CGOGN_IO_API std::vector<unsigned char> zlib_decompress(const char* input, DataType header_type, std::size_t length);
+CGOGN_IO_EXPORT std::vector<unsigned char> zlib_decompress(const char* input, DataType header_type, std::size_t length);
 
 /**
  * @brief zlib_compress
@@ -191,7 +191,7 @@ CGOGN_IO_API std::vector<unsigned char> zlib_decompress(const char* input, DataT
  * @param chunk_size, the maximum compressed size of a chunk
  * @return a vector of compressed chunk. The size of the chunks is equal to chunk_size except for the last one that can be smaller.
  */
-CGOGN_IO_API std::vector<std::vector<unsigned char>> zlib_compress(const unsigned char* input, std::size_t size, std::size_t chunk_size);
+CGOGN_IO_EXPORT std::vector<std::vector<unsigned char>> zlib_compress(const unsigned char* input, std::size_t size, std::size_t chunk_size);
 
 namespace internal
 {
@@ -229,7 +229,7 @@ inline auto convert(const T& x) -> typename std::enable_if<!std::is_arithmetic<T
  * A minimalist buffer that read directly from the string given at the construction instead of copying it.
  * USE WITH CAUTION : the behaviour is undefined if a CharArrayBuffer's string is modified during its lifetime.
  */
-class CGOGN_IO_API CharArrayBuffer : public std::streambuf
+class CGOGN_IO_EXPORT CharArrayBuffer : public std::streambuf
 {
 public:
 
@@ -344,7 +344,7 @@ private:
  * A custom istream using the CharArrayBuffer as buffer.
  * USE WITH CAUTION : the behaviour is undefined if a IMemoryStream's string is modified during its lifetime.
  */
-class CGOGN_IO_API IMemoryStream : public std::istream
+class CGOGN_IO_EXPORT IMemoryStream : public std::istream
 {
 public:
 
@@ -377,8 +377,8 @@ private:
 	CharArrayBuffer buffer_;
 };
 
-CGOGN_IO_API std::istream& getline_safe(std::istream& is, std::string& str);
-CGOGN_IO_API std::istream& getline_safe(std::istream& is, std::string& str, char delim);
+CGOGN_IO_EXPORT std::istream& getline_safe(std::istream& is, std::string& str);
+CGOGN_IO_EXPORT std::istream& getline_safe(std::istream& is, std::string& str, char delim);
 
 } // namespace io
 

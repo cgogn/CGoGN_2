@@ -186,6 +186,11 @@ private:
 	Map3& map_;
 };
 
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
+extern template class CGOGN_CORE_EXPORT CMap3Builder_T<CMap3>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
+
+
 } // namespace cgogn
 
 #endif // CGOGN_CORE_CMAP_CMAP3_BUILDER_H_

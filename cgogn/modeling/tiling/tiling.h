@@ -24,7 +24,7 @@
 #ifndef CGOGN_MODELING_TILING_TILING_H_
 #define CGOGN_MODELING_TILING_TILING_H_
 
-#include <cgogn/modeling/dll.h>
+#include <cgogn/modeling/cgogn_modeling_export.h>
 #include <cgogn/core/utils/numerics.h>
 #include <cgogn/core/cmap/cmap3.h>
 
@@ -91,8 +91,8 @@ public:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_EXTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_MODELING_API Tiling<CMap2>;
-extern template class CGOGN_MODELING_API Tiling<CMap3>;
+extern template class CGOGN_MODELING_EXPORT Tiling<CMap2>;
+extern template class CGOGN_MODELING_EXPORT Tiling<CMap3>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace modeling

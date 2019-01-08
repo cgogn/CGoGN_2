@@ -24,7 +24,7 @@
 #ifndef CGOGN_RENDERING_SHADERS_COLORPERVERTEX_H_
 #define CGOGN_RENDERING_SHADERS_COLORPERVERTEX_H_
 
-#include <cgogn/rendering/dll.h>
+#include <cgogn/rendering/cgogn_rendering_export.h>
 #include <cgogn/rendering/shaders/shader_program.h>
 #include <cgogn/rendering/shaders/vbo.h>
 
@@ -39,7 +39,7 @@ namespace rendering
 // forward
 class ShaderParamColorPerVertex;
 
-class CGOGN_RENDERING_API ShaderColorPerVertex : public ShaderProgram
+class CGOGN_RENDERING_EXPORT ShaderColorPerVertex : public ShaderProgram
 {
 	friend class ShaderParamColorPerVertex;
 
@@ -68,7 +68,7 @@ protected:
 	static ShaderColorPerVertex* instance_;
 };
 
-class CGOGN_RENDERING_API ShaderParamColorPerVertex : public ShaderParam
+class CGOGN_RENDERING_EXPORT ShaderParamColorPerVertex : public ShaderParam
 {
 protected:
 

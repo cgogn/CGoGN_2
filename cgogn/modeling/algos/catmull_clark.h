@@ -26,7 +26,7 @@
 
 #include <vector>
 
-#include <cgogn/modeling/dll.h>
+#include <cgogn/modeling/cgogn_modeling_export.h>
 #include <cgogn/core/basic/dart_marker.h>
 #include <cgogn/core/cmap/cmap3.h>
 #include <cgogn/geometry/algos/centroid.h>
@@ -159,10 +159,10 @@ void catmull_clark(MAP& map, VERTEX_ATTR& position)
 }
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_EXTERNAL_TEMPLATES_CPP_))
-extern template CGOGN_MODELING_API CMap2::Vertex quadrangule_face<CMap2>(CMap2&, CMap2::Face);
-extern template CGOGN_MODELING_API CMap3::Vertex quadrangule_face<CMap3>(CMap3&, CMap3::Face);
-extern template CGOGN_MODELING_API void catmull_clark(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&);
-extern template CGOGN_MODELING_API void catmull_clark(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&);
+extern template CGOGN_MODELING_EXPORT CMap2::Vertex quadrangule_face<CMap2>(CMap2&, CMap2::Face);
+extern template CGOGN_MODELING_EXPORT CMap3::Vertex quadrangule_face<CMap3>(CMap3&, CMap3::Face);
+extern template CGOGN_MODELING_EXPORT void catmull_clark(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&);
+extern template CGOGN_MODELING_EXPORT void catmull_clark(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&);
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace modeling

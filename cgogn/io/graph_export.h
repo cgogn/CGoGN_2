@@ -24,7 +24,7 @@
 #ifndef CGOGN_IO_GRAPH_EXPORT_H_
 #define CGOGN_IO_GRAPH_EXPORT_H_
 
-#include <cgogn/io/dll.h>
+#include <cgogn/io/cgogn_io_export.h>
 
 #include <cgogn/core/graph/undirected_graph.h>
 
@@ -118,7 +118,7 @@ private:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_IO_API GraphExport<UndirectedGraph>;
+extern template class CGOGN_IO_EXPORT GraphExport<UndirectedGraph>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
 
 } // naemspace io

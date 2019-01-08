@@ -24,7 +24,7 @@
 #ifndef CGOGN_MODELING_ALGOS_REFINEMENTS_H_
 #define CGOGN_MODELING_ALGOS_REFINEMENTS_H_
 
-#include <cgogn/modeling/dll.h>
+#include <cgogn/modeling/cgogn_modeling_export.h>
 #include <cgogn/core/cmap/cmap3.h>
 #include <cgogn/core/utils/masks.h>
 #include <cgogn/geometry/algos/centroid.h>
@@ -76,10 +76,10 @@ auto triangule(MAP& map, VERTEX_ATTR& position)
 }
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_EXTERNAL_TEMPLATES_CPP_))
-extern template CGOGN_MODELING_API CMap2::Vertex triangule(CMap2&, CMap2::Face);
-extern template CGOGN_MODELING_API CMap3::Vertex triangule(CMap3&, CMap3::Face);
-extern template CGOGN_MODELING_API void triangule(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&);
-extern template CGOGN_MODELING_API void triangule(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&);
+extern template CGOGN_MODELING_EXPORT CMap2::Vertex triangule(CMap2&, CMap2::Face);
+extern template CGOGN_MODELING_EXPORT CMap3::Vertex triangule(CMap3&, CMap3::Face);
+extern template CGOGN_MODELING_EXPORT void triangule(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&);
+extern template CGOGN_MODELING_EXPORT void triangule(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&);
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace modeling

@@ -24,7 +24,7 @@
 #ifndef CGOGN_RENDERING_SHADERS_EXPLODE_VOLUMES_H_
 #define CGOGN_RENDERING_SHADERS_EXPLODE_VOLUMES_H_
 
-#include <cgogn/rendering/dll.h>
+#include <cgogn/rendering/cgogn_rendering_export.h>
 #include <cgogn/rendering/shaders/shader_program.h>
 #include <cgogn/rendering/shaders/vbo.h>
 
@@ -44,7 +44,7 @@ template <bool CPV>
 class ShaderParamExplodeVolumes
 {};
 
-class CGOGN_RENDERING_API ShaderExplodeVolumesGen : public ShaderProgram
+class CGOGN_RENDERING_EXPORT ShaderExplodeVolumesGen : public ShaderProgram
 {
 	template <bool CPV> friend class ShaderParamExplodeVolumes;
 
@@ -249,11 +249,11 @@ using ShaderExplodeVolumes = ShaderExplodeVolumesTpl<false>;
 using ShaderExplodeVolumesColor = ShaderExplodeVolumesTpl<true>;
 
 
-#if !defined(CGOGN_RENDER_SHADERS_EXPLODE_VOLUME_CPP_)
-extern template class CGOGN_RENDERING_API ShaderExplodeVolumesTpl<false>;
-extern template class CGOGN_RENDERING_API ShaderExplodeVolumesTpl<true>;
-extern template class CGOGN_RENDERING_API ShaderParamExplodeVolumes<false>;
-extern template class CGOGN_RENDERING_API ShaderParamExplodeVolumes<true>;
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && !defined(CGOGN_RENDER_SHADERS_EXPLODE_VOLUME_CPP_)
+extern template class CGOGN_RENDERING_EXPORT ShaderExplodeVolumesTpl<false>;
+extern template class CGOGN_RENDERING_EXPORT ShaderExplodeVolumesTpl<true>;
+extern template class CGOGN_RENDERING_EXPORT ShaderParamExplodeVolumes<false>;
+extern template class CGOGN_RENDERING_EXPORT ShaderParamExplodeVolumes<true>;
 #endif
 
 } // namespace rendering

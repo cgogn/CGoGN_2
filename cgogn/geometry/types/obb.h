@@ -25,14 +25,15 @@
 #define CGOGN_GEOMETRY_TYPES_OBB_H_
 
 #include <array>
-
+#include <tuple>
 #include <cgogn/core/utils/numerics.h>
 #include <cgogn/core/basic/cell.h>
 #include <cgogn/core/cmap/attribute.h>
 #include <cgogn/core/utils/masks.h>
 
-#include <cgogn/geometry/dll.h>
+#include <cgogn/geometry/cgogn_geometry_export.h>
 #include <cgogn/geometry/types/geometry_traits.h>
+#include <cgogn/geometry/types/aabb.h>
 
 namespace cgogn
 {
@@ -40,451 +41,484 @@ namespace cgogn
 namespace geometry
 {
 
-/**
- * Object Bounding Box
- * http://jamesgregson.blogspot.fr/2011/03/latex-test.html
- */
-template <typename VEC_T>
+
+/// ideas coming from
+/// https://code.ill.fr/scientific-software/nsxtool/blob/master/nsxlib/geometry/OBB.h
+template<typename T, uint32 D>
 class OBB
 {
-public:
-
-	using Vec = VEC_T;
-	using Scalar = ScalarOf<Vec>;
-	using Self = OBB<Vec>;
-
-	/**
-	 * \brief Dimension of the dataset
-	 */
-	static const uint32 dim_ = vector_traits<Vec>::SIZE;
-	using Matrix = Eigen::Matrix<Scalar, dim_, dim_>;
-
-	// https://eigen.tuxfamily.org/dox-devel/group__TopicStructHavingEigenMembers.html
-	static const bool eigen_make_aligned = std::is_same<Eigen::AlignedVector3<Scalar>, Vec>::value;
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW_IF(eigen_make_aligned)
-
-private:
-
-	/**
-	 * \brief Translation component of the transformation
-	 */
-	Vec pos_;
-
-	/**
-	 * \brief Bounding box extents
-	 */
-	Vec extension_;
-
-	/**
-	 * \brief The axes defining the OBB
-	 */
-	Matrix rotation_;
-
-	/**
-	 * \brief If the OBB is initiliazed or not
-	 */
-	bool initialized_;
 
 public:
+	//! Some useful typedefs;
+	using Matrix = Eigen::Matrix<T,D,D>;
+	using Vector = Eigen::Matrix<T,D,1>;
+	using HomeMatrix = Eigen::Matrix<T,D+1,D+1>;
+	using HomeVector = Eigen::Matrix<T,D+1,1>;
 
-	/**********************************************/
-	/*                CONSTRUCTORS                */
-	/**********************************************/
-
-	OBB() :
-		initialized_(false)
+	//! Default constructor
+	OBB()
 	{}
 
-	// reinitialize the oriented bounding box
-	void reset()
+	//! Copy constructor
+	OBB(const OBB<T,D>& other)
 	{
-		initialized_ = false;
+		transformation_inv_ = other.transformation_inv_;
+		eigen_values_ = other.eigen_values_;
 	}
 
-	Vec diag() const
+	//! Construct a N-dimensional box from its center, semi-axes, and eigenvectors ()
+	OBB(const Vector& center, const Vector& eigenvalues, const Matrix& eigenvectors) :
+		eigen_values_(eigenvalues)
 	{
-		Vec r(rotation_.col(0));
-		Vec u(rotation_.col(1));
-		Vec f(rotation_.col(2));
+		// Define the inverse scale matrix from the eigenvalues
+		Eigen::DiagonalMatrix<T,D+1> Sinv;
+		for (uint32 i = 0; i < D; ++i)
+			Sinv.diagonal()[i] = 1.0 / eigenvalues[i];
+		Sinv.diagonal()[D] = 1.0;
 
-		Vec max = pos_ - r*extension_[0] - u*extension_[1] - f*extension_[2];
-		Vec min = pos_ + r*extension_[0] + u*extension_[1] + f*extension_[2];
+		// Now prepare the R^-1.T^-1 (rotation,translation)
+		transformation_inv_ = Eigen::Matrix<T,D+1,D+1>::Constant(0.0);
+		transformation_inv_(D,D) = 1.0;
+		for (uint32 i = 0; i < D; ++i)
+			transformation_inv_.block(i,0,1,D) = eigenvectors.col(i).transpose().normalized();
+		transformation_inv_.block(0,D,D,1) = -transformation_inv_.block(0,0,D,D) * center;
 
-		return max - min;
+		// Finally compute (TRS)^-1 by left-multiplying (TR)^-1 by S^-1
+		transformation_inv_ = Sinv * transformation_inv_;
 	}
 
-	inline Scalar diag_size() const
+	//! Construct a OBB from a AABB
+	OBB(const AABB<Vector>& aabb)
 	{
-		return Scalar(diag().norm());
+		transformation_inv_ = Eigen::Matrix<T,D+1,D+1>::Identity();
+		transformation_inv_.block(0,D,D,1) = -center(aabb);
 	}
 
-	/**
-	 * @brief Returns the volume of the OBB.
-	 * It is measure of how tight the fit is.
-	 * Better OBBs wil have smaller volumes.
-	 * @return
-	 */
-	inline Scalar volume()
+	//! Assignment
+	OBB& operator=(const OBB<T,D>& other)
 	{
-		return Scalar(8.0) * extension_[0] * extension_[1] * extension_[2];
-	}
-
-	inline bool is_valid()
-	{
-		std::array<Vec, 8> cvertices;
-		corner_vertices(cvertices);
-
-		for(auto& ve : cvertices)
-			if(ve.hasNaN())
-				return false;
-
-		return true;
-	}
-
-	void corner_vertices(std::array<Vec, 8>& e)
-	{
-		Vec r(rotation_.col(0));
-		Vec u(rotation_.col(1));
-		Vec f(rotation_.col(2));
-
-		e[0] = pos_ - r*extension_[0] - u*extension_[1] - f*extension_[2];
-		e[1] = pos_ - r*extension_[0] - u*extension_[1] + f*extension_[2];
-		e[2] = pos_ - r*extension_[0] + u*extension_[1] - f*extension_[2];
-		e[3] = pos_ - r*extension_[0] + u*extension_[1] + f*extension_[2];
-
-		e[4] = pos_ + r*extension_[0] - u*extension_[1] - f*extension_[2];
-		e[5] = pos_ + r*extension_[0] - u*extension_[1] + f*extension_[2];
-		e[6] = pos_ + r*extension_[0] + u*extension_[1] - f*extension_[2];
-		e[7] = pos_ + r*extension_[0] + u*extension_[1] + f*extension_[2];
-	}
-
-	/**
-	 * \brief Build an OBB from an attribute of points.
-	 * This method just forms the covariance matrix and hands
-	 * it to the build_from_covariance_matrix() method
-	 * which handles fitting the box to the points
-	 * \param[in] attr A container that supports iterators of \p vector
-	 */
-	template <typename ATTR>
-	inline void build(const ATTR& attr)
-	{
-		static_assert(std::is_same<array_data_type<ATTR>, Vec>::value, "Wrong attribute type");
-
-		// compute the mean of the dataset (centroid)
-		Vec mean;
-		cgogn::geometry::set_zero(mean);
-		uint32 count = 0;
-		for (const auto& p : attr)
+		if(this!=&other)
 		{
-			mean += p;
-			++count;
+			eigen_values_ = other.eigen_values_;
+			transformation_inv_ = other.transformation_inv_;
 		}
-		mean /= count;
-
-		// compute covariance matrix
-		Matrix covariance;
-		covariance.setZero();
-
-		for (uint32 j = 0; j < dim_; j++)
-		{
-			for (uint32 k = 0; k < dim_; k++)
-			{
-				for (const auto& p : attr)
-					covariance(j,k) += (p[j] - mean[j]) * (p[k] - mean[k]);
-
-				covariance(j,k) /= count - 1;
-			}
-		}
-
-		build_from_covariance_matrix(covariance, attr);
+		return *this;
 	}
 
-	/**
-	 * \brief Build an OBB from the vertices of a map
-	 * This method just forms the covariance matrix and hands
-	 * it to the build_from_covariance_matrix() method
-	 * which handles fitting the box to the points
-	 * \param[in] attr An attribut of \p vector
-	 * \param[in] map The map to browse
-	 */
-	template <typename MAP>
-	inline void build_from_vertices(const MAP& map, const typename MAP::template VertexAttribute<VEC_T>& attr)
+	//! The destructor.
+	~OBB()
+	{}
+
+	//! Return the extents of the OBB
+	const Vector& extents() const
 	{
-		using Vertex = typename MAP::Vertex;
-
-		// compute the mean of the dataset (centroid)
-		Vec mean;
-		cgogn::geometry::set_zero(mean);
-		uint32 count = 0;
-
-		typename MAP::CellCache cache(map);
-		cache.template build<Vertex>();
-
-		map.foreach_cell(
-			[&] (Vertex v)
-			{
-				mean += attr[v];
-				++count;
-			},
-			cache
-		);
-		mean /= count;
-
-		// compute covariance matrix
-		Matrix covariance;
-		covariance.setZero();
-
-		for (uint32 j = 0; j < dim_; j++)
-		{
-			for (uint32 k = 0; k < dim_; k++)
-			{
-				map.foreach_cell(
-					[&] (Vertex v)
-					{
-						covariance(j,k) += (attr[v][j] - mean[j]) * (attr[v][k] - mean[k]);
-					},
-					cache
-				);
-
-				covariance(j,k) /= count - 1;
-			}
-		}
-
-		build_from_covariance_matrix(covariance, map, attr);
+		return eigen_values_;
 	}
 
-	/**
-	 * \brief Build an OBB from the vertices of a map of a given connected component
-	 * This method just forms the covariance matrix and hands
-	 * it to the build_from_covariance_matrix() method
-	 * which handles fitting the box to the points
-	 * \param[in] attr An attribut of \p vector
-	 * \param[in] map The map to browse
-	 * \param[in] cc The connected component
-	 */
-	template <typename MAP>
-	inline void build_from_vertices(const MAP& map, const typename MAP::template VertexAttribute<VEC_T>& attr, typename MAP::ConnectedComponent cc)
+	//! Return the inverse of the Mapping matrix (\f$ S^{-1}.R^{-1}.T^{-1} \f$)
+	const HomeMatrix& inverse_transformation() const
 	{
-		using Vertex = typename MAP::Vertex;
-
-		// compute the mean of the dataset (centroid)
-		Vec mean;
-		cgogn::geometry::set_zero(mean);
-		uint32 count = 0;
-		std::vector<Vertex> incident_to_cc;
-		incident_to_cc.reserve(1024);
-		map.foreach_incident_vertex(cc, [&] (Vertex v)
-		{
-			mean += attr[v];
-			incident_to_cc.push_back(v);
-			++count;
-		});
-		mean /= count;
-
-		// compute covariance matrix
-		Matrix covariance;
-		covariance.setZero();
-
-		for(int j = 0; j < dim_; j++)
-			for(int k = 0; k < dim_; k++)
-			{
-				for(Vertex v : incident_to_cc)
-					covariance(j,k) += (attr[v][j] - mean[j]) * (attr[v][k] - mean[k]);
-
-				covariance(j,k) /= count - 1;
-			}
-
-		build_from_covariance_matrix(covariance, map, attr);
+		return transformation_inv_;
 	}
 
-	/**
-	 * \brief Builds an OBB from triangles of a map of a given connected component.
-	 *  Forms the covariance matrix for the triangles, then uses the
-	 * method build_from_covariance_matrix() method to fit the box.
-	 */
-	template <typename MAP>
-	inline void build_from_triangles(const MAP& map, const typename MAP::template VertexAttribute<VEC_T>& attr, typename MAP::ConnectedComponent cc)
+	//! Rotate the OBB.
+	void rotate(const Matrix& eigenvectors)
 	{
-		using Vertex = typename MAP::Vertex;
-		using Face = typename MAP::Face;
+		// Reconstruct S
+		Eigen::DiagonalMatrix<T,D+1> S;
+		for(uint32 i = 0; i < D; ++i)
+			S.diagonal()[i] = eigen_values_[i];
+		S.diagonal()[D] = 1.0;
 
-		Scalar Ai = 0.0, Am = 0.0;
+		transformation_inv_ = S * transformation_inv_;
 
-		Vec mu, mui;
-		cgogn::geometry::set_zero(mu);
-		cgogn::geometry::set_zero(mui);
+		// Construct the inverse of the new rotation matrix
+		HomeMatrix Rnewinv = HomeMatrix::Zero();
+		Rnewinv(D,D) = 1.0;
+		for (uint32 i = 0; i < D; ++i)
+			Rnewinv.block(i,0,1,D) = eigenvectors.col(i).transpose().normalized();
+		transformation_inv_ = Rnewinv * transformation_inv_;
 
-		Scalar cxx = 0.0, cxy = 0.0, cxz = 0.0, cyy = 0.0, cyz = 0.0, czz = 0.0;
+		// Reconstruct Sinv
+		for (uint32 i = 0; i < D; ++i)
+			S.diagonal()[i] = 1.0 / eigen_values_[i];
+		S.diagonal()[D] = 1.0;
 
-		// loop over the triangles this time to find the
-		// mean location
-		map.foreach_incident_face(cc, [&] (Face f)
-		{
-			Vec p = attr[Vertex(f.dart)];
-			Vec q = attr[Vertex(map.phi1(f.dart))];
-			Vec r = attr[Vertex(map.phi_1(f.dart))];
-
-			mui = (p + q + r) / 3.0 ;
-
-			Ai = (q-p).cross(r-p).norm() / 2.0;
-
-			mu += mui * Ai;
-			Am += Ai;
-
-			// these bits set the c terms to Am*E[xx], Am*E[xy], Am*E[xz]....
-			cxx += ( 9.0*mui[0]*mui[0] + p[0]*p[0] + q[0]*q[0] + r[0]*r[0])*(Ai/12.0);
-			cxy += ( 9.0*mui[0]*mui[1] + p[0]*p[1] + q[0]*q[1] + r[0]*r[1])*(Ai/12.0);
-			cxz += ( 9.0*mui[0]*mui[2] + p[0]*p[2] + q[0]*q[2] + r[0]*r[2])*(Ai/12.0);
-			cyy += ( 9.0*mui[1]*mui[1] + p[1]*p[1] + q[1]*q[1] + r[1]*r[1])*(Ai/12.0);
-			cyz += ( 9.0*mui[1]*mui[2] + p[1]*p[2] + q[1]*q[2] + r[1]*r[2])*(Ai/12.0);
-		});
-
-		// divide out the Am fraction from the average position and
-		// covariance terms
-		mu /= Am;
-		cxx /= Am; cxy /= Am; cxz /= Am; cyy /= Am; cyz /= Am; czz /= Am;
-
-		// now subtract off the E[x]*E[x], E[x]*E[y], ... terms
-		cxx -= mu[0]*mu[0]; cxy -= mu[0]*mu[1]; cxz -= mu[0]*mu[2];
-		cyy -= mu[1]*mu[1]; cyz -= mu[1]*mu[2]; czz -= mu[2]*mu[2];
-
-		Matrix covariance;
-		covariance.setZero();
-
-		// now build the covariance matrix
-		covariance(0,0)=cxx; covariance(0,1)=cxy; covariance(0,2)=cxz;
-		covariance(1,0)=cxy; covariance(1,1)=cyy; covariance(1,2)=cyz;
-		covariance(2,0)=cxz; covariance(1,2)=cyz; covariance(2,2)=czz;
-
-		build_from_covariance_matrix(covariance, map, attr, cc);
+		// Reconstruct the complete TRS inverse
+		transformation_inv_ = S * transformation_inv_;
 	}
 
-	static std::string cgogn_name_of_type()
+	//! Scale isotropically the OBB.
+	void scale(T value)
 	{
-		return std::string("cgogn::geometry::OBB<") + name_of_type(Vec()) + std::string(">");
+		eigen_values_ *= value;
+		Eigen::DiagonalMatrix<T,D+1> Sinv;
+		for (uint32 i = 0; i < D; ++i)
+			Sinv.diagonal()[i] = 1.0 / value;
+		Sinv.diagonal()[D] = 1.0;
+		transformation_inv_ = Sinv * transformation_inv_;
+	}
+
+	//! Scale anisotropically the OBB.
+	void scale(const Vector& v)
+	{
+		eigen_values_ = eigen_values_.cwiseProduct(v);
+		Eigen::DiagonalMatrix<T,D+1> Sinv;
+		for (uint32 i = 0; i < D; ++i)
+			Sinv.diagonal()[i] = 1.0 / v[i];
+		Sinv.diagonal()[D] = 1.0;
+		transformation_inv_ = Sinv * transformation_inv_;
+	}
+
+	//! Translate the OBB.
+	void translate(const Vector& t)
+	{
+		HomeMatrix tinv = HomeMatrix::Zero();
+		for (uint32 i = 0; i < D+1; ++i)
+			tinv(i,i) = 1.0;
+		tinv.block(0,D,D,1) = -t;
+		transformation_inv_ = transformation_inv_*tinv;
 	}
 
 private:
+	//! The inverse of the homogeneous transformation matrix.
+	HomeMatrix transformation_inv_;
 
-	template <typename ATTR>
-	void build_from_covariance_matrix(Matrix& C, const ATTR& attr)
-	{
-		// Extract axes (i.e. eigenvectors) from covariance matrix.
-		Eigen::SelfAdjointEigenSolver<Matrix> eigen_solver(C);
-		Matrix eivecs = eigen_solver.eigenvectors();
+	//! The scale value.
+	Vector eigen_values_;
 
-		//TODO what follows works only for 3d vectors
-		Vec r(eivecs.col(0));
-		Vec u(eivecs.col(1));
-		Vec f(eivecs.col(2));
+public:
+	// Macro to ensure that an OBB object can be dynamically allocated.
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-		// Compute the size of the obb
-		Vec max = Vec::Constant(dim_, std::numeric_limits<Scalar>::lowest());
-		Vec min = Vec::Constant(dim_, std::numeric_limits<Scalar>::max());
-
-		// now build the bounding box extents in the rotated frame
-		for (const auto& p : attr)
-		{
-			Vec prime(r.dot(p), u.dot(p), f.dot(p));
-
-			max = Vec(std::max(max[0], prime[0]), std::max(max[1], prime[1]), std::max(max[2], prime[2]));
-			min = Vec(std::min(min[0], prime[0]), std::min(min[1], prime[1]), std::min(min[2], prime[2]));
-		}
-
-		// set the center of the OBB to be the average of the
-		// minimum and maximum, and the extents be half of the
-		// difference between the minimum and maximum
-
-		rotation_ = eivecs;
-		Vec center = max + min;
-		center /= 2.0;
-		pos_ = Vec(eivecs.row(0).dot(center), eivecs.row(1).dot(center), eivecs.row(2).dot(center));
-		extension_ = Vec(std::abs(max[0] - min[0]) / 2.0 , std::abs(max[1] - min[1]) / 2.0, std::abs(max[2] - min[2]) / 2.0 );
-	}
-
-	template <typename MAP>
-	void build_from_covariance_matrix(Matrix& C, const MAP& map, const typename MAP::template VertexAttribute<VEC_T>& attr)
-	{
-		using Vertex = typename MAP::Vertex;
-
-		// Extract axes (i.e. eigenvectors) from covariance matrix.
-		Eigen::SelfAdjointEigenSolver<Matrix> eigen_solver(C);
-		Matrix eivecs = eigen_solver.eigenvectors();
-
-		//TODO what follows works only for 3d vectors
-		Vec r(eivecs.col(0));
-		Vec u(eivecs.col(1));
-		Vec f(eivecs.col(2));
-
-		// Compute the size of the obb
-		Vec max = Vec::Constant(dim_, std::numeric_limits<Scalar>::lowest());
-		Vec min = Vec::Constant(dim_, std::numeric_limits<Scalar>::max());
-
-		// now build the bounding box extents in the rotated frame
-		map.foreach_cell([&] (Vertex v)
-		{
-			Vec prime(r.dot(attr[v]), u.dot(attr[v]), f.dot(attr[v]));
-
-			max = Vec(std::max(max[0], prime[0]), std::max(max[1], prime[1]), std::max(max[2], prime[2]));
-			min = Vec(std::min(min[0], prime[0]), std::min(min[1], prime[1]), std::min(min[2], prime[2]));
-		});
-
-		// set the center of the OBB to be the average of the
-		// minimum and maximum, and the extents be half of the
-		// difference between the minimum and maximum
-
-		rotation_ = eivecs;
-		Vec center = max + min;
-		center /= 2.0;
-		pos_ = Vec(eivecs.row(0).dot(center), eivecs.row(1).dot(center), eivecs.row(2).dot(center));
-		extension_ = Vec(std::abs(max[0] - min[0]) / 2.0 , std::abs(max[1] - min[1]) / 2.0, std::abs(max[2] - min[2]) / 2.0 );
-	}
-
-	template <typename MAP>
-	void build_from_covariance_matrix(Matrix& C, const MAP& map, const typename MAP::template VertexAttribute<VEC_T>& attr, typename MAP::ConnectedComponent cc)
-	{
-		using Vertex = typename MAP::Vertex;
-
-		// Extract axes (i.e. eigenvectors) from covariance matrix.
-		Eigen::SelfAdjointEigenSolver<Matrix> eigen_solver(C);
-		Matrix eivecs = eigen_solver.eigenvectors();
-
-		//TODO what follows works only for 3d vectors
-		Vec r(eivecs.col(0));
-		Vec u(eivecs.col(1));
-		Vec f(eivecs.col(2));
-
-		// Compute the size of the obb
-		Vec max = Vec::Constant(dim_, std::numeric_limits<Scalar>::lowest());
-		Vec min = Vec::Constant(dim_, std::numeric_limits<Scalar>::max());
-
-		// now build the bounding box extents in the rotated frame
-		map.foreach_incident_vertex(cc, [&] (Vertex c)
-		{
-			Vec prime(r.dot(attr[c]), u.dot(attr[c]), f.dot(attr[c]));
-
-			max = Vec(std::max(max[0], prime[0]), std::max(max[1], prime[1]), std::max(max[2], prime[2]));
-			min = Vec(std::min(min[0], prime[0]), std::min(min[1], prime[1]), std::min(min[2], prime[2]));
-
-		});
-
-		// set the center of the OBB to be the average of the
-		// minimum and maximum, and the extents be half of the
-		// difference between the minimum and maximum
-
-		rotation_ = eivecs;
-		Vec center = max + min;
-		center /= 2.0;
-		pos_ = Vec(eivecs.row(0).dot(center), eivecs.row(1).dot(center), eivecs.row(2).dot(center));
-		extension_ = Vec(std::abs(max[0] - min[0]) / 2.0 , std::abs(max[1] - min[1]) / 2.0, std::abs(max[2] - min[2]) / 2.0 );
-	}
 };
 
+template <typename T, uint32 D>
+typename OBB<T,D>::Vector diagonal(const OBB<T, D>& obb)
+{
+	typename OBB<T,D>::Vector min, max;
+	std::tie(min, max) = obb.bounds();
+	return max - min;
+}
+
+template <typename T, uint32 D>
+std::tuple<typename OBB<T, 3>::Vector, typename OBB<T, 3>::Vector> bounds(const OBB<T, D>& obb)
+{
+	using HomeMatrix = typename OBB<T, 3>::HomeMatrix;
+	using Matrix = typename OBB<T, 3>::Matrix;
+	using Vector = typename OBB<T, 3>::Vector;
+
+	Vector eigen_values = obb.extents();
+	HomeMatrix transformation_inv = obb.inverse_transformation();
+
+	// Reconstruct S
+	Eigen::DiagonalMatrix<T,D+1> S;
+	for (uint32 i = 0; i < D; ++i)
+		S.diagonal()[i] = eigen_values[i];
+	S.diagonal()[D] = 1.0;
+
+	// Reconstruct R from TRinv
+	HomeMatrix TRinv = S * transformation_inv;
+	Matrix R = TRinv.block(0,0,D,D).transpose();
+
+	// Extract T matrix from TRinv
+	Vector Tmat = -R * TRinv.block(0,D,D,1);
+
+	// Calculate the width of the bounding box
+	Vector width = Vector::Constant(0.0);
+	for (uint32 i = 0; i < D; ++i)
+		for (uint32 j = 0; j < D; ++j)
+			width[i] += std::abs(eigen_values[j]*R(j,i));
+
+	// Update the upper and lower bound of the AABB
+	return {Tmat-width, Tmat+width};
+}
+
+
+/// \brief Returns the volume of the OBB.
+/// It is measure of how tight the fit is.
+/// Better OBBs wil have smaller volumes.
+/// \return
+template <typename T, uint32 D>
+T volume(const OBB<T, D>& obb)
+{
+	return std::pow(2., T(D)) * obb.extents().prod();
+}
+
+template <typename T, uint32 D=3>
+void corner_vertices(const OBB<T, 3>& obb, std::array<typename OBB<T, 3>::Vector, 8>& e)
+{
+	using HomeMatrix = typename OBB<T, 3>::HomeMatrix;
+	using Matrix = typename OBB<T, 3>::Matrix;
+	using Vector = typename OBB<T, 3>::Vector;
+
+	// Reconstruct S
+	Vector eigen_values = obb.extents();
+	Eigen::DiagonalMatrix<T,D+1> S;
+	for (uint32 i=0;i<D;++i)
+		S.diagonal()[i] = eigen_values[i];
+	S.diagonal()[D]=1.0;
+
+	// Reconstruct R from TRinv
+	HomeMatrix TRinv = S * obb.inverse_transformation();
+	Matrix R=TRinv.block(0,0,D,D).transpose();
+
+	// Extract T matrix from TRinv
+	Vector Tmat=-R*TRinv.block(0,D,D,1);
+
+	e[0] = Tmat - R.col(0)*eigen_values[0] - R.col(1)*eigen_values[1] - R.col(2)*eigen_values[2];
+	e[1] = Tmat - R.col(0)*eigen_values[0] - R.col(1)*eigen_values[1] + R.col(2)*eigen_values[2];
+	e[2] = Tmat - R.col(0)*eigen_values[0] + R.col(1)*eigen_values[1] - R.col(2)*eigen_values[2];
+	e[3] = Tmat - R.col(0)*eigen_values[0] + R.col(1)*eigen_values[1] + R.col(2)*eigen_values[2];
+
+	e[4] = Tmat + R.col(0)*eigen_values[0] - R.col(1)*eigen_values[1] - R.col(2)*eigen_values[2];
+	e[5] = Tmat + R.col(0)*eigen_values[0] - R.col(1)*eigen_values[1] + R.col(2)*eigen_values[2];
+	e[6] = Tmat + R.col(0)*eigen_values[0] + R.col(1)*eigen_values[1] - R.col(2)*eigen_values[2];
+	e[7] = Tmat + R.col(0)*eigen_values[0] + R.col(1)*eigen_values[1] + R.col(2)*eigen_values[2];
+}
+
+//! Check whether a point given as Homogeneous coordinate in the (D+1) dimension is inside the OBB.
+template<typename T, uint32 D>
+bool contains(const OBB<T,D>& other, const typename OBB<T,D>::HomeVector& point)
+{
+	typename OBB<T,D>::HomeVector p = other.inverse_transformation()*point;
+
+	for(uint32 i=0; i<D; ++i)
+		if (p[i] < -1 || p[i] > 1)
+			return false;
+
+	return true;
+}
+
+//! Returns true if the OBB collides with a AABB.
+template<typename T, uint32 D>
+bool collide(const OBB<T,D>& obb, const AABB<typename OBB<T,D>::Vector>& aabb)
+{
+	OBB<T,D> obb1(aabb);
+	return collide<T,D>(obb,obb1);
+}
+
+//! Returns true if the OBB collides with an OBB.
+template<typename T, uint32 D=2>
+bool collide(const OBB<T,2> a, const OBB<T,2>& b)
+{
+	//Get the (TRS)^-1 matrices of the two OBBs
+	const Eigen::Matrix<T,3,3>& trsinva=a.inverse_transformation();
+	const Eigen::Matrix<T,3,3>& trsinvb=b.inverse_transformation();
+
+	// Get the extent of the two OBBs
+	const Eigen::Matrix<T,2,1>& eiga=a.extents();
+	const Eigen::Matrix<T,2,1>& eigb=b.extents();
+
+	// Reconstruct the S matrices for the two OBBs
+	Eigen::DiagonalMatrix<T,3> sa;
+	Eigen::DiagonalMatrix<T,3> sb;
+	sa.diagonal() << eiga[0], eiga[1],1;
+	sb.diagonal() << eigb[0], eigb[1],1;
+
+	// Reconstruct the (TR)^-1 matrices for the two OBBs
+	const Eigen::Matrix<T,3,3> trinva(sa*trsinva);
+	const Eigen::Matrix<T,3,3> trinvb(sb*trsinvb);
+
+	// Reconstruct R for the two OBBs
+	Eigen::Matrix<T,2,2> ra(trinva.block(0,0,D,D).transpose());
+	Eigen::Matrix<T,2,2> rb(trinvb.block(0,0,D,D).transpose());
+
+	// Extract T matrix from TRinv
+	Eigen::Matrix<T,2,1> ta=-ra*trinva.block(0,D,D,1);
+	Eigen::Matrix<T,2,1> tb=-rb*trinvb.block(0,D,D,1);
+
+	Eigen::Matrix<T,2,2> C=ra.transpose()*rb;
+	Eigen::Matrix<T,2,2> Cabs=C.array().abs();
+
+	// The difference vector between the centers of OBB2 and OBB1
+	Eigen::Matrix<T,1,2> diff=(tb-ta).transpose();
+
+	// If for one of the following 15 conditions, R<=(R0+R1) then the two OBBs collide.
+	T R0, R, R1;
+
+	// condition 1,2,3
+	for (unsigned int i=0;i<D;++i)
+	{
+		R0=eiga[i];
+		R1=(Cabs.block(i,0,1,D)*eigb)(0,0);
+		R=std::abs((diff*ra.block(0,i,D,1))(0,0));
+		if (R>(R0+R1))
+			return false;
+	}
+
+	// condition 4,5,6
+	for (unsigned int i=0;i<D;++i)
+	{
+		R0=(Cabs.block(i,0,1,D)*eiga)(0,0);
+		R1=eigb[i];
+		R=std::abs((diff*rb.block(0,i,D,1))(0,0));
+		if (R>(R0+R1))
+			return false;
+	}
+
+	return true;
+}
+
+//! Returns true if the OBB collides with an OBB.
+template<typename T, uint32 D=3>
+bool collide(const OBB<T,3> a, const OBB<T,3>& b)
+{
+	// Get the (TRS)^-1 matrices of the two OBBs
+	const Eigen::Matrix<T,4,4>& trsinva=a.inverse_transformation();
+	const Eigen::Matrix<T,4,4>& trsinvb=b.inverse_transformation();
+
+	// Get the extent of the two OBBs
+	const Eigen::Matrix<T,3,1>& eiga=a.extents();
+	const Eigen::Matrix<T,3,1>& eigb=b.extents();
+
+	// Reconstruct the S matrices for the two OBBs
+	Eigen::DiagonalMatrix<T,4> sa;
+	Eigen::DiagonalMatrix<T,4> sb;
+	sa.diagonal() << eiga[0], eiga[1],eiga[2],1;
+	sb.diagonal() << eigb[0], eigb[1],eigb[2],1;
+
+	// Reconstruct the (TR)^-1 matrices for the two OBBs
+	const Eigen::Matrix<T,4,4> trinva(sa*trsinva);
+	const Eigen::Matrix<T,4,4> trinvb(sb*trsinvb);
+
+	// Reconstruct R for the two OBBs
+	Eigen::Matrix<T,3,3> ra(trinva.block(0,0,D,D).transpose());
+	Eigen::Matrix<T,3,3> rb(trinvb.block(0,0,D,D).transpose());
+
+	// Extract T matrix from TRinv
+	Eigen::Matrix<T,3,1> ta=-ra*trinva.block(0,D,D,1);
+	Eigen::Matrix<T,3,1> tb=-rb*trinvb.block(0,D,D,1);
+
+	Eigen::Matrix<T,3,3> C=ra.transpose()*rb;
+	Eigen::Matrix<T,3,3> Cabs=C.array().abs();
+
+	// The difference vector between the centers of OBB2 and OBB1
+	Eigen::Matrix<T,1,3> diff=(tb-ta).transpose();
+
+	// If for one of the following 15 conditions, R<=(R0+R1) then the two OBBs collide.
+	T R0, R, R1;
+
+	// condition 1,2,3
+	for (unsigned int i=0;i<D;++i)
+	{
+		R0=eiga[i];
+		R1=(Cabs.block(i,0,1,D)*eigb)(0,0);
+		R=std::abs((diff*ra.block(0,i,D,1))(0,0));
+		if (R>(R0+R1))
+			return false;
+	}
+
+	// condition 4,5,6
+	for (unsigned int i=0;i<D;++i)
+	{
+		R0=(Cabs.block(i,0,1,D)*eiga)(0,0);
+		R1=eigb[i];
+		R=std::abs((diff*rb.block(0,i,D,1))(0,0));
+		if (R>(R0+R1))
+			return false;
+	}
+
+	T A0D((diff*ra.block(0,0,D,1))(0,0));
+	T A1D((diff*ra.block(0,1,D,1))(0,0));
+	T A2D((diff*ra.block(0,2,D,1))(0,0));
+
+	// condition 7
+	R0=eiga[1]*Cabs(2,0)+eiga[2]*Cabs(1,0);
+	R1=eigb[1]*Cabs(0,2)+eigb[2]*Cabs(0,1);
+	R=std::abs(C(1,0)*A2D-C(2,0)*A1D);
+	if (R>(R0+R1))
+		return false;
+
+	// condition 8
+	R0=eiga[1]*Cabs(2,1)+eiga[2]*Cabs(1,1);
+	R1=eigb[0]*Cabs(0,2)+eigb[2]*Cabs(0,0);
+	R=std::abs(C(1,1)*A2D-C(2,1)*A1D);
+	if (R>(R0+R1))
+		return false;
+
+	// condition 9
+	R0=eiga[1]*Cabs(2,2)+eiga[2]*Cabs(1,2);
+	R1=eigb[0]*Cabs(0,1)+eigb[1]*Cabs(0,0);
+	R=std::abs(C(1,2)*A2D-C(2,2)*A1D);
+	if (R>(R0+R1))
+		return false;
+
+	// condition 10
+	R0=eiga[0]*Cabs(2,0)+eiga[2]*Cabs(0,0);
+	R1=eigb[1]*Cabs(1,2)+eigb[2]*Cabs(1,1);
+	R=std::abs(C(2,0)*A0D-C(0,0)*A2D);
+	if (R>(R0+R1))
+		return false;
+
+	// condition 11
+	R0=eiga[0]*Cabs(2,1)+eiga[2]*Cabs(0,1);
+	R1=eigb[0]*Cabs(1,2)+eigb[2]*Cabs(1,0);
+	R=std::abs(C(2,1)*A0D-C(0,1)*A2D);
+	if (R>(R0+R1))
+		return false;
+
+	// condition 12
+	R0=eiga[0]*Cabs(2,2)+eiga[2]*Cabs(0,2);
+	R1=eigb[0]*Cabs(1,1)+eigb[1]*Cabs(1,0);
+	R=std::abs(C(2,2)*A0D-C(0,2)*A2D);
+	if (R>(R0+R1))
+		return false;
+
+	// condition 13
+	R0=eiga[0]*Cabs(1,0)+eiga[1]*Cabs(0,0);
+	R1=eigb[1]*Cabs(2,2)+eigb[2]*Cabs(2,1);
+	R=std::abs(C(0,0)*A1D-C(1,0)*A0D);
+	if (R>(R0+R1))
+		return false;
+
+	// condition 14
+	R0=eiga[0]*Cabs(1,1)+eiga[1]*Cabs(0,1);
+	R1=eigb[0]*Cabs(2,2)+eigb[2]*Cabs(2,0);
+	R=std::abs(C(0,1)*A1D-C(1,1)*A0D);
+	if (R>(R0+R1))
+		return false;
+
+	// condition 15
+	R0=eiga[0]*Cabs(1,2)+eiga[1]*Cabs(0,2);
+	R1=eigb[0]*Cabs(2,1)+eigb[1]*Cabs(2,0);
+	R=std::abs(C(0,2)*A1D-C(1,2)*A0D);
+	if (R>(R0+R1))
+		return false;
+
+	return true;
+}
+
+//! Compute the intersection between the OBB and a given ray.
+//! Return true if an intersection was found, false otherwise.
+//! If the return value is true the intersection "times" will be stored
+//! in t1 and t2 in such a way that from + t1*dir and from + t2*dir are
+//! the two intersection points between the ray and this shape.
+template<typename T, uint32 D>
+bool ray_intersect(const OBB<T,D>& other,
+				  const typename OBB<T,D>::Vector& from,
+				  const typename OBB<T,D>::Vector& dir, T& t1, T& t2)
+{
+	using HomeVector = typename OBB<T,D>::HomeVector;
+	using Vector = typename OBB<T,D>::Vector;
+	HomeVector hFrom = other.inverse_transformation() * from.homogeneous();
+	HomeVector hDir;
+	hDir.segment(0,D) = dir;
+	hDir[D] = 0.0;
+	hDir = other.inverse_transformation()*hDir;
+
+	//AABB<T,D> aabb(-Vector::Ones(), Vector::Ones());
+
+	//return ray_intersect(aabb, hFrom.segment(0,D), hDir.segment(0,D), t1, t2);
+
+	return true;
+}
+
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_TYPES_OBB_CPP_))
-extern template class CGOGN_GEOMETRY_API OBB<Eigen::Vector3d>;
-extern template class CGOGN_GEOMETRY_API OBB<Eigen::Vector3f>;
-//extern template class CGOGN_GEOMETRY_API OBB<Vec_T<std::array<float32, 3>>>;
-//extern template class CGOGN_GEOMETRY_API OBB<Vec_T<std::array<float64,3>>>;
+extern template class CGOGN_GEOMETRY_EXPORT OBB<float, 2>;
+extern template class CGOGN_GEOMETRY_EXPORT OBB<float, 3>;
+extern template class CGOGN_GEOMETRY_EXPORT OBB<double, 2>;
+extern template class CGOGN_GEOMETRY_EXPORT OBB<double, 3>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_TYPES_OBB_CPP_))
 
 } // namespace geometry

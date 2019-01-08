@@ -37,7 +37,7 @@ namespace cgogn
 namespace io
 {
 
-class CGOGN_IO_API FileImport
+class CGOGN_IO_EXPORT FileImport
 {
 public:
 

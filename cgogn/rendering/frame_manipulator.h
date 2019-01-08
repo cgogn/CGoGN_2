@@ -65,7 +65,7 @@ namespace rendering
  *   frame_manip_->get_axis(cgogn::rendering::FrameManipulator::Zt,axis_z);
  *   float32 d = -(position.dot(axis_z));
   */
-class CGOGN_RENDERING_API FrameManipulator
+class CGOGN_RENDERING_EXPORT FrameManipulator
 {
 	std::unique_ptr<VBO> vbo_grid_;
 	std::unique_ptr<ShaderSimpleColor::Param> param_grid_;

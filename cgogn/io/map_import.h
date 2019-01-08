@@ -40,7 +40,6 @@
 
 #include <cgogn/io/formats/cg.h>
 #include <cgogn/io/formats/cskel.h>
-#include <cgogn/io/formats/dot.h>
 #include <cgogn/io/formats/lin.h>
 #include <cgogn/io/formats/off.h>
 #include <cgogn/io/formats/obj.h>
@@ -91,23 +90,22 @@ inline std::unique_ptr<PolylineFileImport<MAP>> new_polyline_import(MAP& map, co
 	}
 }
 
-template <typename VEC3>
-inline std::unique_ptr<GraphFileImport> new_graph_import(const std::string& filename)
+template <typename VEC3, typename MAP>
+inline std::unique_ptr<GraphFileImport<MAP>> new_graph_import(MAP& map, const std::string& filename)
 {
 	const FileType ft = file_type(filename);
 	switch (ft)
 	{
-		case FileType::FileType_SKEL:		return make_unique<SkelGraphImport<VEC3>>();
+		case FileType::FileType_SKEL:		return make_unique<SkelGraphImport<MAP, VEC3>>(map);
 		case FileType::FileType_VTK_LEGACY:
 		case FileType::FileType_VTU:
-		case FileType::FileType_VTP:		return make_unique<VtkGraphImport<VEC3>>();
-		case FileType::FileType_CG:			return make_unique<CgGraphImport<VEC3>>();
-		case FileType::FileType_CSKEL:		return make_unique<CskelGraphImport<VEC3>>();
-		case FileType::FileType_DOT:		return make_unique<DotGraphImport<VEC3>>();
-		case FileType::FileType_OBJ:		return make_unique<ObjGraphImport<VEC3>>();
+		case FileType::FileType_VTP:		return make_unique<VtkGraphImport<MAP, VEC3>>(map);
+		case FileType::FileType_CG:			return make_unique<CgGraphImport<MAP, VEC3>>(map);
+		case FileType::FileType_CSKEL:		return make_unique<CskelGraphImport<MAP, VEC3>>(map);
+		case FileType::FileType_OBJ:		return make_unique<ObjGraphImport<MAP, VEC3>>(map);
 		default:
 			cgogn_log_warning("GraphImport") << "GraphImport does not handle files with extension \"" << extension(filename) << "\".";
-			return std::unique_ptr<GraphFileImport> ();
+			return std::unique_ptr<GraphFileImport<MAP>> ();
 	}
 }
 
@@ -175,11 +173,10 @@ inline void import_polyline(MAP& map, const std::string& filename)
 template <typename VEC3, typename MAP>
 inline void import_graph(MAP& map, const std::string& filename)
 {
-	auto si = new_graph_import<VEC3>(filename);
-
-	if(si)
-		if(si->import_file(filename))
-			si->create(map);
+	auto si = new_graph_import<VEC3>(map, filename);
+	if (si)
+		if (si->import_file(filename))
+			si->create_map();
 }
 
 template <typename VEC3, typename MAP>
@@ -201,14 +198,14 @@ inline void import_volume(MAP& map, const std::string& filename)
 }
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
-extern template CGOGN_IO_API void import_point_set<Eigen::Vector3f>(CMap0&, const std::string&);
-extern template CGOGN_IO_API void import_point_set<Eigen::Vector3d>(CMap0&, const std::string&);
-extern template CGOGN_IO_API void import_graph<Eigen::Vector3f>(UndirectedGraph&, const std::string&);
-extern template CGOGN_IO_API void import_graph<Eigen::Vector3d>(UndirectedGraph&, const std::string&);
-extern template CGOGN_IO_API void import_surface<Eigen::Vector3f>(CMap2&, const std::string&);
-extern template CGOGN_IO_API void import_surface<Eigen::Vector3d>(CMap2&, const std::string&);
-extern template CGOGN_IO_API void import_volume<Eigen::Vector3f>(CMap3&, const std::string&);
-extern template CGOGN_IO_API void import_volume<Eigen::Vector3d>(CMap3&, const std::string&);
+extern template CGOGN_IO_EXPORT void import_point_set<Eigen::Vector3f>(CMap0&, const std::string&);
+extern template CGOGN_IO_EXPORT void import_point_set<Eigen::Vector3d>(CMap0&, const std::string&);
+extern template CGOGN_IO_EXPORT void import_graph<Eigen::Vector3f>(UndirectedGraph&, const std::string&);
+extern template CGOGN_IO_EXPORT void import_graph<Eigen::Vector3d>(UndirectedGraph&, const std::string&);
+extern template CGOGN_IO_EXPORT void import_surface<Eigen::Vector3f>(CMap2&, const std::string&);
+extern template CGOGN_IO_EXPORT void import_surface<Eigen::Vector3d>(CMap2&, const std::string&);
+extern template CGOGN_IO_EXPORT void import_volume<Eigen::Vector3f>(CMap3&, const std::string&);
+extern template CGOGN_IO_EXPORT void import_volume<Eigen::Vector3d>(CMap3&, const std::string&);
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace io

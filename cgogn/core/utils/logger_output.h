@@ -27,6 +27,7 @@
 #include <mutex>
 #include <fstream>
 
+#include <cgogn/core/utils/definitions.h>
 #include <cgogn/core/utils/log_entry.h>
 
 namespace cgogn
@@ -35,7 +36,7 @@ namespace cgogn
 namespace logger
 {
 
-class CGOGN_CORE_API LoggerOutput
+class CGOGN_CORE_EXPORT LoggerOutput
 {
 public:
 	using Self = LoggerOutput;
@@ -47,7 +48,7 @@ public:
 	virtual void process_entry(const LogEntry& entry) = 0;
 };
 
-class CGOGN_CORE_API NullOutput final : public  LoggerOutput
+class CGOGN_CORE_EXPORT NullOutput final : public  LoggerOutput
 {
 public:
 	using Self = NullOutput;
@@ -59,7 +60,7 @@ public:
 };
 
 
-class CGOGN_CORE_API ConsoleOutput final : public  LoggerOutput
+class CGOGN_CORE_EXPORT ConsoleOutput final : public  LoggerOutput
 {
 public:
 	using Self = ConsoleOutput;
@@ -71,7 +72,7 @@ public:
 	virtual void process_entry(const LogEntry&) override;
 };
 
-class CGOGN_CORE_API FileOutput final : public  LoggerOutput
+class CGOGN_CORE_EXPORT FileOutput final : public  LoggerOutput
 {
 public:
 	using Self = FileOutput;

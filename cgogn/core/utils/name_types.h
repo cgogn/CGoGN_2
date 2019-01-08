@@ -41,7 +41,7 @@
 #include <sstream>
 #endif // __GNUG__
 
-#include <cgogn/core/dll.h>
+#include <cgogn/core/cgogn_core_export.h>
 #include <cgogn/core/utils/numerics.h>
 #include <cgogn/core/utils/type_traits.h>
 namespace cgogn
@@ -59,7 +59,7 @@ inline std::string name_of_type(const T& t);
 namespace internal
 {
 
-CGOGN_CORE_API std::string demangle(const std::string& str);
+CGOGN_CORE_EXPORT std::string demangle(const std::string& str);
 
 
 
@@ -86,27 +86,27 @@ inline std::string name_of_type_impl(const std::basic_string<T>&);
 template <typename T, std::size_t N>
 inline std::string name_of_type_impl(const std::array<T, N>&);
 
-CGOGN_CORE_API std::string name_of_type_impl(const bool&);
+CGOGN_CORE_EXPORT std::string name_of_type_impl(const bool&);
 
-CGOGN_CORE_API std::string name_of_type_impl(const int8&);
+CGOGN_CORE_EXPORT std::string name_of_type_impl(const int8&);
 
-CGOGN_CORE_API std::string name_of_type_impl(const uint8&);
+CGOGN_CORE_EXPORT std::string name_of_type_impl(const uint8&);
 
-CGOGN_CORE_API std::string name_of_type_impl(const int16&);
+CGOGN_CORE_EXPORT std::string name_of_type_impl(const int16&);
 
-CGOGN_CORE_API std::string name_of_type_impl(const uint16&);
+CGOGN_CORE_EXPORT std::string name_of_type_impl(const uint16&);
 
-CGOGN_CORE_API std::string name_of_type_impl(const int32&);
+CGOGN_CORE_EXPORT std::string name_of_type_impl(const int32&);
 
-CGOGN_CORE_API std::string name_of_type_impl(const uint32&);
+CGOGN_CORE_EXPORT std::string name_of_type_impl(const uint32&);
 
-CGOGN_CORE_API std::string name_of_type_impl(const int64&);
+CGOGN_CORE_EXPORT std::string name_of_type_impl(const int64&);
 
-CGOGN_CORE_API std::string name_of_type_impl(const uint64&);
+CGOGN_CORE_EXPORT std::string name_of_type_impl(const uint64&);
 
-CGOGN_CORE_API std::string name_of_type_impl(const float32&);
+CGOGN_CORE_EXPORT std::string name_of_type_impl(const float32&);
 
-CGOGN_CORE_API std::string name_of_type_impl(const float64&);
+CGOGN_CORE_EXPORT std::string name_of_type_impl(const float64&);
 
 // definitions
 

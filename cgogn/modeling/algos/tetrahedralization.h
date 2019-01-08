@@ -33,27 +33,27 @@ namespace cgogn
 namespace modeling
 {
 
-CGOGN_MODELING_API Dart split_vertex(CMap3& map, std::vector<Dart>& vd);
+CGOGN_MODELING_EXPORT Dart split_vertex(CMap3& map, std::vector<Dart>& vd);
 
-CGOGN_MODELING_API bool is_tetrahedron(CMap3& map, CMap3::Volume w);
+CGOGN_MODELING_EXPORT bool is_tetrahedron(CMap3& map, CMap3::Volume w);
 
 //bool is_tetrahedralization(CMap3& map);
 
-CGOGN_MODELING_API Dart swap_22(CMap3& map, CMap3::Volume w);
+CGOGN_MODELING_EXPORT Dart swap_22(CMap3& map, CMap3::Volume w);
 
-CGOGN_MODELING_API Dart swap_44(CMap3& map, CMap3::Volume w);
+CGOGN_MODELING_EXPORT Dart swap_44(CMap3& map, CMap3::Volume w);
 
-CGOGN_MODELING_API Dart swap_32(CMap3& map, CMap3::Edge e);
+CGOGN_MODELING_EXPORT Dart swap_32(CMap3& map, CMap3::Edge e);
 
-CGOGN_MODELING_API Dart swap_23(CMap3& map, CMap3::Face f);
+CGOGN_MODELING_EXPORT Dart swap_23(CMap3& map, CMap3::Face f);
 
-CGOGN_MODELING_API CMap3::Vertex flip_14(CMap3& map, CMap3::Volume w);
+CGOGN_MODELING_EXPORT CMap3::Vertex flip_14(CMap3& map, CMap3::Volume w);
 
-CGOGN_MODELING_API CMap3::Vertex flip_13(CMap3& map, CMap3::Face f);
+CGOGN_MODELING_EXPORT CMap3::Vertex flip_13(CMap3& map, CMap3::Face f);
 
-CGOGN_MODELING_API Dart edge_bisection(CMap3& map, CMap3::Edge e);
+CGOGN_MODELING_EXPORT Dart edge_bisection(CMap3& map, CMap3::Edge e);
 
-CGOGN_MODELING_API Dart swap_gen_32(CMap3& map, CMap3::Edge e);
+CGOGN_MODELING_EXPORT Dart swap_gen_32(CMap3& map, CMap3::Edge e);
 
 //template <typename VEC3>
 //std::vector<Dart> swap_gen_32_optimized(CMap3& map, CMap3::Edge e)
@@ -94,7 +94,7 @@ CGOGN_MODELING_API Dart swap_gen_32(CMap3& map, CMap3::Edge e);
 //void swapGen2To3(CMap3& map, typename CMap3::Volume d);
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_TETRAHEDRALIZATION_CPP_))
-//extern template CGOGN_MODELING_API std::vector<Dart> swap_gen_32_optimized<Eigen::Vector3f>(CMap3&, CMap3::Edge);
+//extern template CGOGN_MODELING_EXPORT std::vector<Dart> swap_gen_32_optimized<Eigen::Vector3f>(CMap3&, CMap3::Edge);
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_ALGOS_TETRAHEDRALIZATION_CPP_))
 
 } // namespace modeling

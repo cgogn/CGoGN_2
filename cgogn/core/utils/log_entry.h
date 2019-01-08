@@ -28,9 +28,8 @@
 #include <sstream>
 #include <memory>
 
-#include <cgogn/core/dll.h>
+#include <cgogn/core/cgogn_core_export.h>
 #include <cgogn/core/utils/numerics.h>
-
 
 namespace cgogn
 {
@@ -42,7 +41,7 @@ namespace internal
 {
 
 
-class CGOGN_CORE_API FileInfo
+class CGOGN_CORE_EXPORT FileInfo
 {
 public:
 	FileInfo(const char *f, uint32 l);
@@ -71,13 +70,13 @@ enum LogLevel
 	LogLevel_ERROR = 4
 };
 
-CGOGN_CORE_API std::string loglevel_to_string(LogLevel lvl);
-CGOGN_CORE_API std::ostream& add_color(std::ostream& o, LogLevel lvl);
+CGOGN_CORE_EXPORT std::string loglevel_to_string(LogLevel lvl);
+CGOGN_CORE_EXPORT std::ostream& add_color(std::ostream& o, LogLevel lvl);
 
 } // namespace internal
 
 
-class CGOGN_CORE_API LogEntry final
+class CGOGN_CORE_EXPORT LogEntry final
 {
 public:
 	using Self = LogEntry;

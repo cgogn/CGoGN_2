@@ -24,7 +24,7 @@
 #ifndef CGOGN_RENDERING_SHADERS_SIMPLECOLOR_H_
 #define CGOGN_RENDERING_SHADERS_SIMPLECOLOR_H_
 
-#include <cgogn/rendering/dll.h>
+#include <cgogn/rendering/cgogn_rendering_export.h>
 #include <cgogn/rendering/shaders/shader_program.h>
 #include <cgogn/rendering/shaders/vbo.h>
 
@@ -39,7 +39,7 @@ namespace rendering
 
 class ShaderParamSimpleColor;
 
-class CGOGN_RENDERING_API ShaderSimpleColor : public ShaderProgram
+class CGOGN_RENDERING_EXPORT ShaderSimpleColor : public ShaderProgram
 {
 	friend class ShaderParamSimpleColor;
 
@@ -73,7 +73,7 @@ protected:
 	static ShaderSimpleColor* instance_;
 };
 
-class CGOGN_RENDERING_API ShaderParamSimpleColor : public ShaderParam
+class CGOGN_RENDERING_EXPORT ShaderParamSimpleColor : public ShaderParam
 {
 protected:
 

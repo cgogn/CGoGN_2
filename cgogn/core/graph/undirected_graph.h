@@ -35,7 +35,8 @@ class UndirectedGraph_T : public MapBase<MAP_TYPE>
 {
 public:
 
-	static const uint8 DIMENSION = 2;
+	static const uint8 DIMENSION = 1;
+
 	static const uint8 PRIM_SIZE = 1;
 
 	using MapType = MAP_TYPE;
@@ -80,8 +81,9 @@ public:
 	template <Orbit ORBIT>
 	using CellMarkerStore = typename cgogn::CellMarkerStore<Self, ORBIT>;
 
-	using CellCache = typename cgogn::CellCache<Self>;
+	using FilteredQuickTraversor = typename cgogn::FilteredQuickTraversor<Self>;
 	using QuickTraversor = typename cgogn::QuickTraversor<Self>;
+	using CellCache = typename cgogn::CellCache<Self>;
 	using BoundaryCache = typename cgogn::BoundaryCache<Self>;
 
 protected:
@@ -195,233 +197,244 @@ public:
 
 protected:
 
-	inline Dart add_vertex_topo(std::size_t size)
-	{
-		cgogn_message_assert(size > 0u, "Cannot create an empty vertex");
-
-		Dart d = this->add_topology_element();
-		Dart first = d;
-		Dart dit;
-		for (size_t i = 0 ; i < size - 1 ; ++i)
-		{
-			dit = this->add_topology_element();
-			alpha1_sew(d,dit);
-			d = dit;
-		}
-
-		return first;
-	}
-
-	inline void remove_vertex_topo(Dart d)
-	{
-		Dart it = alpha1(d);
-		while(it != d)
-		{
-			Dart next = alpha1(it);
-			alpha0_unsew(it);
-			this->remove_topology_element(it);
-			it = next;
-		}
-
-		alpha0_unsew(d);
-		this->remove_topology_element(d);
-	}
-
-	inline Dart insert_vertex_topo(Dart d)
-	{
-		Dart d0 = alpha0(d);
-		alpha0_unsew(d);
-		Dart v = add_vertex_topo(2);
-		alpha0_sew(d, v);
-		alpha0_sew(d0, alpha1(v));
-
-		return v;
-	}
-
-public:
-
-	inline Vertex insert_vertex(Edge e)
-	{
-		Vertex v(insert_vertex_topo(e.dart));
-
-		if (this->template is_embedded<Vertex>())
-			this->new_orbit_embedding(v);
-
-		if (this->template is_embedded<Edge>())
-		{
-			this->template set_orbit_embedding<Edge>(e, this->embedding(e));
-			Edge e2(alpha1(v.dart));
-			this->new_orbit_embedding(e2);
-		}
-
-		return v;
-	}
-
-protected:
-
-	inline Dart collapse_vertex_topo(Dart d)
-	{
-		Dart e = alpha0(d);
-		Dart ee = alpha0(alpha1(d));
-
-		remove_vertex_topo(d);
-		alpha0_sew(e, ee);
-
-		return e;
-	}
-
-public:
-
-	inline void collapse_vertex(Vertex v)
-	{
-		cgogn_message_assert(degree(v) == 2, "Can only collapse vertex of degree 2");
-
-		Edge e(collapse_vertex_topo(v.dart));
-
-		if (this->template is_embedded<Edge>())
-			this->template set_orbit_embedding<Edge>(e, this->embedding(e));
-	}
-
-protected:
-
-	inline void merge_vertices_topo(Dart v1, Dart v2)
-	{
-		alpha1_sew(v1, v2);
-	}
-
-public:
-
-	inline void merge_vertices(Vertex v1, Vertex v2)
-	{
-		merge_vertices_topo(v1.dart, v2.dart);
-		if (this->template is_embedded<Vertex>())
-			this->template set_orbit_embedding<Vertex>(v1, this->embedding(v1));
-	}
-
-protected:
-
-	inline Dart add_edge_topo()
+	inline Dart add_vertex_topo()
 	{
 		Dart d = this->add_topology_element();
-		Dart e = this->add_topology_element();
-
-		alpha0_sew(d,e);
-
+		Dart dd = this->add_topology_element();
+		alpha0_sew(d, dd);
+		this->set_boundary(dd, true);
 		return d;
 	}
 
 public:
 
-	inline Edge add_edge()
+	inline Vertex add_vertex()
 	{
-		Edge e(add_edge_topo());
-
+		Dart d = add_vertex_topo();
+		Vertex v(d);
 		if (this->template is_embedded<Vertex>())
-		{
-			this->new_orbit_embedding(Vertex(e.dart));
-			this->new_orbit_embedding(Vertex(alpha0(e.dart)));
-		}
-
+			this->new_orbit_embedding(v);
 		if (this->template is_embedded<Edge>())
-			this->new_orbit_embedding(e);
-
-		return e;
-	}
-
-protected:
-
-	inline void disconnect_edge_topo(Dart e)
-	{
-		alpha1_unsew(e);
-	}
-
-public:
-
-	inline void disconnect_edge(Edge e)
-	{
-		disconnect_edge_topo(e.dart);
-		if (this->template is_embedded<Vertex>())
-			this->new_orbit_embedding(Vertex(e.dart));
-	}
-
-protected:
-
-	inline Dart collapse_edge_topo(Dart e)
-	{
-		Dart e0 = alpha0(e);
-		Dart e1 = alpha1(e);
-		Dart e2 = alpha_1(alpha0(e));
-
-		alpha1_unsew(e);
-		alpha1_unsew(e0);
-		this->remove_topology_element(e);
-		this->remove_topology_element(e0);
-
-		alpha1_sew(e1, e2);
-
-		return e1;
-	}
-
-public:
-
-	inline Vertex collapse_edge(Edge e)
-	{
-		Vertex v(collapse_edge_topo(e.dart));
-		if (this->template is_embedded<Vertex>())
-		{
-			this->template set_orbit_embedding<Vertex>(v, this->embedding(v));
-		}
-
+			this->new_orbit_embedding(Edge(d));
 		return v;
 	}
 
+protected:
+
+	inline void remove_vertex_topo(Dart d)
+	{
+		Dart dd = alpha0(d);
+		cgogn_message_assert(this->is_boundary(dd), "Vertex is still connected to another vertex");
+		this->remove_topology_element(d);
+		this->remove_topology_element(dd);
+	}
+
 public:
 
+	inline void remove_vertex(Vertex v)
+	{
+		Dart d = v.dart;
+		Dart dd = alpha0(d);
+		cgogn_message_assert(this->is_boundary(dd), "Vertex is still connected to another vertex");
+		remove_vertex_topo(d);
+	}
+
+protected:
+
+	inline Dart connect_vertices_topo(Dart d, Dart e)
+	{
+		Dart dd = alpha0(d);
+		Dart ee = alpha0(e);
+		if (this->is_boundary(dd))
+		{
+			if (this->is_boundary(ee))
+			{
+				this->remove_topology_element(dd);
+				this->remove_topology_element(ee);
+				alpha0_sew(d, e);
+				return d;
+			}
+			else
+			{
+				this->set_boundary(dd, false);
+				alpha1_sew(e, dd);
+				return d;
+			}
+		}
+		else
+		{
+			if (this->is_boundary(ee))
+			{
+				this->set_boundary(ee, false);
+				alpha1_sew(d, ee);
+				return ee;
+			}
+			else
+			{
+				Dart dd = this->add_topology_element();
+				Dart ee = this->add_topology_element();
+				alpha1_sew(d, dd);
+				alpha1_sew(e, ee);
+				alpha0_sew(dd, ee);
+				return dd;
+			}
+		}
+	}
+
+public:
+
+	inline Edge connect_vertices(Vertex v1, Vertex v2)
+	{
+		Dart d = v1.dart;
+		Dart e = v2.dart;
+		Dart dd = alpha0(d);
+		Dart ee = alpha0(e);
+		if (this->is_boundary(dd))
+		{
+			if (this->is_boundary(ee))
+			{
+				Edge edge(connect_vertices_topo(d, e));
+				if (this->template is_embedded<Edge>())
+					this->template copy_embedding<Edge>(e, d);
+				return edge;
+			}
+			else
+			{
+				Edge edge(connect_vertices_topo(d, e));
+				if (this->template is_embedded<Vertex>())
+					this->template copy_embedding<Vertex>(dd, e);
+				return edge;
+			}
+		}
+		else
+		{
+			if (this->is_boundary(ee))
+			{
+				Edge edge(connect_vertices_topo(d, e));
+				if (this->template is_embedded<Vertex>())
+					this->template copy_embedding<Vertex>(ee, d);
+				return edge;
+			}
+			else
+			{
+				Edge edge(connect_vertices_topo(d, e));
+				if (this->template is_embedded<Vertex>())
+				{
+					this->template copy_embedding<Vertex>(alpha1(d), d);
+					this->template copy_embedding<Vertex>(alpha1(e), e);
+				}
+				if (this->template is_embedded<Edge>())
+					this->new_orbit_embedding(edge);
+				return edge;
+			}
+		}
+	}
+
+protected:
+
+	inline void disconnect_vertices_topo(Dart d)
+	{
+		Dart e = alpha0(d);
+		cgogn_message_assert(!(this->is_boundary(d) || this->is_boundary(e)), "Given edge does not connect 2 vertices");
+		if (alpha1(d) == d)
+		{
+			if (alpha1(e) == e)
+			{
+				alpha0_unsew(d);
+				Dart dd = this->add_topology_element();
+				Dart ee = this->add_topology_element();
+				alpha0_sew(d, dd);
+				alpha0_sew(e, ee);
+				this->set_boundary(dd, true);
+				this->set_boundary(ee, true);
+			}
+			else
+			{
+				alpha1_unsew(e);
+				this->set_boundary(e, true);
+			}
+		}
+		else
+		{
+			if (alpha1(e) == e)
+			{
+				alpha1_unsew(d);
+				this->set_boundary(d, true);
+			}
+			else
+			{
+				alpha0_unsew(d);
+				alpha1_unsew(d);
+				alpha1_unsew(e);
+				this->remove_topology_element(d);
+				this->remove_topology_element(e);
+			}
+		}
+	}
+
+public:
+
+	inline void disconnect_vertices(Edge edge)
+	{
+		Dart d = edge.dart;
+		Dart e = alpha0(d);
+		cgogn_message_assert(!(this->is_boundary(d) || this->is_boundary(e)), "Given edge does not connect 2 vertices");
+		if (alpha1(d) == d)
+		{
+			if (alpha1(e) == e)
+			{
+				disconnect_vertices_topo(d);
+				if (this->template is_embedded<Edge>())
+				{
+					this->template copy_embedding<Edge>(alpha0(d), d);
+					this->new_orbit_embedding(Edge(e));
+				}
+			}
+			else
+			{
+				disconnect_vertices_topo(d);
+				this->template unset_embedding<Vertex>(alpha0(d));
+			}
+		}
+		else
+		{
+			if (alpha1(e) == e)
+			{
+				disconnect_vertices_topo(d);
+				this->template unset_embedding<Vertex>(alpha0(e));
+			}
+			else
+			{
+				disconnect_vertices_topo(d);
+			}
+		}
+	}
+
+	// n is the number of vertices
 	inline Vertex make_polyline(uint32 n)
 	{
-		Vertex last;
-
-		for (uint32 i = 0; i < n - 1; ++i)
+		Vertex last = add_vertex();
+		for (uint32 i = 1; i < n; ++i)
 		{
-			Edge cur = add_edge();
-			if (last.is_valid())
-			{
-				alpha1_sew(last.dart, cur.dart);
-
-				if (this->template is_embedded<Vertex>())
-					this->template copy_embedding<Vertex>(cur.dart, last.dart);
-			}
-			last = Vertex(alpha0(cur.dart));
+			Vertex v = add_vertex();
+			connect_vertices(v, last);
+			last = v;
 		}
-
 		return last;
 	}
 
+	// n is the number of vertices
 	inline Vertex make_loop(uint32 n)
 	{
-		Vertex last;
-		Vertex first;
-
-		for (uint32 i = 0; i < n; ++i)
+		Vertex first = add_vertex();
+		Vertex last = first;
+		for (uint32 i = 1; i < n; ++i)
 		{
-			Edge cur = add_edge();
-			if (last.is_valid())
-			{
-				alpha1_sew(last.dart, cur.dart);
-
-				if (this->template is_embedded<Vertex>())
-					this->template copy_embedding<Vertex>(cur.dart, last.dart);
-			}
-			else
-				first = Vertex(cur.dart);
-
-			last = Vertex(alpha0(cur.dart));
+			Vertex v = add_vertex();
+			connect_vertices(v, last);
+			last = v;
 		}
-		alpha1_sew(first.dart, last.dart);
-
-		if (this->template is_embedded<Vertex>())
-			this->template copy_embedding<Vertex>(last.dart, first.dart);
-
+		connect_vertices(last, first);
 		return first;
 	}
 
@@ -455,14 +468,15 @@ public:
 		switch (ORBIT)
 		{
 			case Orbit::DART: foreach_dart_of_DART(c.dart, f); break;
-			case Orbit::PHI21: foreach_dart_of_ALPHA1(c.dart, f); break;
-			case Orbit::PHI2: foreach_dart_of_ALPHA0(c.dart, f); break;
 			case Orbit::PHI1: foreach_dart_of_ALPHA01(c.dart, f); break;
+			case Orbit::PHI2: foreach_dart_of_ALPHA0(c.dart, f); break;
+			case Orbit::PHI21: foreach_dart_of_ALPHA1(c.dart, f); break;
 			case Orbit::PHI1_PHI2:
 			case Orbit::PHI2_PHI3:
 			case Orbit::PHI1_PHI3:
 			case Orbit::PHI21_PHI31:
-			default: cgogn_assert_not_reached("Orbit not supported in a Graph"); break;
+			case Orbit::PHI1_PHI2_PHI3:
+			default: cgogn_assert_not_reached("Orbit not supported in an UndirectedGraph"); break;
 		}
 	}
 
@@ -498,7 +512,7 @@ protected:
 	{
 		Dart it = d;
 		do
-		{			
+		{
 			if (!internal::void_to_true_binder(f, it))
 				break;
 			it = alpha1(it);
@@ -522,7 +536,13 @@ public:
 	inline void foreach_incident_vertex(Edge e, const FUNC& func) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Vertex>::value, "Wrong function cell parameter type");
-		foreach_dart_of_orbit(e, [&func] (Dart d) -> bool { return internal::void_to_true_binder(func , Vertex(d)); });
+		foreach_dart_of_orbit(e, [this, &func] (Dart d) -> bool
+		{
+			if (!this->is_boundary(d))
+				return internal::void_to_true_binder(func , Vertex(d));
+			else
+				return true;
+		});
 	}
 
 	template <typename FUNC>
@@ -530,13 +550,15 @@ public:
 	{
 		static_assert(is_func_parameter_same<FUNC, Vertex>::value, "Wrong function cell parameter type");
 		DartMarkerStore marker(*this);
-		foreach_dart_of_orbit(cc, [&] (Dart d)
+		foreach_dart_of_orbit(cc, [&] (Dart d) -> bool
 		{
 			if (!marker.is_marked(d))
 			{
 				marker.mark_orbit(Vertex(d));
-				func(Vertex(d));
+				if (!this->is_boundary(d))
+					return internal::void_to_true_binder(func, Vertex(d));
 			}
+			return true;
 		});
 	}
 
@@ -564,7 +586,14 @@ public:
 	inline void foreach_adjacent_vertex_through_edge(Vertex v, const FUNC& f) const
 	{
 		static_assert(is_func_parameter_same<FUNC, Vertex>::value, "Wrong function cell parameter type");
-		foreach_dart_of_orbit(v, [this, &f] (Dart d) -> bool { return internal::void_to_true_binder(f, Vertex(this->alpha0(d))); });
+		foreach_dart_of_orbit(v, [this, &f] (Dart d) -> bool
+		{
+			Dart dd = this->alpha0(d);
+			if (!this->is_boundary(dd))
+				return internal::void_to_true_binder(f, Vertex(dd));
+			else
+				return true;
+		});
 	}
 
 	template <typename FUNC>
@@ -575,13 +604,16 @@ public:
 		foreach_dart_of_orbit(e, [this, &f] (Dart ed) -> bool
 		{
 			bool res_nested_lambda = true;
-			this->foreach_dart_of_orbit(Vertex(ed), [&f, &res_nested_lambda, ed] (Dart vd) -> bool
+			if (!this->is_boundary(ed))
 			{
-				// skip Edge e itself
-				if (vd != ed)
-					res_nested_lambda = internal::void_to_true_binder(f, Edge(vd));
-				return res_nested_lambda;
-			});
+				this->foreach_dart_of_orbit(Vertex(ed), [&f, &res_nested_lambda, ed] (Dart vd) -> bool
+				{
+					// skip Edge e itself
+					if (vd != ed)
+						res_nested_lambda = internal::void_to_true_binder(f, Edge(vd));
+					return res_nested_lambda;
+				});
+			}
 			return res_nested_lambda;
 		});
 	}
@@ -604,7 +636,7 @@ public:
 			}
 		};
 
-		for (Orbit orb : { DART, PHI1, PHI2, PHI21})
+		for (Orbit orb : { DART, PHI1, PHI2, PHI21 })
 			if (!this->is_embedded(orb) && map.is_embedded(orb))
 				create_embedding(this, orb);
 	}
@@ -650,20 +682,20 @@ struct UndirectedGraphType
 using UndirectedGraph = UndirectedGraph_T<UndirectedGraphType>;
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_CORE_API UndirectedGraph_T<UndirectedGraphType>;
-extern template class CGOGN_CORE_API UndirectedGraphBuilder_T<UndirectedGraph>;
-extern template class CGOGN_CORE_API DartMarker<UndirectedGraph>;
-extern template class CGOGN_CORE_API DartMarkerStore<UndirectedGraph>;
-extern template class CGOGN_CORE_API DartMarkerNoUnmark<UndirectedGraph>;
-extern template class CGOGN_CORE_API CellMarker<UndirectedGraph, UndirectedGraph::Vertex::ORBIT>;
-extern template class CGOGN_CORE_API CellMarker<UndirectedGraph, UndirectedGraph::Edge::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerNoUnmark<UndirectedGraph, UndirectedGraph::Vertex::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerNoUnmark<UndirectedGraph, UndirectedGraph::Edge::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<UndirectedGraph, UndirectedGraph::Vertex::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<UndirectedGraph, UndirectedGraph::Edge::ORBIT>;
-extern template class CGOGN_CORE_API CellCache<UndirectedGraph>;
-extern template class CGOGN_CORE_API BoundaryCache<UndirectedGraph>;
-extern template class CGOGN_CORE_API QuickTraversor<UndirectedGraph>;
+extern template class CGOGN_CORE_EXPORT UndirectedGraph_T<UndirectedGraphType>;
+extern template class CGOGN_CORE_EXPORT UndirectedGraphBuilder_T<UndirectedGraph>;
+extern template class CGOGN_CORE_EXPORT DartMarker<UndirectedGraph>;
+extern template class CGOGN_CORE_EXPORT DartMarkerStore<UndirectedGraph>;
+extern template class CGOGN_CORE_EXPORT DartMarkerNoUnmark<UndirectedGraph>;
+extern template class CGOGN_CORE_EXPORT CellMarker<UndirectedGraph, UndirectedGraph::Vertex::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarker<UndirectedGraph, UndirectedGraph::Edge::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerNoUnmark<UndirectedGraph, UndirectedGraph::Vertex::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerNoUnmark<UndirectedGraph, UndirectedGraph::Edge::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerStore<UndirectedGraph, UndirectedGraph::Vertex::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerStore<UndirectedGraph, UndirectedGraph::Edge::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellCache<UndirectedGraph>;
+extern template class CGOGN_CORE_EXPORT BoundaryCache<UndirectedGraph>;
+extern template class CGOGN_CORE_EXPORT QuickTraversor<UndirectedGraph>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
 
 } // end namespace cgogn

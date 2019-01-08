@@ -24,7 +24,7 @@
 #ifndef CGOGN_RENDERING_FLAT_TR_DR_H_
 #define CGOGN_RENDERING_FLAT_TR_DR_H_
 
-#include <cgogn/rendering/dll.h>
+#include <cgogn/rendering/cgogn_rendering_export.h>
 #include <cgogn/rendering/transparency_shaders/shader_transparent_flat.h>
 #include <cgogn/rendering/transparency_shaders/shader_transparent_phong.h>
 #include <cgogn/rendering/transparency_shaders/shader_transparent_volumes.h>
@@ -43,7 +43,7 @@ namespace cgogn
 namespace rendering
 {
 
-class CGOGN_RENDERING_API SurfaceTransparencyDrawer
+class CGOGN_RENDERING_EXPORT SurfaceTransparencyDrawer
 {
 	int max_nb_layers_;
 

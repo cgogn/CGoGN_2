@@ -24,7 +24,7 @@
 #ifndef CGOGN_RENDERING_SHADERS_SHADERPROGRAM_H_
 #define CGOGN_RENDERING_SHADERS_SHADERPROGRAM_H_
 
-#include <cgogn/rendering/dll.h>
+#include <cgogn/rendering/cgogn_rendering_export.h>
 #include <cgogn/core/utils/numerics.h>
 
 #include <QOpenGLShaderProgram>
@@ -50,7 +50,7 @@ inline void* void_ptr(uint32 x)
 // forward
 class ShaderProgram;
 
-class CGOGN_RENDERING_API ShaderParam
+class CGOGN_RENDERING_EXPORT ShaderParam
 {
 protected:
 
@@ -95,7 +95,7 @@ public:
 	void release();
 };
 
-class CGOGN_RENDERING_API ShaderProgram : protected QOpenGLFunctions_3_3_Core
+class CGOGN_RENDERING_EXPORT ShaderProgram : protected QOpenGLFunctions_3_3_Core
 {
 protected:
 

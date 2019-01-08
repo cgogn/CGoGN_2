@@ -33,7 +33,7 @@
 #include <cgogn/core/utils/endian.h>
 #include <cgogn/core/utils/numerics.h>
 #include <cgogn/core/utils/type_traits.h>
-#include <cgogn/core/dll.h>
+#include <cgogn/core/cgogn_core_export.h>
 
 namespace cgogn
 {
@@ -152,7 +152,7 @@ bool known_size(T const* /*src*/)
 }
 
 template <>
-CGOGN_CORE_API bool known_size<std::string>(std::string const* /*src*/);
+CGOGN_CORE_EXPORT bool known_size<std::string>(std::string const* /*src*/);
 
 template <typename U>
 bool known_size(std::vector<U> const* /*src*/)
@@ -204,13 +204,13 @@ std::size_t data_length(std::array<U, size>const* src, std::size_t quantity);
 
 
 template <>
-CGOGN_CORE_API void load<std::string>(std::istream& istream, std::string* dest, std::size_t quantity);
+CGOGN_CORE_EXPORT void load<std::string>(std::istream& istream, std::string* dest, std::size_t quantity);
 
 template <>
-CGOGN_CORE_API void save<std::string>(std::ostream& ostream, std::string const* src, std::size_t quantity);
+CGOGN_CORE_EXPORT void save<std::string>(std::ostream& ostream, std::string const* src, std::size_t quantity);
 
 template <>
-CGOGN_CORE_API std::size_t data_length<std::string>(std::string const* src, std::size_t quantity);
+CGOGN_CORE_EXPORT std::size_t data_length<std::string>(std::string const* src, std::size_t quantity);
 
 
 // loading n vectors

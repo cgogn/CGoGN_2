@@ -24,7 +24,7 @@
 #ifndef CGOGN_RENDERING_SHADER_COPY_DEPTH_H_
 #define CGOGN_RENDERING_SHADER_COPY_DEPTH_H_
 
-#include <cgogn/rendering/dll.h>
+#include <cgogn/rendering/cgogn_rendering_export.h>
 #include <cgogn/rendering/shaders/shader_program.h>
 #include <cgogn/rendering/shaders/vbo.h>
 
@@ -40,7 +40,7 @@ namespace rendering
 // forward
 class ShaderCopyDepth;
 
-class CGOGN_RENDERING_API ShaderParamCopyDepth : public ShaderParam
+class CGOGN_RENDERING_EXPORT ShaderParamCopyDepth : public ShaderParam
 {
 protected:
 
@@ -54,7 +54,7 @@ public:
 	ShaderParamCopyDepth(ShaderCopyDepth* sh);
 };
 
-class CGOGN_RENDERING_API ShaderCopyDepth : public ShaderProgram
+class CGOGN_RENDERING_EXPORT ShaderCopyDepth : public ShaderProgram
 {
 	friend class ShaderParamCopyDepth;
 

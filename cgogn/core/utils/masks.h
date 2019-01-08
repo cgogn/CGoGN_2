@@ -39,7 +39,7 @@ namespace cgogn
  * A CellFilters instance can be used as a parameter to map.foreach_cell()
  * They can set the filtering function used to filter each Orbit traversal
  */
-class CGOGN_CORE_API CellFilters
+class CGOGN_CORE_EXPORT CellFilters
 {
 public:
 
@@ -77,7 +77,7 @@ protected:
 };
 
 // dummy class for all cells traversal
-class CGOGN_CORE_API AllCellsFilter
+class CGOGN_CORE_EXPORT AllCellsFilter
 {
 public:
 
@@ -94,7 +94,7 @@ public:
  *  - template <typename CellType> const_iterator begin() const
  *" - template <typename CellType> const_iterator end() const
  */
-class CGOGN_CORE_API CellTraversor
+class CGOGN_CORE_EXPORT CellTraversor
 {
 public:
 

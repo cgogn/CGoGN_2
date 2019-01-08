@@ -75,22 +75,23 @@ namespace io
 ///mesh.
 ///
 /// \todo import/export of the edge properties
-template <typename VEC3>
-class CskelGraphImport : public GraphFileImport
+template <typename MAP, typename VEC3>
+class CskelGraphImport : public GraphFileImport<MAP>
 {
-
 public:
-	using Self = CskelGraphImport<VEC3>;
-	using Inherit = GraphFileImport;
+
+	using Self = CskelGraphImport<MAP, VEC3>;
+	using Inherit = GraphFileImport<MAP>;
     using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
     template <typename T>
     using ChunkArray = typename Inherit::template ChunkArray<T>;
 
-	inline CskelGraphImport() {}
+	inline CskelGraphImport(MAP& map) : Inherit(map) {}
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CskelGraphImport);
 	virtual ~CskelGraphImport() override {}
 
 protected:
+
     virtual bool import_file_impl(const std::string& filename) override
     {
  		std::ifstream fp(filename.c_str(), std::ios::in);
@@ -109,45 +110,47 @@ protected:
         	iss >> nb_vertices;
         	iss >> nb_edges;
         }
+
+		std::vector<uint32> vertices_id;
+		vertices_id.reserve(nb_vertices);
+
         this->reserve(nb_edges);
 
         // read points
-        for(uint32 i = 0u; i < nb_vertices; ++i)
+		for (uint32 i = 0u; i < nb_vertices; ++i)
 		{
 			getline_safe(fp, line);
-			std::istringstream oss(line);
+			std::istringstream iss(line);
 
 			float64 Cx, Cy, Cz;
-			oss >> Cx;
-			oss >> Cy;
-			oss >> Cz;
+			iss >> Cx;
+			iss >> Cy;
+			iss >> Cz;
 
 			VEC3 pos{Scalar(Cx), Scalar(Cy), Scalar(Cz)};
 			const uint32 vertex_id = this->insert_line_vertex_container();
 
 			(*position)[vertex_id] = pos;
 			(*radius)[vertex_id] = Scalar(0.1);
+
+			vertices_id.push_back(vertex_id);
         }
 
         // read connectivity
-		for(uint32 i = 0u; i < nb_edges; ++i)
+		for (uint32 i = 0u; i < nb_edges; ++i)
 		{
-
 			getline_safe(fp, line);
 			int32 pA, pB;
 			std::istringstream iss(line);
 			iss >> pA;
 			iss >> pB;
 
-			this->edges_nb_vertices_.push_back(2);
-			this->edges_vertex_indices_.push_back(pA);
-			this->edges_vertex_indices_.push_back(pB);
+			this->add_edge(vertices_id[pA], vertices_id[pB]);
 
 			getline_safe(fp, line);
 			getline_safe(fp, line);
 			getline_safe(fp, line);
 			getline_safe(fp, line);
-
 		}
 
     	return true;
@@ -158,6 +161,7 @@ template <typename MAP>
 class CskelGraphExport : public GraphExport<MAP>
 {
 public:
+
     using Inherit = GraphExport<MAP>;
     using Self = CskelGraphExport<MAP>;
     using Map = typename Inherit::Map;
@@ -169,6 +173,7 @@ public:
     using ChunkArrayContainer = typename Inherit::ChunkArrayContainer;
 
 protected:
+
 	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& ) override
     {
 		// Header
@@ -180,7 +185,6 @@ protected:
 			this->position_attribute(Vertex::ORBIT)->export_element(map.embedding(v), output, false, false);
 			output << std::endl;
 		}, *(this->cell_cache_));
-
 
 		// Edges
 		map.foreach_cell([&] (Edge e)
@@ -197,14 +201,13 @@ protected:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_IO_API CskelGraphImport<Eigen::Vector3d>;
-extern template class CGOGN_IO_API CskelGraphImport<Eigen::Vector3f>;
-extern template class CGOGN_IO_API CskelGraphImport<geometry::Vec_T<std::array<float64,3>>>;
-extern template class CGOGN_IO_API CskelGraphImport<geometry::Vec_T<std::array<float32,3>>>;
+extern template class CGOGN_IO_EXPORT CskelGraphImport<Eigen::Vector3d>;
+extern template class CGOGN_IO_EXPORT CskelGraphImport<Eigen::Vector3f>;
+extern template class CGOGN_IO_EXPORT CskelGraphImport<geometry::Vec_T<std::array<float64,3>>>;
+extern template class CGOGN_IO_EXPORT CskelGraphImport<geometry::Vec_T<std::array<float32,3>>>;
 
-extern template class CGOGN_IO_API CskelGraphExport<UndirectedGraph>;
+extern template class CGOGN_IO_EXPORT CskelGraphExport<UndirectedGraph>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
-
 
 } // namespace io
 

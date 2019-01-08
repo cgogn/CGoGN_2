@@ -44,22 +44,23 @@ namespace io
 ///
 /// Tagliasacchi 2012
 ///
-template <typename VEC3>
-class CgGraphImport : public GraphFileImport
+template <typename MAP, typename VEC3>
+class CgGraphImport : public GraphFileImport<MAP>
 {
-
 public:
-	using Self = CgGraphImport<VEC3>;
-	using Inherit = GraphFileImport;
+
+	using Self = CgGraphImport<MAP, VEC3>;
+	using Inherit = GraphFileImport<MAP>;
     using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
     template <typename T>
     using ChunkArray = typename Inherit::template ChunkArray<T>;
 
-	inline CgGraphImport() {}
+	inline CgGraphImport(MAP& map) : Inherit(map) {}
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CgGraphImport);
 	virtual ~CgGraphImport() override {}
 
 protected:
+
     virtual bool import_file_impl(const std::string& filename) override
     {
         std::ifstream fp(filename.c_str(), std::ios::in);
@@ -89,7 +90,7 @@ protected:
 		ossl >> value;
 		const uint32 nb_edges = value;
 
-		this->reserve(nb_vertices);
+		this->reserve(2 * nb_edges);
 
 		ChunkArray<VEC3>* position = this->template add_vertex_attribute<VEC3>("position");
 
@@ -132,13 +133,11 @@ protected:
 
             if (tag == std::string("e"))
             {
-                uint32  a, b;
+				uint32 a, b;
                 oss >> a;
                 oss >> b;
 
-                this->edges_nb_vertices_.push_back(2);
-				this->edges_vertex_indices_.push_back(a-1);
-				this->edges_vertex_indices_.push_back(b-1);
+				this->add_edge(vertices_id[a-1], vertices_id[b-1]);
             }
         }
 
@@ -150,6 +149,7 @@ template <typename MAP>
 class CgGraphExport : public GraphExport<MAP>
 {
 public:
+
     using Inherit = GraphExport<MAP>;
     using Self = CgGraphExport<MAP>;
     using Map = typename Inherit::Map;
@@ -161,6 +161,7 @@ public:
     using ChunkArrayContainer = typename Inherit::ChunkArrayContainer;
 
 protected:
+
     virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& ) override
 	{
 		// Header
@@ -184,14 +185,13 @@ protected:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_IO_API CgGraphImport<Eigen::Vector3d>;
-extern template class CGOGN_IO_API CgGraphImport<Eigen::Vector3f>;
-extern template class CGOGN_IO_API CgGraphImport<geometry::Vec_T<std::array<float64,3>>>;
-extern template class CGOGN_IO_API CgGraphImport<geometry::Vec_T<std::array<float32,3>>>;
+extern template class CGOGN_IO_EXPORT CgGraphImport<Eigen::Vector3d>;
+extern template class CGOGN_IO_EXPORT CgGraphImport<Eigen::Vector3f>;
+extern template class CGOGN_IO_EXPORT CgGraphImport<geometry::Vec_T<std::array<float64,3>>>;
+extern template class CGOGN_IO_EXPORT CgGraphImport<geometry::Vec_T<std::array<float32,3>>>;
 
-extern template class CGOGN_IO_API CgGraphExport<UndirectedGraph>;
+extern template class CGOGN_IO_EXPORT CgGraphExport<UndirectedGraph>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
-
 
 } // namespace io
 

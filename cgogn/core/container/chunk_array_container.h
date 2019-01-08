@@ -33,7 +33,7 @@
 #include <climits>
 
 #include <cgogn/core/utils/logger.h>
-#include <cgogn/core/dll.h>
+#include <cgogn/core/cgogn_core_export.h>
 #include <cgogn/core/utils/numerics.h>
 #include <cgogn/core/utils/assert.h>
 #include <cgogn/core/utils/name_types.h>
@@ -1126,8 +1126,8 @@ public:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_CORE_API ChunkArrayContainer<CGOGN_CHUNK_SIZE, uint32>;
-extern template class CGOGN_CORE_API ChunkArrayContainer<CGOGN_CHUNK_SIZE, uint8>;
+extern template class CGOGN_CORE_EXPORT ChunkArrayContainer<CGOGN_CHUNK_SIZE, uint32>;
+extern template class CGOGN_CORE_EXPORT ChunkArrayContainer<CGOGN_CHUNK_SIZE, uint8>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace cgogn

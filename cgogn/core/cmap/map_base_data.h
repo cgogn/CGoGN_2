@@ -59,7 +59,7 @@ template <typename T, Orbit ORBIT> class Attribute;
 /**
  * @brief The MapBaseData class
  */
-class CGOGN_CORE_API MapBaseData
+class CGOGN_CORE_EXPORT MapBaseData
 {
 public:
 
@@ -223,6 +223,14 @@ public:
 		return (*embeddings_[ORBIT])[c.dart.index];
 	}
 
+	template <Orbit ORBIT>
+	inline bool is_valid_embedding(Cell<ORBIT> c) const
+	{
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+		cgogn_message_assert(is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
+		return (*embeddings_[ORBIT])[c.dart.index] != INVALID_INDEX;
+	}
+
 	inline uint32 embedding(Dart d, Orbit orb) const
 	{
 		cgogn_message_assert(orb < NB_ORBITS, "Unknown orbit parameter");
@@ -250,6 +258,19 @@ protected:
 			attributes_[ORBIT].unref_line(old);		// unref the old emb
 
 		(*embeddings_[ORBIT])[d.index] = emb;		// affect the embedding to the dart
+	}
+
+	template <class CellType>
+	inline void unset_embedding(Dart d)
+	{
+		static const Orbit ORBIT = CellType::ORBIT;
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+		cgogn_message_assert(is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
+
+		const uint32 old = (*embeddings_[ORBIT])[d.index];
+		if (old != INVALID_INDEX)
+			attributes_[ORBIT].unref_line(old);			// unref the old emb
+		(*embeddings_[ORBIT])[d.index] = INVALID_INDEX;	// affect the embedding to the dart
 	}
 
 	template <class CellType>

@@ -28,7 +28,7 @@
 namespace cgogn
 {
 
-CGOGN_CORE_API std::string trim_left(const std::string& str)
+CGOGN_CORE_EXPORT std::string trim_left(const std::string& str)
 {
   const std::string pattern = " \f\n\r\t\v";
   return str.substr(str.find_first_not_of(pattern));
@@ -37,7 +37,7 @@ CGOGN_CORE_API std::string trim_left(const std::string& str)
 //
 //Right trim
 //
-CGOGN_CORE_API std::string trim_right(const std::string& str)
+CGOGN_CORE_EXPORT std::string trim_right(const std::string& str)
 {
   const std::string pattern = " \f\n\r\t\v";
   return str.substr(0,str.find_last_not_of(pattern) + 1);
@@ -46,12 +46,12 @@ CGOGN_CORE_API std::string trim_right(const std::string& str)
 //
 //Left and Right trim
 //
-CGOGN_CORE_API std::string trim(const std::string& str)
+CGOGN_CORE_EXPORT std::string trim(const std::string& str)
 {
   return trim_left(trim_right(str));
 }
 
-CGOGN_CORE_API std::string to_upper(const std::string& str)
+CGOGN_CORE_EXPORT std::string to_upper(const std::string& str)
 {
 	const std::locale locale;
 	std::string res(str);
@@ -60,7 +60,7 @@ CGOGN_CORE_API std::string to_upper(const std::string& str)
 	return res;
 }
 
-CGOGN_CORE_API std::string to_lower(const std::string& str)
+CGOGN_CORE_EXPORT std::string to_lower(const std::string& str)
 {
 	const std::locale locale;
 	std::string res(str);
@@ -69,7 +69,7 @@ CGOGN_CORE_API std::string to_lower(const std::string& str)
 	return res;
 }
 
-CGOGN_CORE_API std::string extension(const std::string& str)
+CGOGN_CORE_EXPORT std::string extension(const std::string& str)
 {
 	const std::size_t dot = str.rfind('.');
 	if (dot == std::string::npos || dot == str.size() -1u)
@@ -77,7 +77,7 @@ CGOGN_CORE_API std::string extension(const std::string& str)
 	return str.substr(dot + 1u);
 }
 
-CGOGN_CORE_API std::string remove_extension(const std::string& str)
+CGOGN_CORE_EXPORT std::string remove_extension(const std::string& str)
 {
 	const std::size_t dot = str.rfind('.');
 	if (dot == std::string::npos || dot == str.size() -1u)
@@ -86,7 +86,7 @@ CGOGN_CORE_API std::string remove_extension(const std::string& str)
 		return str.substr(0,dot);
 }
 
-CGOGN_CORE_API bool i_equals(const std::string& str1, const std::string& str2)
+CGOGN_CORE_EXPORT bool i_equals(const std::string& str1, const std::string& str2)
 {
 	using char_t = std::string::value_type;
 
