@@ -51,9 +51,9 @@ public:
 
 	using Self = CgGraphImport<MAP, VEC3>;
 	using Inherit = GraphFileImport<MAP>;
-    using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
-    template <typename T>
-    using ChunkArray = typename Inherit::template ChunkArray<T>;
+	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
+	template <typename T>
+	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
 	inline CgGraphImport(MAP& map) : Inherit(map) {}
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CgGraphImport);
@@ -61,33 +61,33 @@ public:
 
 protected:
 
-    virtual bool import_file_impl(const std::string& filename) override
-    {
-        std::ifstream fp(filename.c_str(), std::ios::in);
+	virtual bool import_file_impl(const std::string& filename) override
+	{
+		std::ifstream fp(filename.c_str(), std::ios::in);
 
-        std::string line;
-        line.reserve(512);
+		std::string line;
+		line.reserve(512);
 
 		io::getline_safe(fp, line);
 		if (line.rfind("# D") == std::string::npos)
 		{
-				cgogn_log_error("CgGraphImport::import_file_impl") << "File \"" << filename << "\" is not a valid cg file.";
-				return false;
+			cgogn_log_error("CgGraphImport::import_file_impl") << "File \"" << filename << "\" is not a valid cg file.";
+			return false;
 		}
 
 		// read header
 		std::replace(line.begin(), line.end(), ':', ' ');
-		std::stringstream ossl(line);
+		std::stringstream issl(line);
 		std::string tagl;
 		uint32 value;
-		ossl >> tagl;
-		ossl >> tagl;
-		ossl >> value; // dimension unused for now
-		ossl >> tagl;
-		ossl >> value;
+		issl >> tagl;
+		issl >> tagl;
+		issl >> value; // dimension unused for now
+		issl >> tagl;
+		issl >> value;
 		const uint32 nb_vertices = value;
-		ossl >> tagl;
-		ossl >> value;
+		issl >> tagl;
+		issl >> value;
 		const uint32 nb_edges = value;
 
 		this->reserve(2 * nb_edges);
@@ -95,54 +95,52 @@ protected:
 		ChunkArray<VEC3>* position = this->template add_vertex_attribute<VEC3>("position");
 
 		// read vertices
-        std::vector<uint32> vertices_id;
+		std::vector<uint32> vertices_id;
 		vertices_id.reserve(nb_vertices);
 
-        for (uint32 i = 0; i < nb_vertices; ++i)
-        {
-            io::getline_safe(fp, line);
-            std::stringstream oss(line);
+		for (uint32 i = 0; i < nb_vertices; ++i)
+		{
+			io::getline_safe(fp, line);
+			std::stringstream iss(line);
 
-            std::string tag;
-            oss >> tag;
+			std::string tag;
+			iss >> tag;
 
-            if (tag == std::string("v"))
-            {
-                float64 x, y, z;
-                oss >> x;
-                oss >> y;
-                oss >> z;
+			if (tag == std::string("v"))
+			{
+				float64 x, y, z;
+				iss >> x;
+				iss >> y;
+				iss >> z;
 
-                VEC3 pos{Scalar(x), Scalar(y), Scalar(z)};
+				uint32 vertex_id = this->insert_line_vertex_container();
+				(*position)[vertex_id] = { Scalar(x), Scalar(y), Scalar(z) };
 
-                uint32 vertex_id = this->vertex_attributes_.template insert_lines<1>();
-                (*position)[vertex_id] = pos;
-
-                vertices_id.push_back(vertex_id);
-            }
+				vertices_id.push_back(vertex_id);
+			}
 		}
 
 		// read edges
-        for (uint32 i = 0; i < nb_edges; ++i)
-        {
-            io::getline_safe(fp, line);
-            std::stringstream oss(line);
+		for (uint32 i = 0; i < nb_edges; ++i)
+		{
+			io::getline_safe(fp, line);
+			std::stringstream iss(line);
 
-            std::string tag;
-            oss >> tag;
+			std::string tag;
+			iss >> tag;
 
-            if (tag == std::string("e"))
-            {
+			if (tag == std::string("e"))
+			{
 				uint32 a, b;
-                oss >> a;
-                oss >> b;
+				iss >> a;
+				iss >> b;
 
 				this->add_edge(vertices_id[a-1], vertices_id[b-1]);
-            }
-        }
+			}
+		}
 
-    	return true;
-    }
+		return true;
+	}
 };
 
 template <typename MAP>
@@ -150,19 +148,19 @@ class CgGraphExport : public GraphExport<MAP>
 {
 public:
 
-    using Inherit = GraphExport<MAP>;
-    using Self = CgGraphExport<MAP>;
-    using Map = typename Inherit::Map;
-    using Vertex = typename Inherit::Vertex;
-    using Edge = typename Inherit::Edge;
-    using ChunkArrayGen = typename Inherit::ChunkArrayGen;
-    template <typename T>
-    using VertexAttribute = typename Inherit::template VertexAttribute<T>;
-    using ChunkArrayContainer = typename Inherit::ChunkArrayContainer;
+	using Inherit = GraphExport<MAP>;
+	using Self = CgGraphExport<MAP>;
+	using Map = typename Inherit::Map;
+	using Vertex = typename Inherit::Vertex;
+	using Edge = typename Inherit::Edge;
+	using ChunkArrayGen = typename Inherit::ChunkArrayGen;
+	template <typename T>
+	using VertexAttribute = typename Inherit::template VertexAttribute<T>;
+	using ChunkArrayContainer = typename Inherit::ChunkArrayContainer;
 
 protected:
 
-    virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& ) override
+	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions&) override
 	{
 		// Header
 		output << "# D:3 NV:" << map.template nb_cells<Vertex::ORBIT>() << " NE:" << map.template nb_cells<Edge::ORBIT>() << std::endl;
@@ -181,7 +179,7 @@ protected:
 			std::pair<Vertex, Vertex> vs = map.vertices(e);
 			output << "e " << (this->vindices_[vs.first]+1u) << " " << (this->vindices_[vs.second]+1u) << std::endl;
 		}, *(this->cell_cache_));
-    }
+	}
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))

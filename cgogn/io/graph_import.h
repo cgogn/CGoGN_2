@@ -63,7 +63,6 @@ public:
 
 	inline GraphImport(MAP& map) :
 		edges_vertex_indices_(),
-		vertex_attributes_(),
 		map_(map),
 		mbuild_(map)
 	{}
@@ -71,37 +70,32 @@ public:
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(GraphImport);
 	virtual ~GraphImport() {}
 
-	void create_map()
+	inline ChunkArrayContainer& vertex_container()
 	{
-		if (vertex_attributes_.size() == 0u)
-			return;
-
-		mbuild_.template create_embedding<Vertex::ORBIT>();
-		mbuild_.template swap_chunk_array_container<Vertex::ORBIT>(this->vertex_attributes_);
-
-		auto vertex_dart = map_.template add_attribute<Dart, Vertex>("__vertex_dart");
-
-		for (uint32 i = vertex_attributes_.begin(); i != vertex_attributes_.end(); vertex_attributes_.next(i))
-		{
-			Dart d = mbuild_.add_vertex_topo();
-			mbuild_.template set_embedding<Vertex>(d, i);
-			vertex_dart[i] = d;
-		}
-
-		for (uint32 i = 0; i < edges_vertex_indices_.size(); i += 2)
-			mbuild_.connect_vertices_topo(edges_vertex_indices_[i], edges_vertex_indices_[i+1]);
-
-		map_.remove_attribute(vertex_dart);
+		return mbuild_.template attribute_container<Vertex::ORBIT>();
 	}
 
 	uint32 insert_line_vertex_container()
 	{
-		return vertex_attributes_.template insert_lines<1>();
+		return vertex_container().template insert_lines<1>();
+	}
+
+	inline ChunkArrayGen* add_vertex_attribute(const DataInputGen& in_data, const std::string& att_name)
+	{
+		ChunkArrayGen* att = in_data.add_attribute(vertex_container(), att_name);
+		in_data.to_chunk_array(att);
+		return att;
+	}
+
+	template<typename T>
+	inline ChunkArray<T>* add_vertex_attribute(const std::string& att_name)
+	{
+		return vertex_container().template add_chunk_array<T>(att_name);
 	}
 
 	void reserve(uint32 nb_edges)
 	{
-		edges_vertex_indices_.reserve(nb_edges);
+		edges_vertex_indices_.reserve(nb_edges * 2);
 	}
 
 	void add_edge(uint32 p0, uint32 p1)
@@ -110,23 +104,33 @@ public:
 		edges_vertex_indices_.push_back(p1);
 	}
 
-	inline ChunkArrayGen* add_vertex_attribute(const DataInputGen& in_data, const std::string& att_name)
+	void create_map()
 	{
-		ChunkArrayGen* att = in_data.add_attribute(vertex_attributes_, att_name);
-		in_data.to_chunk_array(att);
-		return att;
-	}
+		ChunkArrayContainer& vc = vertex_container();
 
-	template <typename T>
-	inline ChunkArray<T>* add_vertex_attribute(const std::string& att_name)
-	{
-		return vertex_attributes_.template add_chunk_array<T>(att_name);
+		if (vc.size() == 0u)
+			return;
+
+		mbuild_.template create_embedding<Vertex::ORBIT>();
+
+		auto vertex_dart = map_.template add_attribute<Dart, Vertex>("__vertex_dart");
+
+		for (uint32 i = vc.begin(); i != vc.end(); vc.next(i))
+		{
+			Dart d = mbuild_.add_vertex_topo();
+			mbuild_.template set_embedding<Vertex>(d, i);
+			vertex_dart[i] = d;
+		}
+
+		for (uint32 i = 0; i < edges_vertex_indices_.size(); i += 2)
+			map_.connect_vertices(Vertex(vertex_dart[edges_vertex_indices_[i]]), Vertex(vertex_dart[edges_vertex_indices_[i+1]]));
+
+		map_.remove_attribute(vertex_dart);
 	}
 
 protected:
 
 	std::vector<uint32> edges_vertex_indices_;
-	ChunkArrayContainer vertex_attributes_;
 
 	MAP& map_;
 	MapBuilder mbuild_;
