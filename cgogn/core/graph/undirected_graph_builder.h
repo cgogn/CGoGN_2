@@ -33,9 +33,10 @@ namespace cgogn
 template <typename GRAPH>
 class UndirectedGraphBuilder_T
 {
-	static_assert(GRAPH::DIMENSION == 2, "UndirectedGraphBuilder_T works only with 1D Graphs.");
+	static_assert(GRAPH::DIMENSION == 1, "UndirectedGraphBuilder_T works only with 1D Graphs.");
 
 public:
+
 	using Self = UndirectedGraphBuilder_T<GRAPH>;
 	using Graph = GRAPH;
 	using CDart = typename Graph::CDart;
@@ -45,15 +46,12 @@ public:
 	template <typename T>
 	using ChunkArrayContainer = typename Graph::template ChunkArrayContainer<T>;
 
-	inline UndirectedGraphBuilder_T(Graph& map) : map_(map)
-	{}
+	template <typename T>
+	using ChunkArray = typename Graph::template ChunkArray<T>;
 
+	inline UndirectedGraphBuilder_T(Graph& map) : map_(map) {}
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(UndirectedGraphBuilder_T);
-
-	inline ~UndirectedGraphBuilder_T()
-	{}
-
-public:
+	inline ~UndirectedGraphBuilder_T() {}
 
 	template <Orbit ORBIT>
 	inline void create_embedding()
@@ -61,10 +59,10 @@ public:
 		map_.template create_embedding<ORBIT>();
 	}
 
-	template <Orbit ORBIT, typename T>
-	inline void swap_chunk_array_container(ChunkArrayContainer<T>& cac)
+	template <Orbit ORBIT>
+	inline ChunkArrayContainer<uint32>& attribute_container()
 	{
-		map_.attributes_[ORBIT].swap(cac);
+		return map_.template non_const_attribute_container<ORBIT>();
 	}
 
 	template <class CellType>
@@ -105,14 +103,14 @@ public:
 		map_.alpha1_unsew(d);
 	}
 
-	inline Dart add_edge_topo()
+	inline Dart add_vertex_topo()
 	{
-		return map_.add_edge_topo();
+		return map_.add_vertex_topo();
 	}
 
-	inline Dart add_vertex_topo(uint32 nb_edges)
+	inline Dart connect_vertices_topo(Dart d, Dart e)
 	{
-		return map_.add_vertex_topo(nb_edges);
+		return map_.connect_vertices_topo(d, e);
 	}
 
 private:

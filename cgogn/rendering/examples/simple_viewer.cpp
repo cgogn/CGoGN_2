@@ -145,8 +145,8 @@ void Viewer::import(const std::string& surface_mesh)
 //	map_.merge(map2);
 
 	cgogn::geometry::compute_AABB(vertex_position_, bb_);
-	setSceneRadius(bb_.diag_size()/2.0);
-	Vec3 center = bb_.center();
+	setSceneRadius(cgogn::geometry::diagonal(bb_).norm()/2.0);
+	Vec3 center = cgogn::geometry::center(bb_);
 	setSceneCenter(qoglviewer::Vec(center[0], center[1], center[2]));
 	showEntireScene();
 }
@@ -295,7 +295,7 @@ void Viewer::init()
 	vbo_sphere_sz_ = cgogn::make_unique<cgogn::rendering::VBO>(1);
 	cgogn::rendering::update_vbo(vertex_normal_, vbo_sphere_sz_.get(), [&] (const Vec3& n) -> float
 	{
-		return bb_.diag_size()/1000.0 * (1.0 + 2.0*std::abs(n[2]));
+		return cgogn::geometry::diagonal(bb_).norm()/1000.0 * (1.0 + 2.0*std::abs(n[2]));
 	});
 
 	// map rendering object (primitive creation & sending to GPU)
@@ -324,7 +324,7 @@ void Viewer::init()
 	param_normal_ = cgogn::rendering::ShaderVectorPerVertex::generate_param();
 	param_normal_->set_all_vbos(vbo_pos_.get(), vbo_norm_.get());
 	param_normal_->color_ = QColor(200,0,200);
-	param_normal_->length_ = bb_.diag_size()/50;
+	param_normal_->length_ = cgogn::geometry::diagonal(bb_).norm()/50;
 
 	param_phong_ = cgogn::rendering::ShaderPhongColor::generate_param();
 	param_phong_->set_all_vbos(vbo_pos_.get(), vbo_norm_.get(), vbo_color_.get());

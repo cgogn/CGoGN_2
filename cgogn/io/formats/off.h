@@ -24,8 +24,6 @@
 #ifndef CGOGN_IO_FORMATS_OFF_H_
 #define CGOGN_IO_FORMATS_OFF_H_
 
-#include <cgogn/core/cmap/cmap3.h>
-
 #include <cgogn/geometry/types/eigen.h>
 #include <cgogn/geometry/types/vec.h>
 #include <cgogn/geometry/types/geometry_traits.h>

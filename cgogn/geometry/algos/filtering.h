@@ -46,7 +46,7 @@ void filter_average(
 	VERTEX_ATTR& attribute_out
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"attribute_in & attribute_out must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, "attribute_in & attribute_out must be a vertex attribute");
 
 	using T = InsideTypeOf<VERTEX_ATTR>;
 	using Scalar = ScalarOf<T>;
@@ -74,7 +74,7 @@ void filter_average(
 	VERTEX_ATTR& attribute_out
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"attribute_in & attribute_out must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, "attribute_in & attribute_out must be a vertex attribute");
 
 	filter_average(map, AllCellsFilter(), attribute_in, attribute_out);
 }
@@ -88,7 +88,7 @@ void filter_bilateral(
 	const VERTEX_ATTR& normal
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position_in, position_out & normal must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, "position_in, position_out & normal must be a vertex attribute");
 
 	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 	using Scalar = ScalarOf<VEC3>;
@@ -132,7 +132,6 @@ void filter_bilateral(
 	mask);
 }
 
-
 template <typename MAP, typename VERTEX_ATTR>
 void filter_bilateral(
 	const MAP& map,
@@ -141,7 +140,7 @@ void filter_bilateral(
 	const VERTEX_ATTR& normal
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position_in, position_out & normal must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, "position_in, position_out & normal must be a vertex attribute");
 	filter_bilateral(map, AllCellsFilter(), position_in, position_out, normal);
 }
 

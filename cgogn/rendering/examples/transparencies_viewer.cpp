@@ -122,8 +122,8 @@ void ViewerTransparency::import(const std::string& surface_mesh)
 
 
 	cgogn::geometry::compute_AABB(vertex_position_, bb_);
-	setSceneRadius(bb_.diag_size());
-	Vec3 center = bb_.center();
+	setSceneRadius(cgogn::geometry::diagonal(bb_).norm());
+	Vec3 center = cgogn::geometry::center(bb_);
 	setSceneCenter(qoglviewer::Vec(center[0], center[1], center[2]));
 	showEntireScene();
 }
@@ -174,9 +174,9 @@ void ViewerTransparency::draw()
 	// the the transparents objects.
 
 	QMatrix4x4 tr1;
-	tr1.translate(-0.25*bb_.diag_size(),0,0);
+	tr1.translate(-0.25*cgogn::geometry::diagonal(bb_).norm(),0,0);
 	QMatrix4x4 tr2;
-	tr2.translate(0.25*bb_.diag_size(),0,0);
+	tr2.translate(0.25*cgogn::geometry::diagonal(bb_).norm(),0,0);
 
 	transp_drawer_->draw( [&] ()
 	{
@@ -252,18 +252,18 @@ void ViewerTransparency::init()
 	drawer_rend_= drawer_->generate_renderer();
 	drawer_->new_list();
 
-	drawer_->ball_size(bb_.diag_size()/50);
+	drawer_->ball_size(cgogn::geometry::diagonal(bb_).norm()/50);
 	drawer_->begin(GL_POINTS);
 		drawer_->color3f(1,1,0);
-		Vec3 P = bb_.center();
+		Vec3 P = cgogn::geometry::center(bb_);
 		drawer_->vertex3fv(P);
-		P[0] -= 0.25*bb_.diag_size();
+		P[0] -= 0.25*cgogn::geometry::diagonal(bb_).norm();
 		drawer_->vertex3fv(P);
-		P[0] -= 0.25*bb_.diag_size();
+		P[0] -= 0.25*cgogn::geometry::diagonal(bb_).norm();
 		drawer_->vertex3fv(P);
-		P[0] += 0.75*bb_.diag_size();
+		P[0] += 0.75*cgogn::geometry::diagonal(bb_).norm();
 		drawer_->vertex3fv(P);
-		P[0] += 0.25*bb_.diag_size();
+		P[0] += 0.25*cgogn::geometry::diagonal(bb_).norm();
 		drawer_->vertex3fv(P);
 	drawer_->end();
 	drawer_->end_list();

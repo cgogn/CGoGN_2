@@ -196,8 +196,8 @@ void Viewer::import(const std::string& volumeMesh)
 
 	cgogn::geometry::compute_AABB(vertex_position_, bb_);
 
-	setSceneRadius(bb_.diag_size()/2.0);
-	Vec3 center = bb_.center();
+	setSceneRadius(cgogn::geometry::diagonal(bb_).norm()/2.0);
+	Vec3 center = cgogn::geometry::center(bb_);
 	setSceneCenter(qoglviewer::Vec(center[0], center[1], center[2]));
 	showEntireScene();
 
@@ -278,11 +278,11 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			else if (thick_plane_mode_)
 			{
 				if (ev->modifiers() & Qt::ShiftModifier)
-					plane_thickness_ += bb_.diag_size()/200;
+					plane_thickness_ += cgogn::geometry::diagonal(bb_).norm()/200;
 				else
 				{
-					if (plane_thickness_>= bb_.diag_size()/200)
-						plane_thickness_ -= bb_.diag_size()/200;
+					if (plane_thickness_>= cgogn::geometry::diagonal(bb_).norm()/200)
+						plane_thickness_ -= cgogn::geometry::diagonal(bb_).norm()/200;
 				}
 			}
 			if (thick_plane_mode_)
@@ -453,11 +453,11 @@ void Viewer::init()
 
 
 	frame_manip_ = cgogn::make_unique<cgogn::rendering::FrameManipulator>();
-	frame_manip_->set_size(bb_.diag_size()/4);
+	frame_manip_->set_size(cgogn::geometry::diagonal(bb_).norm()/4);
 	frame_manip_->set_position(bb_.max());
 	frame_manip_->z_plane_param(QColor(200,200,200),-1.5f,-1.5f, 2.0f);
 
-	plane_thickness_ = bb_.diag_size()/20;
+	plane_thickness_ = cgogn::geometry::diagonal(bb_).norm()/20;
 
 	plane_clip_from_frame();
 

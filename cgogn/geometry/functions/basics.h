@@ -98,7 +98,6 @@ inline auto angle(const VEC& a, const VEC& b)
 	return angle(eigenize(a),eigenize(b));
 }
 
-
 } // namespace geometry
 
 } // namespace cgogn

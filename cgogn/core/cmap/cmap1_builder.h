@@ -53,7 +53,6 @@ public:
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CMap1Builder_T);
 	inline ~CMap1Builder_T() {}
 
-public:
 	template <Orbit ORBIT>
 	inline void create_embedding()
 	{

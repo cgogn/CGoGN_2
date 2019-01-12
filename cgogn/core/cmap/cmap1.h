@@ -73,6 +73,7 @@ public:
 
 	using DartMarker = typename cgogn::DartMarker<Self>;
 	using DartMarkerStore = typename cgogn::DartMarkerStore<Self>;
+	using DartMarkerNoUnmark = typename cgogn::DartMarkerNoUnmark<Self>;
 
 	template <Orbit ORBIT>
 	using CellMarker = typename cgogn::CellMarker<Self, ORBIT>;

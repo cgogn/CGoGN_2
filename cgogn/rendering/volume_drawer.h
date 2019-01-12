@@ -344,8 +344,7 @@ public:
 						out_color.push_back({float32(C3[0]), float32(C3[1]), float32(C3[2])});
 					}
 				}
-			},
-			mask);
+			});
 		},
 		mask);
 
