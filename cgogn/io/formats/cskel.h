@@ -75,102 +75,107 @@ namespace io
 ///mesh.
 ///
 /// \todo import/export of the edge properties
-template <typename VEC3>
-class CskelGraphImport : public GraphFileImport
+template <typename MAP, typename VEC3>
+class CskelGraphImport : public GraphFileImport<MAP>
 {
-
 public:
-	using Self = CskelGraphImport<VEC3>;
-	using Inherit = GraphFileImport;
-    using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
-    template <typename T>
-    using ChunkArray = typename Inherit::template ChunkArray<T>;
 
-	inline CskelGraphImport() {}
+	using Self = CskelGraphImport<MAP, VEC3>;
+	using Inherit = GraphFileImport<MAP>;
+	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
+	template <typename T>
+	using ChunkArray = typename Inherit::template ChunkArray<T>;
+
+	inline CskelGraphImport(MAP& map) : Inherit(map) {}
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CskelGraphImport);
 	virtual ~CskelGraphImport() override {}
 
 protected:
-    virtual bool import_file_impl(const std::string& filename) override
-    {
- 		std::ifstream fp(filename.c_str(), std::ios::in);
+
+	virtual bool import_file_impl(const std::string& filename) override
+	{
+		std::ifstream fp(filename.c_str(), std::ios::in);
 
 		ChunkArray<VEC3>* position = this->template add_vertex_attribute<VEC3>("position");
 		ChunkArray<Scalar>* radius = this->template add_vertex_attribute<Scalar>("radius");
 
-        std::string line;
-        line.reserve(512);
+		std::string line;
+		line.reserve(512);
 
-        // reading number of points and number of edges
-        uint32 nb_vertices = 0u, nb_edges = 0u;
-        {
-        	getline_safe(fp, line);
-        	std::istringstream iss(line);
-        	iss >> nb_vertices;
-        	iss >> nb_edges;
-        }
-        this->reserve(nb_edges);
-
-        // read points
-        for(uint32 i = 0u; i < nb_vertices; ++i)
+		// reading number of points and number of edges
+		uint32 nb_vertices = 0u, nb_edges = 0u;
 		{
 			getline_safe(fp, line);
-			std::istringstream oss(line);
+			std::istringstream iss(line);
+			iss >> nb_vertices;
+			iss >> nb_edges;
+		}
+
+		std::vector<uint32> vertices_id;
+		vertices_id.reserve(nb_vertices);
+
+		this->reserve(nb_edges);
+
+		// read points
+		for (uint32 i = 0u; i < nb_vertices; ++i)
+		{
+			getline_safe(fp, line);
+			std::istringstream iss(line);
 
 			float64 Cx, Cy, Cz;
-			oss >> Cx;
-			oss >> Cy;
-			oss >> Cz;
+			iss >> Cx;
+			iss >> Cy;
+			iss >> Cz;
 
 			VEC3 pos{Scalar(Cx), Scalar(Cy), Scalar(Cz)};
 			const uint32 vertex_id = this->insert_line_vertex_container();
 
 			(*position)[vertex_id] = pos;
 			(*radius)[vertex_id] = Scalar(0.1);
-        }
 
-        // read connectivity
-		for(uint32 i = 0u; i < nb_edges; ++i)
+			vertices_id.push_back(vertex_id);
+		}
+
+		// read connectivity
+		for (uint32 i = 0u; i < nb_edges; ++i)
 		{
-
 			getline_safe(fp, line);
 			int32 pA, pB;
 			std::istringstream iss(line);
 			iss >> pA;
 			iss >> pB;
 
-			this->edges_nb_vertices_.push_back(2);
-			this->edges_vertex_indices_.push_back(pA);
-			this->edges_vertex_indices_.push_back(pB);
+			this->add_edge(vertices_id[pA], vertices_id[pB]);
 
 			getline_safe(fp, line);
 			getline_safe(fp, line);
 			getline_safe(fp, line);
 			getline_safe(fp, line);
-
 		}
 
-    	return true;
-    }
+		return true;
+	}
 };
 
 template <typename MAP>
 class CskelGraphExport : public GraphExport<MAP>
 {
 public:
-    using Inherit = GraphExport<MAP>;
-    using Self = CskelGraphExport<MAP>;
-    using Map = typename Inherit::Map;
-    using Vertex = typename Inherit::Vertex;
-    using Edge = typename Inherit::Edge;
-    using ChunkArrayGen = typename Inherit::ChunkArrayGen;
-    template <typename T>
-    using VertexAttribute = typename Inherit::template VertexAttribute<T>;
-    using ChunkArrayContainer = typename Inherit::ChunkArrayContainer;
+
+	using Inherit = GraphExport<MAP>;
+	using Self = CskelGraphExport<MAP>;
+	using Map = typename Inherit::Map;
+	using Vertex = typename Inherit::Vertex;
+	using Edge = typename Inherit::Edge;
+	using ChunkArrayGen = typename Inherit::ChunkArrayGen;
+	template <typename T>
+	using VertexAttribute = typename Inherit::template VertexAttribute<T>;
+	using ChunkArrayContainer = typename Inherit::ChunkArrayContainer;
 
 protected:
+
 	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& ) override
-    {
+	{
 		// Header
 		output << map.template nb_cells<Vertex::ORBIT>() << " " << map.template nb_cells<Edge::ORBIT>() << std::endl;
 
@@ -180,7 +185,6 @@ protected:
 			this->position_attribute(Vertex::ORBIT)->export_element(map.embedding(v), output, false, false);
 			output << std::endl;
 		}, *(this->cell_cache_));
-
 
 		// Edges
 		map.foreach_cell([&] (Edge e)
@@ -193,7 +197,7 @@ protected:
 			output << "0" << std::endl;
 
 		}, *(this->cell_cache_));
-    }
+	}
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
@@ -204,7 +208,6 @@ extern template class CGOGN_IO_EXPORT CskelGraphImport<geometry::Vec_T<std::arra
 
 extern template class CGOGN_IO_EXPORT CskelGraphExport<UndirectedGraph>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
-
 
 } // namespace io
 

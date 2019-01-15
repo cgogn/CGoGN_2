@@ -55,6 +55,7 @@ enum DrawingType : uint8
 class CGOGN_RENDERING_EXPORT MapRender
 {
 protected:
+
 	std::array<std::unique_ptr<QOpenGLBuffer>, SIZE_BUFFER>	indices_buffers_;
 	std::array<bool, SIZE_BUFFER>							indices_buffers_uptodate_;
 	std::array<uint32, SIZE_BUFFER>							nb_indices_;

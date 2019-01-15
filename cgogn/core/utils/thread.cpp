@@ -28,6 +28,7 @@
 
 namespace cgogn
 {
+
 CGOGN_TLS Buffers<Dart>* dart_buffers_thread_ = nullptr;
 CGOGN_TLS Buffers<uint32>* uint_buffers_thread_ = nullptr;
 CGOGN_TLS uint32 thread_marker_index_;
