@@ -440,7 +440,12 @@ public:
 
 	inline std::pair<Vertex, Vertex> vertices(Edge e) const
 	{
-		return std::pair<Vertex, Vertex>(Vertex(e.dart), Vertex(alpha0(e.dart)));
+		Dart d = e.dart;
+		Dart dd = alpha0(d);
+		if (this->is_boundary(dd))
+			return std::pair<Vertex, Vertex>(Vertex(d), Vertex(d));
+		else
+			return std::pair<Vertex, Vertex>(Vertex(d), Vertex(dd));
 	}
 
 	/*******************************************************************************
