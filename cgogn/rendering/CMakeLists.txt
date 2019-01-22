@@ -100,7 +100,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 )
 
 # Write out cgogn_rendering_export.h to the current binary directory
-include(GenerateExportHeader)
 generate_export_header(cgogn_rendering)
 
 target_link_libraries(${PROJECT_NAME} cgogn::core cgogn::geometry Qt5::Gui QOGLViewer)
