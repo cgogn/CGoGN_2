@@ -71,7 +71,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 )
 
 # Write out cgogn_geometry_export.h to the current binary directory
-include(GenerateExportHeader)
 generate_export_header(cgogn_geometry)
 
 target_link_libraries(${PROJECT_NAME} cgogn::core Eigen3::Eigen)

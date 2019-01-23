@@ -39,7 +39,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 )
 
 # Write out cgogn_topology_export.h to the current binary directory
-include(GenerateExportHeader)
 generate_export_header(cgogn_topology)
 
 target_link_libraries(${PROJECT_NAME} cgogn::core cgogn::geometry)
