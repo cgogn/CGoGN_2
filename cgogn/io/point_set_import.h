@@ -68,6 +68,7 @@ public:
 	using DataInputGen = cgogn::io::DataInputGen;
 
 	inline PointSetImport(MAP& map) :
+		nb_vertices_(0u),
 		map_(map),
 		mbuild_(map)
 	{
