@@ -1339,21 +1339,48 @@ public:
 		if (!this->unsew_volumes_topo(f.dart))
 			return;
 
+		// embedding of boundary
+		do
+		{
+			if (this->template is_embedded<Vertex>())
+				this->template set_orbit_embedding<Vertex>(Vertex(dit),this->embedding(Vertex(dit)));
+
+			if (this->template is_embedded<Edge>())
+				this->template set_orbit_embedding<Edge>(Edge(dit),this->embedding(Edge(dit)));
+			dit = this->phi1(dit);
+		} while (dit != f.dart);
+
+		if (this->template is_embedded<Face>())
+			this->template set_orbit_embedding<Face>(Face(dit),this->embedding(Face(dit)));
+
 		do
 		{
 			if (this->template is_embedded<Vertex>() && !this->same_orbit(Vertex(dit), Vertex(dd)))
+			{
 				this->new_orbit_embedding(Vertex(dd));
+				auto& cac = this->template non_const_attribute_container<Vertex::ORBIT>();
+				cac.copy_line(this->embedding(Vertex(dd)), this->embedding(Vertex(dit)), false, false);
+			}
 
 			dd = this->phi_1(dd);
 
 			if (this->template is_embedded<Edge>() && !this->same_orbit(Edge(dit), Edge(dd)))
+			{
 				this->new_orbit_embedding(Edge(dd));
+				auto& cac = this->template non_const_attribute_container<Edge::ORBIT>();
+				cac.copy_line(this->embedding(Edge(dd)), this->embedding(Edge(dit)), false, false);
+			}
 
 			dit = this->phi1(dit);
 		} while (dit != f.dart);
 
 		if (this->template is_embedded<Face>())
+		{
 			this->new_orbit_embedding(Face(dd));
+			auto& cac = this->template non_const_attribute_container<Face::ORBIT>();
+			cac.copy_line(this->embedding(Face(dd)), this->embedding(Face(dit)), false, false);
+		}
+
 	}
 
 protected:
