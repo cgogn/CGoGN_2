@@ -142,33 +142,33 @@ void Viewer::import(const std::string& volumeMesh)
 	{
 		vertex_position_ = map_.template add_attribute<Vec3, Map3::Vertex>("position");
 
-//		const uint N = 10;
-//		cgogn::modeling::TilingHexa tile1(map_, 2*N,2*N,2*N);
-//		tile1.embedded_grid3D([&](uint32 i, uint32 j, uint32 k)
-//		{
-//			i -= N;
-//			j -= N;
-//			k -= N;
-//			auto r = i * i + j * j + k * k;
-//			return ((r > N*N/4) && (r < N*N)) ||
-//					(r < 2*2);
-//		});
-//		tile1.update_positions([&](cgogn::CMap3::Vertex v, double r, double s, double t)
-//		{
-//			vertex_position_[v] = Vec3(r-1.2 ,s ,t*1.5);
-//		});
+		const uint N = 10;
+		cgogn::modeling::TilingHexa tile1(map_, 2*N,2*N,2*N);
+		tile1.embedded_grid3D([&](uint32 i, uint32 j, uint32 k)
+		{
+			i -= N;
+			j -= N;
+			k -= N;
+			auto r = i * i + j * j + k * k;
+			return ((r > N*N/4) && (r < N*N)) ||
+					(r < 2*2);
+		});
+		tile1.update_positions([&](cgogn::CMap3::Vertex v, double r, double s, double t)
+		{
+			vertex_position_[v] = Vec3(r-1.2 ,s ,t*1.5);
+		});
 
-//		const uint32 NB = 27;
-//		cgogn::modeling::TilingHexa tile2(map_,NB,NB,NB);
-//		tile2.embedded_grid3D( [&](uint32 i, uint32 j, uint32 k)
-//		{
-//			return menger(NB, i, j, k);
-//		});
-//		tile2.update_positions([&](cgogn::CMap3::Vertex v, double r, double s, double t) {
-//			vertex_position_[v] = Vec3(std::pow(1+2*r,2)/9,std::pow(1+2*s,2)/9,std::pow(1+2*t,2)/9);
-//		});
+		const uint32 NB = 27;
+		cgogn::modeling::TilingHexa tile2(map_,NB,NB,NB);
+		tile2.embedded_grid3D( [&](uint32 i, uint32 j, uint32 k)
+		{
+			return menger(NB, i, j, k);
+		});
+		tile2.update_positions([&](cgogn::CMap3::Vertex v, double r, double s, double t) {
+			vertex_position_[v] = Vec3(std::pow(1+2*r,2)/9,std::pow(1+2*s,2)/9,std::pow(1+2*t,2)/9);
+		});
 
-		cgogn::modeling::TilingHexa tile3(map_,2,2,20);
+		cgogn::modeling::TilingHexa tile3(map_,3,3,50);
 		tile3.grid_topo( [](uint32,uint32,uint32){return true;});
 		tile3.self_sew_z();
 		tile3.close_grid();
@@ -362,24 +362,6 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 		if (!da.is_nil())
 		{
 			topo_drawer_->update_color(da, Vec3(1.0,0.0,0.0));
-
-			map_.check_map_integrity();
-			map_.unsew_volumes(Map3::Face(da));
-			map_.check_map_integrity();
-
-			vertex_position_[da] += Vec3(0,0,0.05);
-			da = map_.phi1(da);
-			vertex_position_[da] += Vec3(0,0,0.05);
-			da = map_.phi1(da);
-			vertex_position_[da] += Vec3(0,0,0.05);
-			da = map_.phi1(da);
-			vertex_position_[da] += Vec3(0,0,0.05);
-
-			volume_drawer_->update_face(map_,vertex_position_);
-			volume_drawer_->update_edge(map_,vertex_position_);
-
-			topo_drawer_->update(map_,vertex_position_);
-
 		}
 	}
 
