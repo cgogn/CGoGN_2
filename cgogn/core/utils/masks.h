@@ -184,7 +184,7 @@ public:
 	{
 		static_assert(is_func_return_same<DartSelectionFunction, Dart>::value && is_func_parameter_same<DartSelectionFunction, CellType>::value, "Badly formed DartSelectionFunction");
 		static const Orbit ORBIT = CellType::ORBIT;
-        cgogn_message_assert(is_traversed<CellType>(), "Try to update a cell on a QuickTraversor that has not been built");
+		cgogn_message_assert(is_traversed<CellType>(), "Try to update a cell on a QuickTraversor that has not been built");
 		qt_attributes_[ORBIT][c.dart] = dart_select(c);
 	}
 

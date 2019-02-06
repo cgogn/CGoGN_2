@@ -253,11 +253,18 @@ void ShaderBoldLineGen::set_plane_clip2(const QVector4D& plane)
 	prg_.setUniformValue(unif_plane_clip2_, plane);
 }
 
-
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES)
 template class CGOGN_RENDERING_EXPORT ShaderBoldLineTpl<false>;
 template class CGOGN_RENDERING_EXPORT ShaderBoldLineTpl<true>;
-template class CGOGN_RENDERING_EXPORT ShaderParamBoldLine<false>;
-template class CGOGN_RENDERING_EXPORT ShaderParamBoldLine<true>;
+#endif
+
+ShaderParamBoldLine<false>::~ShaderParamBoldLine()
+{}
+
+ShaderParamBoldLine<true>::~ShaderParamBoldLine()
+{}
+
+
 
 } // namespace rendering
 

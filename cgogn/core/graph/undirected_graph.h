@@ -25,10 +25,13 @@
 #define CGOGN_CORE_GRAPH_UNDIRECTED_GRAPH_H_
 
 #include <cgogn/core/cmap/map_base.h>
-#include <cgogn/core/graph/undirected_graph_builder.h>
+
 
 namespace cgogn
 {
+
+template <typename MAP>
+class UndirectedGraphBuilder_T; // forward declaration
 
 template <typename MAP_TYPE>
 class UndirectedGraph_T : public MapBase<MAP_TYPE>
@@ -683,7 +686,6 @@ using UndirectedGraph = UndirectedGraph_T<UndirectedGraphType>;
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
 extern template class CGOGN_CORE_EXPORT UndirectedGraph_T<UndirectedGraphType>;
-extern template class CGOGN_CORE_EXPORT UndirectedGraphBuilder_T<UndirectedGraph>;
 extern template class CGOGN_CORE_EXPORT DartMarker<UndirectedGraph>;
 extern template class CGOGN_CORE_EXPORT DartMarkerStore<UndirectedGraph>;
 extern template class CGOGN_CORE_EXPORT DartMarkerNoUnmark<UndirectedGraph>;

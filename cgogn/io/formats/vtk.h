@@ -161,12 +161,15 @@ private:
 					output << std::endl;
 			}, *(this->cell_cache_));
 
-			map.foreach_cell([&](Edge e)
+			if (this->position_attribute(Edge::ORBIT))
 			{
-				this->position_attribute(Edge::ORBIT)->export_element(map.embedding(e), output, bin, false);
-				if (!bin)
-					output << std::endl;
-			}, *(this->cell_cache_));
+				map.foreach_cell([&](Edge e)
+				{
+					this->position_attribute(Edge::ORBIT)->export_element(map.embedding(e), output, bin, false);
+					if (!bin)
+						output << std::endl;
+				}, *(this->cell_cache_));
+			}
 
 			output << std::endl;
 		} // end point section
@@ -211,27 +214,35 @@ private:
 
 			output << "CELLS " << nbf << " " << cell_section_size << std::endl;
 
-			if (bin)
 			{
-				for (auto& i : buffer_cells)
-					i = swap_endianness_native_big(i);
-				output.write(reinterpret_cast<char*>(&buffer_cells[0]), buffer_cells.size() * sizeof(uint32));
-				for (auto& i : buffer_cells)
-					i = swap_endianness_native_big(i);
-				output << std::endl;
-			} else {
-					std::size_t k = 0;
-					for(std::size_t i = 0u, end = buffer_cells.size(); i < end;)
+				std::size_t k = 0;
+				for(std::size_t i = 0u, end = buffer_cells.size(); i < end;)
+				{
+					uint32 nb_vert = buffer_type_cells[k++];
+					if(bin)
 					{
-						const uint32 nb_vert = buffer_type_cells[k++];
+						nb_vert = swap_endianness_native_big(nb_vert);
+						output.write(reinterpret_cast<char*>(&nb_vert), sizeof(uint32));
+						nb_vert = swap_endianness_native_big(nb_vert);
+					} else
 						output << nb_vert << " ";
-						for (uint32 j = 0u; j < nb_vert; ++j)
+
+					for (uint32 j = 0u; j < nb_vert; ++j)
+					{
+						uint32 c = buffer_cells[i++];
+						if (bin)
 						{
-							output << buffer_cells[i++] << " ";
-						}
-						output << std::endl;
+							c = swap_endianness_native_big(c);
+							output.write(reinterpret_cast<char*>(&c), sizeof(uint32));
+						} else
+							output << c << " ";
 					}
+					if (!bin)
+						output << std::endl;
 				}
+				if (bin)
+					output << std::endl;
+			}
 
 			output << "CELL_TYPES " << nbf << std::endl;
 			if (bin)

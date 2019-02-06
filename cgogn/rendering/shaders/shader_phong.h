@@ -151,7 +151,7 @@ ShaderPhongTpl<CPV>* ShaderPhongTpl<CPV>::instance_ = nullptr;
 
 // COLOR UNIFORM PARAM
 template <>
-class ShaderParamPhong<false> : public ShaderParam
+class CGOGN_RENDERING_EXPORT ShaderParamPhong<false> : public ShaderParam
 {
 protected:
 
@@ -168,7 +168,6 @@ protected:
 	}
 
 public:
-	using ShaderType = ShaderPhongTpl<false>;
 
 	QVector3D light_position_;
 	QColor front_color_;
@@ -178,7 +177,7 @@ public:
 	float32 specular_coef_;
 	bool double_side_;
 
-	ShaderParamPhong(ShaderPhongTpl<false>* sh) :
+	ShaderParamPhong(ShaderPhongGen* sh) :
 		ShaderParam(sh),
 		light_position_(10.0f, 100.0f, 1000.0f),
 		front_color_(250, 0, 0),
@@ -237,7 +236,7 @@ public:
 
 // COLOR PER VERTEX PARAM
 template <>
-class ShaderParamPhong<true> : public ShaderParam
+class CGOGN_RENDERING_EXPORT ShaderParamPhong<true> : public ShaderParam
 {
 protected:
 
@@ -252,7 +251,6 @@ protected:
 	}
 
 public:
-	using ShaderType = ShaderPhongTpl<true>;
 
 	QVector3D light_position_;
 	QColor ambiant_color_;
@@ -260,7 +258,7 @@ public:
 	float32 specular_coef_;
 	bool double_side_;
 
-	ShaderParamPhong(ShaderPhongTpl<true>* sh) :
+	ShaderParamPhong(ShaderPhongGen* sh) :
 		ShaderParam(sh),
 		light_position_(10.0f, 100.0f, 1000.0f),
 		ambiant_color_(5, 5, 5),
@@ -353,8 +351,6 @@ using ShaderPhongColor = ShaderPhongTpl<true>;
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && !defined(CGOGN_RENDER_SHADERS_PHONG_CPP_)
 extern template class CGOGN_RENDERING_EXPORT ShaderPhongTpl<false>;
 extern template class CGOGN_RENDERING_EXPORT ShaderPhongTpl<true>;
-extern template class CGOGN_RENDERING_EXPORT ShaderParamPhong<false>;
-extern template class CGOGN_RENDERING_EXPORT ShaderParamPhong<true>;
 #endif
 } // namespace rendering
 

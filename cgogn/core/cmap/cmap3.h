@@ -30,7 +30,7 @@ namespace cgogn
 {
 
 template <typename MAP3>
-class CMap3Builder_T;
+class CMap3Builder_T; // forward declaration
 
 template <typename MAP_TYPE>
 class CMap3_T : public CMap2_T<MAP_TYPE>

@@ -117,16 +117,12 @@ public:
 private:
 
 	ShaderRoundPointTpl() : ShaderRoundPointGen(CPV) {}
-	static ShaderRoundPointTpl* instance_;
 };
-
-template <bool CPV>
-ShaderRoundPointTpl<CPV>* ShaderRoundPointTpl<CPV>::instance_ = nullptr;
 
 
 // COLOR UNIFORM PARAM
 template <>
-class ShaderParamRoundPoint<false> : public ShaderParam
+class CGOGN_RENDERING_EXPORT ShaderParamRoundPoint<false> : public ShaderParam
 {
 protected:
 
@@ -141,20 +137,20 @@ protected:
 
 public:
 
-	using ShaderType = ShaderRoundPointTpl<false>;
-
 	QColor color_;
 	float32 size_;
 	QVector4D plane_clip_;
 	QVector4D plane_clip2_;
 
-	ShaderParamRoundPoint(ShaderRoundPointTpl<false>* sh) :
+	ShaderParamRoundPoint(ShaderRoundPointGen* sh) :
 		ShaderParam(sh),
 		color_(0, 0, 255),
 		size_(1.0),
 		plane_clip_(0,0,0,0),
 		plane_clip2_(0,0,0,0)
 	{}
+
+	~ShaderParamRoundPoint() override;
 
 	void set_position_vbo(VBO* vbo_pos, uint32 stride = 0, uint32 first = 0)
 	{
@@ -173,7 +169,7 @@ public:
 
 // COLOR PER VERTEX PARAM
 template <>
-class ShaderParamRoundPoint<true> : public ShaderParam
+class CGOGN_RENDERING_EXPORT ShaderParamRoundPoint<true> : public ShaderParam
 {
 protected:
 
@@ -187,18 +183,18 @@ protected:
 
 public:
 
-	using ShaderType = ShaderRoundPointTpl<true>;
-
 	float32 size_;
 	QVector4D plane_clip_;
 	QVector4D plane_clip2_;
 
-	ShaderParamRoundPoint(ShaderRoundPointTpl<true>* sh) :
+	ShaderParamRoundPoint(ShaderRoundPointGen* sh) :
 		ShaderParam(sh),
 		size_(1.0),
 		plane_clip_(0,0,0,0),
 		plane_clip2_(0,0,0,0)
 	{}
+
+	~ShaderParamRoundPoint() override;
 
 	void set_all_vbos(VBO* vbo_pos, VBO* vbo_color, uint32 stride = 0, uint32 first = 0)
 	{
@@ -250,6 +246,7 @@ public:
 template <bool CPV>
 std::unique_ptr<typename ShaderRoundPointTpl<CPV>::Param> ShaderRoundPointTpl<CPV>::generate_param()
 {
+	static ShaderRoundPointTpl* instance_ = nullptr;
 	if (!instance_)
 	{
 		instance_ = new ShaderRoundPointTpl<CPV>();
@@ -266,8 +263,6 @@ using ShaderRoundPointColor = ShaderRoundPointTpl<true>;
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && !defined(CGOGN_RENDER_SHADERS_ROUND_POINT_CPP_)
 extern template class CGOGN_RENDERING_EXPORT ShaderRoundPointTpl<false>;
 extern template class CGOGN_RENDERING_EXPORT ShaderRoundPointTpl<true>;
-extern template class CGOGN_RENDERING_EXPORT ShaderParamRoundPoint<false>;
-extern template class CGOGN_RENDERING_EXPORT ShaderParamRoundPoint<true>;
 #endif
 
 } // namespace rendering

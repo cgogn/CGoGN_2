@@ -128,7 +128,7 @@ extern template class CGOGN_IO_EXPORT PloPointSetImport<CMap0, Eigen::Vector3f>;
 extern template class CGOGN_IO_EXPORT PloPointSetImport<CMap0, geometry::Vec_T<std::array<float64,3>>>;
 extern template class CGOGN_IO_EXPORT PloPointSetImport<CMap0, geometry::Vec_T<std::array<float32,3>>>;
 
-extern template class CGOGN_IO_EXPORT PlotPointSetExport<CMap0>;
+extern template class CGOGN_IO_EXPORT PloPointSetExport<CMap0>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
 
 } //end namespace io

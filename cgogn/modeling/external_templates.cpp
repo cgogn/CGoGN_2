@@ -28,12 +28,7 @@
 #include <cgogn/modeling/algos/decimation.h>
 #include <cgogn/modeling/algos/pliant_remeshing.h>
 #include <cgogn/modeling/algos/refinements.h>
-#include <cgogn/modeling/tiling/square_cylinder.h>
-#include <cgogn/modeling/tiling/square_grid.h>
-#include <cgogn/modeling/tiling/square_tore.h>
-#include <cgogn/modeling/tiling/triangular_cylinder.h>
-#include <cgogn/modeling/tiling/triangular_grid.h>
-#include <cgogn/modeling/tiling/triangular_tore.h>
+#include <cgogn/modeling/cgogn_modeling_export.h>
 
 namespace cgogn
 {
@@ -44,41 +39,68 @@ template CGOGN_MODELING_EXPORT void loop(CMap2&, CMap2::VertexAttribute<Eigen::V
 template CGOGN_MODELING_EXPORT void loop(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&);
 template CGOGN_MODELING_EXPORT void loop(CMap3&, CMap3::VertexAttribute<Eigen::Vector3f>&);
 template CGOGN_MODELING_EXPORT void loop(CMap3&, CMap3::VertexAttribute<Eigen::Vector3d>&);
-
 template CGOGN_MODELING_EXPORT CMap2::Vertex quadrangule_face<CMap2>(CMap2&, CMap2::Face);
 template CGOGN_MODELING_EXPORT CMap3::Vertex quadrangule_face<CMap3>(CMap3&, CMap3::Face);
 template CGOGN_MODELING_EXPORT void catmull_clark(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&);
 template CGOGN_MODELING_EXPORT void catmull_clark(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&);
-
 template CGOGN_MODELING_EXPORT void doo_sabin(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&);
 template CGOGN_MODELING_EXPORT void doo_sabin(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&);
-
-
-
 template CGOGN_MODELING_EXPORT void decimate(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&, EdgeTraversorType, EdgeApproximatorType, uint32);
 template CGOGN_MODELING_EXPORT void decimate(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&, EdgeTraversorType, EdgeApproximatorType, uint32);
-
 template CGOGN_MODELING_EXPORT void pliant_remeshing(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&);
 template CGOGN_MODELING_EXPORT void pliant_remeshing(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&);
-
 template CGOGN_MODELING_EXPORT CMap2::Vertex triangule(CMap2&, CMap2::Face);
 template CGOGN_MODELING_EXPORT CMap3::Vertex triangule(CMap3&, CMap3::Face);
 template CGOGN_MODELING_EXPORT void triangule(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&);
 template CGOGN_MODELING_EXPORT void triangule(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&);
 
+} // nampespace modeling
+} // namespace cgogn
 
-template class CGOGN_MODELING_EXPORT SquareCylinder<CMap2>;
-template class CGOGN_MODELING_EXPORT SquareGrid<CMap2>;
-template class CGOGN_MODELING_EXPORT SquareTore<CMap2>;
+#include <cgogn/modeling/tiling/tiling.h>
+#include <cgogn/modeling/tiling/square_cylinder.h>
+#include <cgogn/modeling/tiling/square_grid.h>
+
+
+namespace cgogn
+{
+namespace modeling
+{
+
 template class CGOGN_MODELING_EXPORT Tiling<CMap2>;
 template class CGOGN_MODELING_EXPORT Tiling<CMap3>;
+template class CGOGN_MODELING_EXPORT SquareCylinder<CMap2>;
+template class CGOGN_MODELING_EXPORT SquareGrid<CMap2>;
 
-template class CGOGN_MODELING_EXPORT TriangularCylinder<CMap2>;
-template class CGOGN_MODELING_EXPORT TriangularGrid<CMap2>;
-template class CGOGN_MODELING_EXPORT TriangularTore<CMap2>;
-
-} // namespace modeling
-
+} // nampespace modeling
 } // namespace cgogn
 
 
+#include <cgogn/modeling/tiling/square_tore.h>
+#include <cgogn/modeling/tiling/triangular_cylinder.h>
+#include <cgogn/modeling/tiling/triangular_grid.h>
+
+
+namespace cgogn
+{
+namespace modeling
+{
+
+template class CGOGN_MODELING_EXPORT SquareTore<CMap2>;
+template class CGOGN_MODELING_EXPORT TriangularCylinder<CMap2>;
+template class CGOGN_MODELING_EXPORT TriangularGrid<CMap2>;
+
+} // nampespace modeling
+} // namespace cgogn
+
+#include <cgogn/modeling/tiling/triangular_tore.h>
+
+namespace cgogn
+{
+namespace modeling
+{
+
+template class CGOGN_MODELING_EXPORT TriangularTore<CMap2>;
+
+} // nampespace modeling
+} // namespace cgogn

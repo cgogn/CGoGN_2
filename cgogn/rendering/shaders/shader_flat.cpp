@@ -166,10 +166,16 @@ void ShaderFlatGen::set_bf_culling(bool cull)
 	prg_.setUniformValue(unif_bf_culling_, cull);
 }
 
+ShaderParamFlat<false>::~ShaderParamFlat()
+{}
+
+ShaderParamFlat<true>::~ShaderParamFlat()
+{}
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES)
 template class CGOGN_RENDERING_EXPORT ShaderFlatTpl<false>;
 template class CGOGN_RENDERING_EXPORT ShaderFlatTpl<true>;
-template class CGOGN_RENDERING_EXPORT ShaderParamFlat<false>;
-template class CGOGN_RENDERING_EXPORT ShaderParamFlat<true>;
+#endif
 
 } // namespace rendering
 
