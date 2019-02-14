@@ -176,6 +176,8 @@ private:
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
 extern template class CGOGN_CORE_EXPORT CMap2Builder_T<CMap2>;
+extern template class CGOGN_CORE_EXPORT CMap2Builder_T<CMap2Tri>;
+extern template class CGOGN_CORE_EXPORT CMap2Builder_T<CMap2Quad>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
 
 

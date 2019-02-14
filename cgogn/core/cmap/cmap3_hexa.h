@@ -25,10 +25,12 @@
 #define CGOGN_CORE_CMAP_CMAP3_HEXA_H_
 
 #include <cgogn/core/cmap/map_base.h>
-#include <cgogn/core/cmap/cmap3_builder.h>
 
 namespace cgogn
 {
+
+template <typename MAP3>
+class CMap3Builder_T; // forward declaration
 
 template <typename MAP_TYPE>
 class CMap3Hexa_T : public MapBase<MAP_TYPE>
@@ -1713,7 +1715,6 @@ struct CMap3HexaType
 using CMap3Hexa = CMap3Hexa_T<CMap3HexaType>;
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_CORE_EXPORT CMap3Builder_T<CMap3Hexa>;
 extern template class CGOGN_CORE_EXPORT DartMarker<CMap3Hexa>;
 extern template class CGOGN_CORE_EXPORT DartMarkerStore<CMap3Hexa>;
 extern template class CGOGN_CORE_EXPORT DartMarkerNoUnmark<CMap3Hexa>;

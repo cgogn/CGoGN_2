@@ -25,6 +25,7 @@
 #define CGOGN_CORE_CMAP_UNDIRECTED_GRAPH_BUILDER_H_
 
 #include <cgogn/core/cmap/map_base.h>
+#include <cgogn/core/graph/undirected_graph.h>
 
 namespace cgogn
 {
@@ -116,6 +117,10 @@ private:
 
 	Graph& map_;
 };
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
+extern template class CGOGN_CORE_EXPORT UndirectedGraphBuilder_T<UndirectedGraph>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace cgogn
 

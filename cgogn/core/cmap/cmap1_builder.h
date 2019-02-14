@@ -25,6 +25,7 @@
 #define CGOGN_CORE_CMAP_CMAP1_BUILDER_H_
 
 #include <cgogn/core/cmap/map_base.h>
+#include <cgogn/core/cmap/cmap1.h>
 
 namespace cgogn
 {

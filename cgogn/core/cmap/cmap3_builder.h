@@ -24,10 +24,9 @@
 #ifndef CGOGN_CORE_CMAP_CMAP3_BUILDER_H_
 #define CGOGN_CORE_CMAP_CMAP3_BUILDER_H_
 
-#include <cgogn/core/cmap/map_base.h>
 #include <cgogn/core/cmap/cmap3.h>
-//#include <cgogn/core/cmap/cmap3_tetra.h>
-//#include <cgogn/core/cmap/cmap3_hexa.h>
+#include <cgogn/core/cmap/cmap3_tetra.h>
+#include <cgogn/core/cmap/cmap3_hexa.h>
 
 namespace cgogn
 {
@@ -188,6 +187,8 @@ private:
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
 extern template class CGOGN_CORE_EXPORT CMap3Builder_T<CMap3>;
+//extern template class CGOGN_CORE_EXPORT CMap3Builder_T<CMap3Tetra>; // TODO : fix compilation
+//extern template class CGOGN_CORE_EXPORT CMap3Builder_T<CMap3Hexa>; // TODO : fix compilation
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
 
 

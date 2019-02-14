@@ -32,7 +32,6 @@
 #include <cgogn/core/utils/name_types.h>
 #include <cgogn/core/utils/string.h>
 
-#include <cgogn/core/cmap/cmap0.h>
 #include <cgogn/core/cmap/cmap0_builder.h>
 
 #include <cgogn/io/cgogn_io_export.h>
@@ -69,6 +68,7 @@ public:
 	using DataInputGen = cgogn::io::DataInputGen;
 
 	inline PointSetImport(MAP& map) :
+		nb_vertices_(0u),
 		map_(map),
 		mbuild_(map)
 	{

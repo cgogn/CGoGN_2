@@ -25,10 +25,12 @@
 #define CGOGN_CORE_CMAP_CMAP3_TETRA_H_
 
 #include <cgogn/core/cmap/map_base.h>
-#include <cgogn/core/cmap/cmap3_builder.h>
 
 namespace cgogn
 {
+
+template <typename MAP3>
+class CMap3Builder_T; // forward declaration
 
 template <typename MAP_TYPE>
 class CMap3Tetra_T : public MapBase<MAP_TYPE>
@@ -1623,7 +1625,7 @@ struct CMap3TetraType
 using CMap3Tetra = CMap3Tetra_T<CMap3TetraType>;
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_CORE_EXPORT CMap3Builder_T<CMap3Tetra>;
+
 extern template class CGOGN_CORE_EXPORT DartMarker<CMap3Tetra>;
 extern template class CGOGN_CORE_EXPORT DartMarkerStore<CMap3Tetra>;
 extern template class CGOGN_CORE_EXPORT DartMarkerNoUnmark<CMap3Tetra>;

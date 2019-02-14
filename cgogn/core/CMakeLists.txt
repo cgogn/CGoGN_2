@@ -49,6 +49,7 @@ target_sources(${PROJECT_NAME}
 		"${CMAKE_CURRENT_LIST_DIR}/utils/assert.h"
 		"${CMAKE_CURRENT_LIST_DIR}/utils/assert.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/utils/buffers.h"
+		"${CMAKE_CURRENT_LIST_DIR}/utils/color_maps.h"
 		"${CMAKE_CURRENT_LIST_DIR}/utils/definitions.h"
 		"${CMAKE_CURRENT_LIST_DIR}/utils/endian.h"
 		"${CMAKE_CURRENT_LIST_DIR}/utils/unique_ptr.h"
@@ -261,7 +262,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 )
 
 # Write out cgogn_core_export.h to the current binary directory
-include(GenerateExportHeader)
 generate_export_header(cgogn_core)
 
 if(${CGOGN_EXTERNAL_TEMPLATES})

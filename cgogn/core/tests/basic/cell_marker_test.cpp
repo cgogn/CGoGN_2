@@ -24,12 +24,8 @@
 #include <gtest/gtest.h>
 
 #include <cgogn/core/basic/cell.h>
-#include <cgogn/core/cmap/cmap2_tri.h>
-#include <cgogn/core/cmap/cmap2_quad.h>
-#include <cgogn/core/cmap/cmap3.h>
+#include <cgogn/core/cmap/cmap2_builder.h>
 #include <cgogn/core/cmap/cmap3_builder.h>
-//#include <cgogn/core/cmap/cmap3_tetra.h>
-//#include <cgogn/core/cmap/cmap3_hexa.h>
 
 namespace cell_marker_test
 {

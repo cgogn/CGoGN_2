@@ -25,6 +25,7 @@
 #define CGOGN_IO_GRAPH_IMPORT_H_
 
 #include <cgogn/core/cmap/map_base_data.h>
+#include <cgogn/core/graph/undirected_graph_builder.h>
 
 #include <cgogn/io/cgogn_io_export.h>
 

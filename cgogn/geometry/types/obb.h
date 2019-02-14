@@ -197,7 +197,7 @@ template <typename T, uint32 D>
 typename OBB<T,D>::Vector diagonal(const OBB<T, D>& obb)
 {
 	typename OBB<T,D>::Vector min, max;
-	std::tie(min, max) = obb.bounds();
+	std::tie(min, max) = bounds(obb);
 	return max - min;
 }
 

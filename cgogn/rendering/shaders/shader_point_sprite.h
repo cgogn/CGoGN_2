@@ -130,17 +130,11 @@ public:
 
 private:
 
-	ShaderPointSpriteTpl() : ShaderPointSpriteGen(CPV, SPV) {}
-	static ShaderPointSpriteTpl* instance_;
+	inline ShaderPointSpriteTpl() : ShaderPointSpriteGen(CPV, SPV) {}
 };
 
-
-template <bool CPV, bool SPV>
-ShaderPointSpriteTpl<CPV,SPV>* ShaderPointSpriteTpl<CPV, SPV>::instance_ = nullptr;
-
-
 template <>
-class ShaderParamPointSprite<false, false> : public ShaderParam
+class CGOGN_RENDERING_EXPORT ShaderParamPointSprite<false, false> : public ShaderParam
 {
 protected:
 
@@ -157,8 +151,6 @@ protected:
 
 public:
 
-	using ShaderType = ShaderPointSpriteTpl<false, false>;
-
 	QColor color_;
 	QColor ambiant_color_;
 	QVector3D light_pos_;
@@ -166,8 +158,7 @@ public:
 	QVector4D plane_clip_;
 	QVector4D plane_clip2_;
 
-
-	ShaderParamPointSprite(ShaderPointSpriteTpl<false,false>* sh) :
+	ShaderParamPointSprite(ShaderPointSpriteGen* sh) :
 		ShaderParam(sh),
 		color_(0, 0, 255),
 		ambiant_color_(5, 5, 5),
@@ -176,6 +167,8 @@ public:
 		plane_clip_(0,0,0,0),
 		plane_clip2_(0,0,0,0)
 	{}
+
+	virtual ~ShaderParamPointSprite() override;
 
 	void set_position_vbo(VBO* vbo_pos)
 	{
@@ -192,7 +185,7 @@ public:
 };
 
 template <>
-class ShaderParamPointSprite<false, true> : public ShaderParam
+class CGOGN_RENDERING_EXPORT ShaderParamPointSprite<false, true> : public ShaderParam
 {
 protected:
 
@@ -208,8 +201,6 @@ protected:
 
 public:
 
-	using ShaderType = ShaderPointSpriteTpl<false, true>;
-
 	QColor color_;
 	QColor ambiant_color_;
 	QVector3D light_pos_;
@@ -217,7 +208,7 @@ public:
 	QVector4D plane_clip2_;
 
 
-	ShaderParamPointSprite(ShaderPointSpriteTpl<false, true>* sh) :
+	ShaderParamPointSprite(ShaderPointSpriteGen* sh) :
 		ShaderParam(sh),
 		color_(0, 0, 255),
 		ambiant_color_(5, 5, 5),
@@ -225,6 +216,8 @@ public:
 		plane_clip_(0,0,0,0),
 		plane_clip2_(0,0,0,0)
 	{}
+
+	virtual ~ShaderParamPointSprite() override;
 
 	void set_all_vbos(VBO* vbo_pos, VBO* vbo_size)
 	{
@@ -273,7 +266,7 @@ public:
 };
 
 template <>
-class ShaderParamPointSprite<true, false> : public ShaderParam
+class CGOGN_RENDERING_EXPORT ShaderParamPointSprite<true, false> : public ShaderParam
 {
 protected:
 
@@ -289,8 +282,6 @@ protected:
 
 public:
 
-	using ShaderType = ShaderPointSpriteTpl<true, false>;
-
 	QColor ambiant_color_;
 	QVector3D light_pos_;
 	float32 size_;
@@ -298,7 +289,7 @@ public:
 	QVector4D plane_clip2_;
 
 
-	ShaderParamPointSprite(ShaderPointSpriteTpl<true, false>* sh) :
+	ShaderParamPointSprite(ShaderPointSpriteGen* sh) :
 		ShaderParam(sh),
 		ambiant_color_(5, 5, 5),
 		light_pos_(10, 100, 1000),
@@ -306,6 +297,8 @@ public:
 		plane_clip_(0,0,0,0),
 		plane_clip2_(0,0,0,0)
 	{}
+
+	virtual ~ShaderParamPointSprite() override;
 
 	void set_all_vbos(VBO* vbo_pos, VBO* vbo_color)
 	{
@@ -354,7 +347,7 @@ public:
 };
 
 template <>
-class ShaderParamPointSprite<true, true> : public ShaderParam
+class CGOGN_RENDERING_EXPORT ShaderParamPointSprite<true, true> : public ShaderParam
 {
 protected:
 
@@ -369,21 +362,21 @@ protected:
 
 public:
 
-	using ShaderType = ShaderPointSpriteTpl<true, true>;
-
 	QColor ambiant_color_;
 	QVector3D light_pos_;
 	QVector4D plane_clip_;
 	QVector4D plane_clip2_;
 
 
-	ShaderParamPointSprite(ShaderPointSpriteTpl<true, true>* sh) :
+	ShaderParamPointSprite(ShaderPointSpriteGen* sh) :
 		ShaderParam(sh),
 		ambiant_color_(5, 5, 5),
 		light_pos_(10, 100, 1000),
 		plane_clip_(0,0,0,0),
 		plane_clip2_(0,0,0,0)
 	{}
+
+	virtual ~ShaderParamPointSprite() override;
 
 	void set_all_vbos(VBO* vbo_pos, VBO* vbo_color, VBO* vbo_size)
 	{
@@ -453,6 +446,7 @@ public:
 template <bool CPV, bool SPV>
 std::unique_ptr<typename ShaderPointSpriteTpl<CPV, SPV>::Param> ShaderPointSpriteTpl<CPV, SPV>::generate_param()
 {
+	static ShaderPointSpriteTpl* instance_ = nullptr;
 	if (!instance_)
 	{
 		instance_ = new ShaderPointSpriteTpl<CPV, SPV>;
@@ -461,23 +455,18 @@ std::unique_ptr<typename ShaderPointSpriteTpl<CPV, SPV>::Param> ShaderPointSprit
 	return cgogn::make_unique<Param>(instance_);
 }
 
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && !defined(CGOGN_RENDER_SHADERS_POINT_SPRITE_CPP_)
+extern template class CGOGN_RENDERING_EXPORT ShaderPointSpriteTpl<false, false>;
+extern template class CGOGN_RENDERING_EXPORT ShaderPointSpriteTpl<true, false>;
+extern template class CGOGN_RENDERING_EXPORT ShaderPointSpriteTpl<false, true>;
+extern template class CGOGN_RENDERING_EXPORT ShaderPointSpriteTpl<true, true>;
+#endif
 
 using ShaderPointSprite = ShaderPointSpriteTpl<false, false>;
 using ShaderPointSpriteColor = ShaderPointSpriteTpl<true, false>;
 using ShaderPointSpriteSize = ShaderPointSpriteTpl<false, true>;
 using ShaderPointSpriteColorSize = ShaderPointSpriteTpl<true, true>;
 
-
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && !defined(CGOGN_RENDER_SHADERS_POINT_SPRITE_CPP_)
-extern template class CGOGN_RENDERING_EXPORT  ShaderPointSpriteTpl<false, false>;
-extern template class CGOGN_RENDERING_EXPORT ShaderPointSpriteTpl<true, false>;
-extern template class CGOGN_RENDERING_EXPORT ShaderPointSpriteTpl<false, true>;
-extern template class CGOGN_RENDERING_EXPORT ShaderPointSpriteTpl<true, true>;
-extern template class CGOGN_RENDERING_EXPORT ShaderParamPointSprite<false, false>;
-extern template class CGOGN_RENDERING_EXPORT ShaderParamPointSprite<true, false>;
-extern template class CGOGN_RENDERING_EXPORT ShaderParamPointSprite<false, true>;
-extern template class CGOGN_RENDERING_EXPORT ShaderParamPointSprite<true, true>;
-#endif
 
 } // namespace rendering
 
