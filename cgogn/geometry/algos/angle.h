@@ -134,6 +134,50 @@ inline void compute_angle_between_face_normals(
 }
 
 /**
+ * @brief compute and return the angle formed by the normals of the two faces corresponding to the given darts
+ * @param map
+ * @param d1
+ * @param d2
+ * @param position vertex attribute of position position attribute
+ * @return
+ */
+template <typename MAP, typename VERTEX_ATTR>
+inline ScalarOf<InsideTypeOf<VERTEX_ATTR>> angle_between_face_normals(
+    const MAP& map,
+    const Dart d1,
+    const Dart d2,
+    const VERTEX_ATTR& position)
+{
+    static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, "position must be a vertex attribute");
+
+    using VEC3 = InsideTypeOf<VERTEX_ATTR>;
+    using Scalar = ScalarOf<VEC3>;
+    using Face2 = Cell<Orbit::PHI1>;
+
+    const VEC3 n1 = normal(map, Face2(d1), position);
+    const VEC3 n2 = normal(map, Face2(d2), position);
+
+    VEC3 edge = position[d2] - position[d1];
+    edge.normalize();
+    Scalar s = edge.dot(n1.cross(n2));
+    Scalar c = n1.dot(n2);
+    Scalar a(0);
+
+    // the following trick is useful to avoid NaNs (due to floating point errors)
+    if (c > Scalar(0.5)) a = std::asin(s);
+    else
+    {
+        if(c < -1) c = -1;
+        if (s >= 0) a = std::acos(c);
+        else a = -std::acos(c);
+    }
+    if (a != a)
+        cgogn_log_warning("angle_between_face_normals") << "NaN computed";
+
+    return a;
+}
+
+/**
  * @brief compute angle between face normals incident to each edge of the map
  * @param map
  * @param position vertex attribute of position
