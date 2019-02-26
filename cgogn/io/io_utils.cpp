@@ -291,39 +291,39 @@ CGOGN_IO_EXPORT std::vector<unsigned char> base64_decode(const char* input, std:
 CGOGN_IO_EXPORT FileType file_type(const std::string& filename)
 {
 	const std::string& ext = to_lower(extension(filename));
-	static const std::map<std::string, FileType> file_type_map{
-		{"off", FileType::FileType_OFF},
-		{"obj", FileType::FileType_OBJ},
-		{"2dm", FileType::FileType_2DM},
-		{"stl", FileType::FileType_STL},
-		{"ply", FileType::FileType_PLY},
-		{"vtk", FileType::FileType_VTK_LEGACY},
-		{"vtu", FileType::FileType_VTU},
-		{"vtp", FileType::FileType_VTP},
-		{"meshb", FileType::FileType_MESHB},
-		{"mesh", FileType::FileType_MESHB},
-		{"msh", FileType::FileType_MSH},
-		{"node", FileType::FileType_TETGEN},
-		{"ele", FileType::FileType_TETGEN},
-		{"nas", FileType::FileType_NASTRAN},
-		{"bdf", FileType::FileType_NASTRAN},
-		{"tet", FileType::FileType_AIMATSHAPE},
-		{"tetmesh", FileType::FileType_TETMESH},
-		{"skel", FileType::FileType_SKEL},
-		{"cg", FileType::FileType_CG},
-		{"cskel", FileType::FileType_CSKEL},
-		{"skc", FileType::FileType_CSKEL},
-		{"dot", FileType::FileType_DOT},
-		{"plo", FileType::FileType_PLO},
-		{"ts", FileType::FileType_TS},
-		{"lin", FileType::FileType_LIN}
-	};
 
-	const auto it = file_type_map.find(ext);
-	if (it != file_type_map.end())
+	//TODO replace by c++17 a constexpr merge between the maps someday
+	const auto it = point_set_file_type_map.find(ext);
+	if (it != point_set_file_type_map.end())
 		return it->second;
 	else
-		return FileType::FileType_UNKNOWN;
+	{
+		const auto it = polyline_file_type_map.find(ext);
+		if (it != polyline_file_type_map.end())
+			return it->second;
+		else
+		{
+			const auto it = graph_file_type_map.find(ext);
+			if (it != graph_file_type_map.end())
+				return it->second;
+			else
+			{
+				const auto it = surface_file_type_map.find(ext);
+				if (it != surface_file_type_map.end())
+					return it->second;
+				else
+				{
+					const auto it = volume_file_type_map.find(ext);
+					if (it != volume_file_type_map.end())
+						return it->second;
+					else
+					{
+						return FileType::FileType_UNKNOWN;
+					}
+				}
+			}
+		}
+	}
 }
 
 CGOGN_IO_EXPORT DataType data_type(const std::string& type_name)
@@ -348,6 +348,19 @@ CGOGN_IO_EXPORT DataType data_type(const std::string& type_name)
 	else
 		return DataType::UNKNOWN;
 }
+
+CGOGN_IO_EXPORT std::string file_type_filter(const std::map<std::string, FileType>& file_type_map, const char* const delim)
+{
+	std::vector<std::string> keys;
+	for (auto & k : file_type_map)
+		keys.emplace_back(std::string("*.") + k.first);
+
+	std::ostringstream filter;
+	std::copy(keys.begin(), keys.end(), std::ostream_iterator<std::string>(filter, delim));
+
+	return filter.str();
+}
+
 
 CharArrayBuffer::~CharArrayBuffer() {}
 
@@ -400,18 +413,18 @@ CGOGN_IO_EXPORT std::istream& getline_safe(std::istream& is, std::string& str)
 		const auto c = sb->sbumpc();
 		switch (c)
 		{
-		case '\n':
-			return is;
-		case '\r':
-			if (sb->sgetc() == '\n')
-				sb->sbumpc();
-			return is;
-		case EOF: // Also handle the case when the last line has no line ending
-			if (str.empty())
-				is.setstate(std::ios::eofbit);
-			return is;
-		default:
-			str.push_back(static_cast<char>(c));
+			case '\n':
+				return is;
+			case '\r':
+				if (sb->sgetc() == '\n')
+					sb->sbumpc();
+				return is;
+			case EOF: // Also handle the case when the last line has no line ending
+				if (str.empty())
+					is.setstate(std::ios::eofbit);
+				return is;
+			default:
+				str.push_back(static_cast<char>(c));
 		}
 	}
 }
@@ -429,18 +442,18 @@ CGOGN_IO_EXPORT std::istream& getline_safe(std::istream& is, std::string& str, c
 			return is;
 		switch (c)
 		{
-		case '\n':
-			return is;
-		case '\r':
-			if (sb->sgetc() == '\n')
-				sb->sbumpc();
-			return is;
-		case EOF: // Also handle the case when the last line has no line ending
-			if (str.empty())
-				is.setstate(std::ios::eofbit);
-			return is;
-		default:
-			str.push_back(static_cast<char>(c));
+			case '\n':
+				return is;
+			case '\r':
+				if (sb->sgetc() == '\n')
+					sb->sbumpc();
+				return is;
+			case EOF: // Also handle the case when the last line has no line ending
+				if (str.empty())
+					is.setstate(std::ios::eofbit);
+				return is;
+			default:
+				str.push_back(static_cast<char>(c));
 		}
 	}
 }

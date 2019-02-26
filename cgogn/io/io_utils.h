@@ -108,7 +108,6 @@ enum FileType
 	FileType_UNKNOWN = 0,
 	FileType_CG,
 	FileType_CSKEL,
-	FileType_DOT,
 	FileType_OFF,
 	FileType_OBJ,
 	FileType_2DM,
@@ -154,10 +153,60 @@ enum VolumeType
 	Connector
 };
 
+static const std::map<std::string, FileType> point_set_file_type_map{
+	{"plo", FileType::FileType_PLO}
+};
+
+static const std::map<std::string, FileType> polyline_file_type_map{
+	{"obj", FileType::FileType_OBJ},
+	{"lin", FileType::FileType_LIN}
+};
+
+static const std::map<std::string, FileType> graph_file_type_map{
+	{"cg", FileType::FileType_CG},
+	{"cskel", FileType::FileType_CSKEL},
+	{"obj", FileType::FileType_OBJ},
+	{"skel", FileType::FileType_SKEL},
+	{"vtk", FileType::FileType_VTK_LEGACY},
+	{"vtu", FileType::FileType_VTU},
+	{"vtp", FileType::FileType_VTP}
+};
+
+static const std::map<std::string, FileType> surface_file_type_map{
+	{"off", FileType::FileType_OFF},
+	{"obj", FileType::FileType_OBJ},
+	{"2dm", FileType::FileType_2DM},
+	{"stl", FileType::FileType_STL},
+	{"ply", FileType::FileType_PLY},
+	{"vtk", FileType::FileType_VTK_LEGACY},
+	{"vtu", FileType::FileType_VTU},
+	{"vtp", FileType::FileType_VTP},
+	{"meshb", FileType::FileType_MESHB},
+	{"mesh", FileType::FileType_MESHB},
+	{"msh", FileType::FileType_MSH},
+	{"ts", FileType::FileType_TS}
+};
+
+static const std::map<std::string, FileType> volume_file_type_map{
+	{"meshb", FileType::FileType_MESHB},
+	{"mesh", FileType::FileType_MESHB},
+	{"msh", FileType::FileType_MSH},
+	{"node", FileType::FileType_TETGEN},
+	{"ele", FileType::FileType_TETGEN},
+	{"nas", FileType::FileType_NASTRAN},
+	{"bdf", FileType::FileType_NASTRAN},
+	{"tet", FileType::FileType_AIMATSHAPE},
+	{"tetmesh", FileType::FileType_TETMESH},
+	{"vtk", FileType::FileType_VTK_LEGACY},
+	{"vtu", FileType::FileType_VTU}
+};
+
 CGOGN_IO_EXPORT bool                           file_exists(const std::string& filename);
 CGOGN_IO_EXPORT std::unique_ptr<std::ofstream> create_file(const std::string& filename, bool binary, bool overwrite);
 CGOGN_IO_EXPORT FileType                       file_type(const std::string& filename);
 CGOGN_IO_EXPORT DataType                       data_type(const std::string& type_name);
+CGOGN_IO_EXPORT std::string file_type_filter(const std::map<std::string, FileType>& file_type_map, const char* const delim);
+
 
 /**
  * @brief base64_encode
