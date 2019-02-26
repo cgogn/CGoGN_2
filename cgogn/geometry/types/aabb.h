@@ -243,8 +243,14 @@ template <typename VEC_T>
 VEC_T center(const AABB<VEC_T>& bb)
 {
 	cgogn_message_assert(bb.is_initialized(), "Axis-Aligned Bounding box not initialized");
-	VEC_T center = (bb.max() + bb.min()) / typename VEC_T::Scalar(2);
-	return center;
+	return (bb.max() + bb.min()) / typename VEC_T::Scalar(2);
+}
+
+template <typename VEC_T>
+VEC_T extents(const AABB<VEC_T>& bb)
+{
+	cgogn_message_assert(bb.is_initialized(), "Axis-Aligned Bounding box not initialized");
+	return (bb.max() - bb.min()) / typename VEC_T::Scalar(2);
 }
 
 // return true if bb intersects the axis-aligned bounding box
