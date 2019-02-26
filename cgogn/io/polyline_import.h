@@ -115,6 +115,12 @@ public:
 		return uint32(edges_vertex_indices_.size() / 2 );
 	}
 
+	inline void add_edge(uint32 p0, uint32 p1)
+	{
+		edges_vertex_indices_.push_back(p0);
+		edges_vertex_indices_.push_back(p1);
+	}
+
 	void create_map()
 	{
 		if (nb_edges() == 0u)
