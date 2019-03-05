@@ -240,6 +240,35 @@ public:
 		return (*embeddings_[orb])[d.index];
 	}
 
+
+	/*******************************************************************************
+	 * Attributes management
+	 *******************************************************************************/
+
+	/**
+	 * \brief has_attribute
+	 * @param orbit, the attribute orbit
+	 * @param att_name attribute name
+	 * @return true iff an attribute with the specified name and orbit exists
+	 */
+	inline bool has_attribute(Orbit orbit, const std::string& att_name)
+	{
+		cgogn_message_assert(orbit < NB_ORBITS, "Unknown orbit parameter");
+		return this->attributes_[orbit].has_array(att_name);
+	}
+
+	/**
+	 * \brief remove_attribute
+	 * @param orbit, the attribute orbit
+	 * @param att_name attribute name
+	 * @return true if remove succeed else false
+	 */
+	inline bool remove_attribute(Orbit orbit, const std::string& att_name)
+	{
+		cgogn_message_assert(orbit < NB_ORBITS, "Unknown orbit parameter");
+		return this->attributes_[orbit].remove_chunk_array(att_name);
+	}
+
 protected:
 
 	template <class CellType>
