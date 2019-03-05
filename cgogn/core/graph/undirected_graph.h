@@ -215,6 +215,8 @@ public:
 	{
 		Dart d = add_vertex_topo();
 		Vertex v(d);
+		if (this->template is_embedded<CDart>())
+			this->new_orbit_embedding(CDart(d));
 		if (this->template is_embedded<Vertex>())
 			this->new_orbit_embedding(v);
 		if (this->template is_embedded<Edge>())
@@ -304,6 +306,8 @@ public:
 			else
 			{
 				Edge edge(connect_vertices_topo(d, e));
+				if (this->template is_embedded<CDart>())
+					this->new_orbit_embedding(CDart(dd));
 				if (this->template is_embedded<Vertex>())
 					this->template copy_embedding<Vertex>(dd, e);
 				return edge;
@@ -314,6 +318,8 @@ public:
 			if (this->is_boundary(ee))
 			{
 				Edge edge(connect_vertices_topo(d, e));
+				if (this->template is_embedded<CDart>())
+					this->new_orbit_embedding(CDart(ee));
 				if (this->template is_embedded<Vertex>())
 					this->template copy_embedding<Vertex>(ee, d);
 				return edge;
@@ -321,6 +327,11 @@ public:
 			else
 			{
 				Edge edge(connect_vertices_topo(d, e));
+				if (this->template is_embedded<CDart>())
+				{
+					this->new_orbit_embedding(CDart(alpha1(d)));
+					this->new_orbit_embedding(CDart(alpha1(e)));
+				}
 				if (this->template is_embedded<Vertex>())
 				{
 					this->template copy_embedding<Vertex>(alpha1(d), d);
@@ -396,7 +407,10 @@ public:
 			else
 			{
 				disconnect_vertices_topo(d);
-				this->template unset_embedding<Vertex>(alpha0(d));
+				if (this->template is_embedded<CDart>())
+					this->template unset_embedding<CDart>(alpha0(d));
+				if (this->template is_embedded<Vertex>())
+					this->template unset_embedding<Vertex>(alpha0(d));
 			}
 		}
 		else
@@ -404,6 +418,9 @@ public:
 			if (alpha1(e) == e)
 			{
 				disconnect_vertices_topo(d);
+				if (this->template is_embedded<CDart>())
+					this->template unset_embedding<CDart>(alpha0(e));
+				if (this->template is_embedded<Vertex>())
 				this->template unset_embedding<Vertex>(alpha0(e));
 			}
 			else
