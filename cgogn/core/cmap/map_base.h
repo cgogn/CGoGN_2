@@ -79,6 +79,9 @@ public:
 	template <Orbit ORBIT>
 	using CellMarkerNoUnmark = typename cgogn::CellMarkerNoUnmark<ConcreteMap, ORBIT>;
 
+	using Inherit::remove_attribute;
+	using Inherit::has_attribute;
+
 	MapBase() :	Inherit() {}
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(MapBase);
 	~MapBase() {}

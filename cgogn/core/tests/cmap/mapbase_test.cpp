@@ -22,7 +22,6 @@
 *******************************************************************************/
 
 #include <gtest/gtest.h>
-
 #include <cgogn/core/cmap/cmap3.h>
 
 namespace cgogn
