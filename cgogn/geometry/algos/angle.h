@@ -144,8 +144,8 @@ inline void compute_angle_between_face_normals(
 template <typename MAP, typename VERTEX_ATTR>
 inline ScalarOf<InsideTypeOf<VERTEX_ATTR>> angle_between_face_normals(
     const MAP& map,
-    const Dart d1,
-    const Dart d2,
+    const Cell<Orbit::PHI1> d1,
+    const Cell<Orbit::PHI1> d2,
     const VERTEX_ATTR& position)
 {
     static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, "position must be a vertex attribute");
@@ -154,10 +154,10 @@ inline ScalarOf<InsideTypeOf<VERTEX_ATTR>> angle_between_face_normals(
     using Scalar = ScalarOf<VEC3>;
     using Face2 = Cell<Orbit::PHI1>;
 
-    const VEC3 n1 = normal(map, Face2(d1), position);
-    const VEC3 n2 = normal(map, Face2(d2), position);
+    const VEC3 n1 = normal(map, d1, position);
+    const VEC3 n2 = normal(map, d2, position);
 
-    VEC3 edge = position[d2] - position[d1];
+    VEC3 edge = position[d2.dart] - position[d1.dart];
     edge.normalize();
     Scalar s = edge.dot(n1.cross(n2));
     Scalar c = n1.dot(n2);
