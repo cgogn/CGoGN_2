@@ -2349,7 +2349,7 @@ public:
 		static_assert(is_func_parameter_same<FUNC, Volume>::value, "Wrong function cell parameter type");
 		DartMarkerStore marker_volume(*this);
 		marker_volume.mark_orbit(v);
-		foreach_incident_face(v, [&] (Edge inc_face) -> bool
+        foreach_incident_face(v, [&] (Face inc_face) -> bool
 		{
 			bool res_nested_lambda = true;
 			foreach_incident_volume(inc_face, [&] (Volume inc_vol) -> bool
