@@ -108,14 +108,16 @@ inline auto area(
 	return cell_area;
 }
 
-template <typename CellType, typename MAP, typename MASK, typename VERTEX_ATTR>
+template <typename CellType, typename MAP, typename MASK, typename VERTEX_ATTR,typename CELL_ATTR>
 inline void compute_area(
 	const MAP& map,
 	const MASK& mask,
 	const VERTEX_ATTR& position,
-	Attribute<ScalarOf<InsideTypeOf<VERTEX_ATTR>>, CellType::ORBIT>& cell_area)
+    CELL_ATTR& cell_area)
 {
 	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+    static_assert(is_orbit_of<CELL_ATTR, CellType::ORBIT>::value,"cell_area must be a CellType attribute");
+    static_assert(std::is_same<InsideTypeOf<CELL_ATTR>, ScalarOf<InsideTypeOf<VERTEX_ATTR>>>::value,"Inside type of cell_area must be the same as the scalar of the inside type of position");
 
 	map.parallel_foreach_cell([&] (CellType c)
 	{
@@ -125,14 +127,16 @@ inline void compute_area(
 }
 
 
-template <typename CellType, typename MAP, typename VERTEX_ATTR>
+template <typename CellType, typename MAP, typename VERTEX_ATTR,typename CELL_ATTR>
 inline auto compute_area(
 	const MAP& map,
 	const VERTEX_ATTR& position,
-	Attribute<ScalarOf<InsideTypeOf<VERTEX_ATTR>>, CellType::ORBIT>& cell_area
+    CELL_ATTR& cell_area
 ) -> typename std::enable_if<is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,void>::type
 {
-	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+    static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+    static_assert(is_orbit_of<CELL_ATTR, CellType::ORBIT>::value,"cell_area must be a CellType attribute");
+    static_assert(std::is_same<InsideTypeOf<CELL_ATTR>, ScalarOf<InsideTypeOf<VERTEX_ATTR>>>::value,"Inside type of cell_area must be the same as the scalar of the inside type of position");
 
 	compute_area<CellType>(map, AllCellsFilter(), position, cell_area);
 }

@@ -108,15 +108,17 @@ inline InsideTypeOf<VERTEX_ATTR> normal(
 	return n;
 }
 
-template <typename MAP, typename VERTEX_ATTR>
+template <typename MAP, typename VERTEX_ATTR, typename FACE_ATTR>
 inline InsideTypeOf<VERTEX_ATTR> normal(
 	const MAP& map,
 	Cell<Orbit::PHI21> v,
 	const VERTEX_ATTR& position,
-	const Attribute<InsideTypeOf<VERTEX_ATTR>, Orbit::PHI1>& face_normal
+    const FACE_ATTR& face_normal
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, "position must be a vertex attribute");
+    static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, "position must be a vertex attribute");
+    static_assert(is_orbit_of<FACE_ATTR, Orbit::PHI1>::value, "face_normal must be a face2 attribute");
+    static_assert(std::is_same<InsideTypeOf<FACE_ATTR>, InsideTypeOf<VERTEX_ATTR>>::value,"Inside type of face_normal must be the inside type of position");
 
 	using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 	using Scalar = ScalarOf<VEC3>;
@@ -138,15 +140,16 @@ inline InsideTypeOf<VERTEX_ATTR> normal(
 	return n;
 }
 
-template <typename MAP, typename VERTEX_ATTR, typename MASK>
-inline void compute_normal(
+template <typename MAP, typename VERTEX_ATTR, typename MASK,typename FACE_ATTR>
+inline auto compute_normal(
 	const MAP& map,
 	const MASK& mask,
 	const VERTEX_ATTR& position,
-	Attribute<InsideTypeOf<VERTEX_ATTR>, Orbit::PHI1>& face_normal
-)
+    FACE_ATTR& face_normal
+) -> typename std::enable_if<is_orbit_of<FACE_ATTR, Orbit::PHI1>::value>::type
 {
-	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, "position must be a vertex attribute");
+    static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, "position must be a vertex attribute");
+    static_assert(std::is_same<InsideTypeOf<FACE_ATTR>, InsideTypeOf<VERTEX_ATTR>>::value,"Inside type of face_normal must be the inside type of position");
 
 	map.parallel_foreach_cell([&] (Cell<Orbit::PHI1> f)
 	{
@@ -155,27 +158,29 @@ inline void compute_normal(
 	mask);
 }
 
-template <typename MAP, typename VERTEX_ATTR>
-inline void compute_normal(
+
+template <typename MAP, typename VERTEX_ATTR,typename FACE_ATTR>
+inline auto compute_normal(
 	const MAP& map,
 	const VERTEX_ATTR& position,
-	Attribute<InsideTypeOf<VERTEX_ATTR>, Orbit::PHI1>& face_normal
-)
+    FACE_ATTR& face_normal
+) -> typename std::enable_if<is_orbit_of<FACE_ATTR, Orbit::PHI1>::value>::type
 {
-	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, "position must be a vertex attribute");
+    static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, "position must be a vertex attribute");
+    static_assert(std::is_same<InsideTypeOf<FACE_ATTR>, InsideTypeOf<VERTEX_ATTR>>::value,"Inside type of face_normal must be the inside type of position");
 
 	compute_normal(map, AllCellsFilter(), position, face_normal);
 }
-
-template <typename MAP, typename VERTEX_ATTR, typename MASK>
-inline void compute_normal(
+template <typename MAP, typename VERTEX_ATTR, typename MASK,typename VERTEX2_ATTR>
+inline auto compute_normal(
 	const MAP& map,
 	const MASK& mask,
 	const VERTEX_ATTR& position,
-	Attribute<InsideTypeOf<VERTEX_ATTR>, Orbit::PHI21>& vertex_normal
-)
+    VERTEX2_ATTR& vertex_normal
+) -> typename std::enable_if<is_orbit_of<VERTEX2_ATTR, Orbit::PHI21>::value>::type
 {
 	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, "position must be a vertex attribute");
+    static_assert(std::is_same<InsideTypeOf<VERTEX2_ATTR>, InsideTypeOf<VERTEX_ATTR>>::value,"Inside type of vertex_normal must be the inside type of position");
 
 	map.parallel_foreach_cell([&] (Cell<Orbit::PHI21> v)
 	{
@@ -184,28 +189,33 @@ inline void compute_normal(
 	mask);
 }
 
-template <typename MAP, typename VERTEX_ATTR>
-inline void compute_normal(
+template <typename MAP, typename VERTEX_ATTR,typename VERTEX2_ATTR>
+inline auto compute_normal(
 	const MAP& map,
 	const VERTEX_ATTR& position,
-	Attribute<InsideTypeOf<VERTEX_ATTR>, Orbit::PHI21>& vertex_normal
-)
+    VERTEX2_ATTR& vertex_normal
+) -> typename std::enable_if<is_orbit_of<VERTEX2_ATTR, Orbit::PHI21>::value>::type
 {
-	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, "position must be a vertex attribute");
+    static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, "position must be a vertex attribute");
+    static_assert(std::is_same<InsideTypeOf<VERTEX2_ATTR>, InsideTypeOf<VERTEX_ATTR>>::value,"Inside type of vertex_normal must be the inside type of position");
 
 	compute_normal(map, AllCellsFilter(), position, vertex_normal);
 }
 
-template <typename MAP, typename VERTEX_ATTR, typename MASK>
+template <typename MAP, typename VERTEX_ATTR, typename MASK,typename FACE_ATTR,typename VERTEX2_ATTR>
 inline void compute_normal(
 	const MAP& map,
 	const MASK& mask,
 	const VERTEX_ATTR& position,
-	const Attribute<InsideTypeOf<VERTEX_ATTR>, Orbit::PHI1>& face_normal,
-	Attribute<InsideTypeOf<VERTEX_ATTR>, Orbit::PHI21>& vertex_normal
+    const FACE_ATTR& face_normal,
+    VERTEX2_ATTR& vertex_normal
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, "position must be a vertex attribute");
+    static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, "position must be a vertex attribute");
+    static_assert(is_orbit_of<VERTEX2_ATTR, Orbit::PHI21>::value, "vertex_normal must be a vertex2 attribute");
+    static_assert(std::is_same<InsideTypeOf<VERTEX2_ATTR>, InsideTypeOf<VERTEX_ATTR>>::value,"Inside type of vertex_normal must be the inside type of position");
+    static_assert(is_orbit_of<FACE_ATTR, Orbit::PHI1>::value, "face_normal must be a face2 attribute");
+    static_assert(std::is_same<InsideTypeOf<FACE_ATTR>, InsideTypeOf<VERTEX_ATTR>>::value,"Inside type of face_normal must be the inside type of position");
 
 	map.parallel_foreach_cell([&] (Cell<Orbit::PHI21> v)
 	{
@@ -214,15 +224,19 @@ inline void compute_normal(
 	mask);
 }
 
-template <typename MAP, typename VERTEX_ATTR>
+template <typename MAP, typename VERTEX_ATTR,typename FACE_ATTR,typename VERTEX2_ATTR>
 inline void compute_normal(
 	const MAP& map,
 	const VERTEX_ATTR& position,
-	const Attribute<InsideTypeOf<VERTEX_ATTR>, Orbit::PHI1>& face_normal,
-	Attribute<InsideTypeOf<VERTEX_ATTR>, Orbit::PHI21>& vertex_normal
+    const FACE_ATTR& face_normal,
+    VERTEX2_ATTR& vertex_normal
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, "position must be a vertex attribute");
+    static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, "position must be a vertex attribute");
+    static_assert(is_orbit_of<VERTEX2_ATTR, Orbit::PHI21>::value, "vertex_normal must be a vertex2 attribute");
+    static_assert(std::is_same<InsideTypeOf<VERTEX2_ATTR>, InsideTypeOf<VERTEX_ATTR>>::value,"Inside type of vertex_normal must be the inside type of position");
+    static_assert(is_orbit_of<FACE_ATTR, Orbit::PHI1>::value, "face_normal must be a face2 attribute");
+    static_assert(std::is_same<InsideTypeOf<FACE_ATTR>, InsideTypeOf<VERTEX_ATTR>>::value,"Inside type of face_normal must be the inside type of position");
 
 	compute_normal(map, AllCellsFilter(), position, face_normal, vertex_normal);
 }
