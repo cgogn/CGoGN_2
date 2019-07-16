@@ -580,6 +580,7 @@ void create_indices_vertices_faces(
 		}
 		else
 		{
+            local_vert_indices.clear();
 			cgogn::geometry::append_ear_triangulation(m, f, position, local_vert_indices);
 			for (uint32 i : local_vert_indices)
 			{
