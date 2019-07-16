@@ -1396,17 +1396,20 @@ enum ColorMapType: uint8
 
 inline ColorMapType color_map_type(const std::string& name)
 {
-//	switch (name)
-//	{
-//		case "inferno": return ColorMapType::INFERNO; break;
-//		case "jet": return ColorMapType::JET; break;
-//		case "magma": return ColorMapType::MAGMA; break;
-//		case "parula": return ColorMapType::PARULA; break;
-//		case "plasma": return ColorMapType::PLASMA; break;
-//		case "viridis": return ColorMapType::VIRIDIS; break;
-//	}
-
-	cgogn_assert_not_reached("This color map name does not exist");
+    if( name == "inferno")
+        return ColorMapType::INFERNO;
+    else if(name == "jet")
+        return ColorMapType::JET;
+    else if(name == "magma")
+        return ColorMapType::MAGMA;
+    else if(name == "parula")
+        return ColorMapType::PARULA;
+    else if(name == "plasma")
+        return ColorMapType::PLASMA;
+    else if(name == "viridis")
+        return ColorMapType::VIRIDIS;
+    else
+        cgogn_assert_not_reached("This color map name does not exist");
 }
 
 inline std::string color_map_name(ColorMapType cm)
