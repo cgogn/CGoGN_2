@@ -371,6 +371,7 @@ public:
 	void update_face(const MAP& m, const MASK& mask, const VERTEX_ATTR& position, const FACE_ATTR& color)
 	{
 		static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+        static_assert(is_orbit_of<FACE_ATTR, MAP::Face::ORBIT>::value,"color must be a face attribute");
 
 		using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 		using Vertex = typename MAP::Vertex;
@@ -456,6 +457,7 @@ public:
 	void update_face(const MAP& m, const MASK& mask, const VERTEX_ATTR& position, const VOLUME_ATTR& color)
 	{
 		static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+        static_assert(is_orbit_of<VOLUME_ATTR, MAP::Volume::ORBIT>::value,"color must be a volume attribute");
 
 		using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 		using Vertex = typename MAP::Vertex;
