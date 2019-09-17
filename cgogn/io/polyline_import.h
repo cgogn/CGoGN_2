@@ -139,7 +139,9 @@ public:
 			uint32 idx2 = edges_vertex_indices_[i+1];
 			mbuild_.template set_orbit_embedding<Vertex>(Vertex(d), idx);
 			std::cout << idx << " " << idx2 << std::endl;
-			darts_out_vertex[idx2] = d;
+
+            if(idx2 != cgogn::INVALID_INDEX)
+                darts_out_vertex[idx2] = d;
 		}
 
 		uint32 nb_boundary_vertex = 0;
@@ -149,6 +151,7 @@ public:
 			if (map_.phi1(d) == d)
 			{
 				uint32 vertex_index = map_.embedding(Vertex(d));
+
 				Dart prev_vertex_darts = darts_out_vertex[vertex_index];
 
 				if(prev_vertex_darts.is_nil())
