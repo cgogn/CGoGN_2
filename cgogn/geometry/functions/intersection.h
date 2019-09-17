@@ -90,6 +90,9 @@ bool intersection_ray_triangle(const Eigen::MatrixBase<VEC3a>& P, const Eigen::M
 	Scalar gamma =Scalar(1) - alpha - beta;
 	NVEC3 I = Ta * alpha + Tb * beta + Tc * gamma;
 
+	if(I.hasNaN())
+		return false;
+
 	// it's a ray not a line !
 	if (Dir.dot(I-P) < 0.0)
 		return false;
@@ -173,15 +176,13 @@ Intersection intersection_segment_segment(
 			return NO_INTERSECTION;
 	}
 	else
-		Inter = /*NVEC3*/((PA[0] * delta + vp1p2[0] * coeff) / delta, (PA[1] * delta + vp1p2[1] * coeff) / delta, (PA[2] * delta + vp1p2[2] * coeff) / delta) ;
+		Inter = VEC3e((PA[0] * delta + vp1p2[0] * coeff) / delta, (PA[1] * delta + vp1p2[1] * coeff) / delta, (PA[2] * delta + vp1p2[2] * coeff) / delta) ;
 
 	// test if inter point is outside the edges
-	if (
-		(Inter[0] < PA[0] && Inter[0] < PB[0]) || (Inter[0] > PA[0] && Inter[0] > PB[0]) ||
+	if ((Inter[0] < PA[0] && Inter[0] < PB[0]) || (Inter[0] > PA[0] && Inter[0] > PB[0]) ||
 		(Inter[0] < QA[0] && Inter[0] < QB[0]) || (Inter[0] > QA[0] && Inter[0] > QB[0]) ||
 		(Inter[1] < PA[1] && Inter[1] < PB[1]) || (Inter[1] > PA[1] && Inter[1] > PB[1]) ||
-		(Inter[1] < QA[1] && Inter[1] < QB[1]) || (Inter[1] > QA[1] && Inter[1] > QB[1])
-	)
+		(Inter[1] < QA[1] && Inter[1] < QB[1]) || (Inter[1] > QA[1] && Inter[1] > QB[1]))
 		return NO_INTERSECTION;
 
 	if (PA.isApprox(Inter) || PB.isApprox(Inter) || QA.isApprox(Inter) || QB.isApprox(Inter))
