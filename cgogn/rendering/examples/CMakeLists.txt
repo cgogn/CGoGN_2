@@ -37,6 +37,9 @@ target_link_libraries(picking_viewer cgogn::core cgogn::io cgogn::rendering)
 add_executable(viewer_topo3 viewer_topo3.cpp)
 target_link_libraries(viewer_topo3 cgogn::core cgogn::io cgogn::rendering)
 
+add_executable(viewer_hexagrid viewer_hexagrid.cpp)
+target_link_libraries(viewer_hexagrid cgogn::core cgogn::io cgogn::rendering)
+
 add_executable(mt_viewer mt_viewer.cpp)
 target_link_libraries(mt_viewer cgogn::core cgogn::io cgogn::rendering)
 
