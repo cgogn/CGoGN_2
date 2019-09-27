@@ -229,8 +229,9 @@ public:
 	inline void normalize()
 	{
 		const Scalar norm_value = this->norm();
-		for (auto& c : data_)
-			c /= norm_value;
+		if(norm_value > Scalar(0))
+			for (auto& c : data_)
+				c /= norm_value;
 	}
 
 	inline void setZero()
