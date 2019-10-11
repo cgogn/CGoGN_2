@@ -1,6 +1,6 @@
 @PACKAGE_INIT@
 include(CMakeFindDependencyMacro)
-find_dependency(Qt5Widgets REQUIRED)
+find_dependency(Qt5 COMPONENTS Widgets REQUIRED)
 
 if(NOT TARGET QOGLViewer)
 	include("${CMAKE_CURRENT_LIST_DIR}/QOGLViewerTargets.cmake")
