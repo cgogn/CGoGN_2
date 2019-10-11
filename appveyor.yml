@@ -60,8 +60,9 @@ install:
         tinyxml2
         --triplet %arch%-windows
 
-allow_failures:
-  - image: Visual Studio 2015
+matrix:
+  allow_failures:
+    - image: Visual Studio 2015
 
 build_script:
   - md build
