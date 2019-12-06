@@ -154,7 +154,8 @@ enum VolumeType
 };
 
 static const std::map<std::string, FileType> point_set_file_type_map{
-	{"plo", FileType::FileType_PLO}
+	{"plo", FileType::FileType_PLO},
+	{"obj", FileType::FileType_OBJ}
 };
 
 static const std::map<std::string, FileType> polyline_file_type_map{

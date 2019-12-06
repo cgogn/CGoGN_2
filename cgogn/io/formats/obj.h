@@ -28,6 +28,8 @@
 #include <cgogn/geometry/types/vec.h>
 #include <cgogn/geometry/types/geometry_traits.h>
 
+#include <cgogn/io/point_set_import.h>
+
 #include <cgogn/io/polyline_import.h>
 #include <cgogn/io/polyline_export.h>
 
@@ -44,6 +46,114 @@ namespace cgogn
 
 namespace io
 {
+
+template <typename MAP, typename VEC3>
+class ObjPointSetImport : public PointSetFileImport<MAP>
+{
+public:
+
+	using Self = ObjPointSetImport<MAP, VEC3>;
+	using Inherit = PointSetFileImport<MAP>;
+	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
+	template <typename T>
+	using ChunkArray = typename Inherit::template ChunkArray<T>;
+
+	inline ObjPointSetImport(MAP& map) : Inherit(map) {}
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ObjPointSetImport);
+	virtual ~ObjPointSetImport() override {}
+
+protected:
+
+	virtual bool import_file_impl(const std::string& filename) override
+	{
+		std::ifstream fp(filename.c_str(), std::ios::in);
+
+		ChunkArray<VEC3>* position = this->template add_vertex_attribute<VEC3>("position");
+		ChunkArray<VEC3>* normal = nullptr;
+		std::vector<VEC3> norm_buff;
+
+		std::string line, tag;
+		bool has_normals = false;
+
+		do
+		{
+			fp >> tag;
+			getline_safe(fp, line);
+		} while (tag != std::string("vn") && (!fp.eof()));
+
+		if (tag == "vn")
+		{
+			has_normals = true;
+			norm_buff.reserve(1024);
+			do
+			{
+				if (tag == std::string("vn"))
+				{
+					std::stringstream oss(line);
+
+					float64 x, y, z;
+					oss >> x;
+					oss >> y;
+					oss >> z;
+					float64 n = std::sqrt(x*x+y*y+z*z);
+					norm_buff.emplace_back(Scalar(x/n), Scalar(y/n), Scalar(z/n));
+				}
+
+				fp >> tag;
+				getline_safe(fp, line);
+			} while (!fp.eof());
+		}
+
+		fp.clear();
+		fp.seekg(0, std::ios::beg);
+
+		do
+		{
+			fp >> tag;
+			getline_safe(fp, line);
+		} while (tag != std::string("v"));
+
+		// lecture des sommets
+		uint32 i = 0;
+		do
+		{
+			if (tag == std::string("v"))
+			{
+				std::stringstream oss(line);
+
+				float64 x, y, z;
+				oss >> x;
+				oss >> y;
+				oss >> z;
+
+				VEC3 pos{Scalar(x), Scalar(y), Scalar(z)};
+
+				uint32 vertex_id = this->insert_line_vertex_container();
+				(*position)[vertex_id] = pos;
+
+				++i;
+			}
+
+			fp >> tag;
+			getline_safe(fp, line);
+		} while (!fp.eof());
+
+
+		this->nb_vertices_ = i;
+
+		if (has_normals)
+		{
+			normal = this->template add_vertex_attribute<VEC3>("normal");
+			for(uint32 j = 0 ; j < norm_buff.size() ; ++j)
+			{
+				(*normal)[j] = norm_buff[j];
+			}
+		}
+
+
+		return true;
+	}
+};
 
 template <typename MAP, typename VEC3>
 class ObjPolylineImport : public PolylineFileImport<MAP>
@@ -581,6 +691,9 @@ protected:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
+extern template class CGOGN_IO_EXPORT ObjPointSetImport<CMap0, Eigen::Vector3d>;
+extern template class CGOGN_IO_EXPORT ObjPointSetImport<CMap0, Eigen::Vector3f>;
+
 extern template class CGOGN_IO_EXPORT ObjSurfaceImport<CMap2, Eigen::Vector3d>;
 extern template class CGOGN_IO_EXPORT ObjSurfaceImport<CMap2, Eigen::Vector3f>;
 extern template class CGOGN_IO_EXPORT ObjSurfaceImport<CMap2, geometry::Vec_T<std::array<float64, 3>>>;
