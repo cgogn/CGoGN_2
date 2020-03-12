@@ -6,7 +6,7 @@ project(cgogn_topology
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN YES)
 
-add_library(${PROJECT_NAME} SHARED "")
+add_library(${PROJECT_NAME} "")
 
 add_library(cgogn::topology ALIAS cgogn_topology)
 

@@ -8,7 +8,7 @@ set(CMAKE_VISIBILITY_INLINES_HIDDEN YES)
 
 find_package(Eigen3 3.2)
 
-add_library(${PROJECT_NAME} SHARED "")
+add_library(${PROJECT_NAME} "")
 
 add_library(cgogn::geometry ALIAS cgogn_geometry)
 
