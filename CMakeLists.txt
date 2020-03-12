@@ -74,6 +74,7 @@ endif(CGOGN_CPP_STD STREQUAL "11")
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+option(BUILD_SHARED_LIBS "Build a shared library" ON)
 
 #### ThirdParty options
 set(CGOGN_THIRDPARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty)

@@ -9,7 +9,7 @@ set(CMAKE_VISIBILITY_INLINES_HIDDEN YES)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
-add_library(${PROJECT_NAME} SHARED "")
+add_library(${PROJECT_NAME} "")
 add_library(cgogn::core ALIAS cgogn_core)
 
 target_sources(${PROJECT_NAME}

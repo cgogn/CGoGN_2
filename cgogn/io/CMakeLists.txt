@@ -11,7 +11,7 @@ find_package(Meshb REQUIRED)
 find_package(TinyXML2 REQUIRED)
 find_package(ZLIB REQUIRED)
 
-add_library(${PROJECT_NAME} SHARED "")
+add_library(${PROJECT_NAME} "")
 
 add_library(cgogn::io ALIAS cgogn_io)
 

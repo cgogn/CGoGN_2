@@ -12,7 +12,7 @@ find_package(QOGLViewer REQUIRED)
 #CMake will handle .qrc files added as target sources
 set(CMAKE_AUTORCC ON)
 
-add_library(${PROJECT_NAME} SHARED "")
+add_library(${PROJECT_NAME} "")
 
 add_library(cgogn::rendering ALIAS cgogn_rendering)
 
