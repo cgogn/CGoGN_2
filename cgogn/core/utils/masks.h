@@ -233,7 +233,7 @@ public:
 
 		const Self* const qt_ptr_;
 		Orbit orbit_;
-		const Attribute_T<Dart>::ChunkArrayContainer& ca_cont_;
+		Attribute_T<Dart>::ChunkArrayContainer& ca_cont_;
 		uint32 index_;
 
 		inline const_iterator(const Self* qt, Orbit orbit, uint32 i) :
