@@ -407,7 +407,7 @@ TEST_F(CMap3TopoTest, merge_incident_faces)
 		Dart d1 = phi1(d);
 		uint32 k1 = codegree(Face(d));
 		uint32 k2 = codegree(Face(phi2(d)));
-		if (merge_incident_faces_topo(d))
+		if (merge_incident_faces_of_edge_topo(d))
 		{
 			--count_edges;
 			--count_faces;

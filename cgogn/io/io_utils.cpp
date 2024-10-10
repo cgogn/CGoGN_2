@@ -37,7 +37,7 @@ namespace cgogn
 namespace io
 {
 
-CGOGN_IO_API std::vector<std::vector<unsigned char>> zlib_compress(const unsigned char* input, std::size_t size, std::size_t chunk_size)
+CGOGN_IO_EXPORT std::vector<std::vector<unsigned char>> zlib_compress(const unsigned char* input, std::size_t size, std::size_t chunk_size)
 {
 	chunk_size = std::min(size, chunk_size);
 	std::size_t buffer_size{0ul};
@@ -78,7 +78,7 @@ CGOGN_IO_API std::vector<std::vector<unsigned char>> zlib_compress(const unsigne
 	return res;
 }
 
-CGOGN_IO_API std::vector<unsigned char> zlib_decompress(const char* input, DataType header_type, std::size_t input_length)
+CGOGN_IO_EXPORT std::vector<unsigned char> zlib_decompress(const char* input, DataType header_type, std::size_t input_length)
 {
 
 	uint64 nb_blocks = UINT64_MAX;
@@ -167,7 +167,7 @@ CGOGN_IO_API std::vector<unsigned char> zlib_decompress(const char* input, DataT
 	return res;
 }
 
-CGOGN_IO_API std::vector<char> base64_encode(const char* input_buffer, std::size_t buffer_size)
+CGOGN_IO_EXPORT std::vector<char> base64_encode(const char* input_buffer, std::size_t buffer_size)
 {
 
 	const static char encode_lookup[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -217,7 +217,7 @@ CGOGN_IO_API std::vector<char> base64_encode(const char* input_buffer, std::size
 	return res;
 }
 
-CGOGN_IO_API std::vector<unsigned char> base64_decode(const char* input, std::size_t length)
+CGOGN_IO_EXPORT std::vector<unsigned char> base64_decode(const char* input, std::size_t length)
 {
 	const std::locale locale;
 
@@ -288,45 +288,45 @@ CGOGN_IO_API std::vector<unsigned char> base64_decode(const char* input, std::si
 	return decoded_chars;
 }
 
-CGOGN_IO_API FileType file_type(const std::string& filename)
+CGOGN_IO_EXPORT FileType file_type(const std::string& filename)
 {
 	const std::string& ext = to_lower(extension(filename));
-	static const std::map<std::string, FileType> file_type_map{
-		{"off", FileType_OFF},
-		{"obj", FileType_OBJ},
-		{"2dm", FileType_2DM},
-		{"stl", FileType_STL},
-		{"ply", FileType_PLY},
-		{"vtk", FileType_VTK_LEGACY},
-		{"vtu", FileType_VTU},
-		{"vtp", FileType_VTP},
-		{"meshb", FileType_MESHB},
-		{"mesh", FileType_MESHB},
-		{"msh", FileType_MSH},
-		{"node", FileType_TETGEN},
-		{"ele", FileType_TETGEN},
-		{"nas", FileType_NASTRAN},
-		{"bdf", FileType_NASTRAN},
-		{"tet", FileType_AIMATSHAPE},
-		{"tetmesh", FileType_TETMESH},
-		{"skel", FileType::FileType_SKEL},
-		{"cg", FileType::FileType_CG},
-		{"cskel", FileType::FileType_CSKEL},
-		{"skc", FileType::FileType_CSKEL},
-		{"dot", FileType::FileType_DOT},
-		{"plo", FileType::FileType_PLO},
-		{"ts", FileType::FileType_TS},
-		{"lin", FileType::FileType_LIN}
-	};
 
-	const auto it = file_type_map.find(ext);
-	if (it != file_type_map.end())
+	//TODO replace by c++17 a constexpr merge between the maps someday
+	const auto it = point_set_file_type_map.find(ext);
+	if (it != point_set_file_type_map.end())
 		return it->second;
 	else
-		return FileType::FileType_UNKNOWN;
+	{
+		const auto it = polyline_file_type_map.find(ext);
+		if (it != polyline_file_type_map.end())
+			return it->second;
+		else
+		{
+			const auto it = graph_file_type_map.find(ext);
+			if (it != graph_file_type_map.end())
+				return it->second;
+			else
+			{
+				const auto it = surface_file_type_map.find(ext);
+				if (it != surface_file_type_map.end())
+					return it->second;
+				else
+				{
+					const auto it = volume_file_type_map.find(ext);
+					if (it != volume_file_type_map.end())
+						return it->second;
+					else
+					{
+						return FileType::FileType_UNKNOWN;
+					}
+				}
+			}
+		}
+	}
 }
 
-CGOGN_IO_API DataType data_type(const std::string& type_name)
+CGOGN_IO_EXPORT DataType data_type(const std::string& type_name)
 {
 	static const std::map<std::string, DataType> data_type_map{
 		{name_of_type(float32()), DataType::FLOAT},
@@ -349,16 +349,29 @@ CGOGN_IO_API DataType data_type(const std::string& type_name)
 		return DataType::UNKNOWN;
 }
 
+CGOGN_IO_EXPORT std::string file_type_filter(const std::map<std::string, FileType>& file_type_map, const char* const delim)
+{
+	std::vector<std::string> keys;
+	for (auto & k : file_type_map)
+		keys.emplace_back(std::string("*.") + k.first);
+
+	std::ostringstream filter;
+	std::copy(keys.begin(), keys.end(), std::ostream_iterator<std::string>(filter, delim));
+
+	return filter.str();
+}
+
+
 CharArrayBuffer::~CharArrayBuffer() {}
 
 IMemoryStream::~IMemoryStream() {}
 
-CGOGN_IO_API bool file_exists(const std::string& filename)
+CGOGN_IO_EXPORT bool file_exists(const std::string& filename)
 {
 	return std::ifstream(filename).good();
 }
 
-CGOGN_IO_API std::unique_ptr<std::ofstream> create_file(const std::string& filename, bool binary, bool overwrite)
+CGOGN_IO_EXPORT std::unique_ptr<std::ofstream> create_file(const std::string& filename, bool binary, bool overwrite)
 {
 	std::unique_ptr<std::ofstream> output;
 
@@ -389,7 +402,7 @@ CGOGN_IO_API std::unique_ptr<std::ofstream> create_file(const std::string& filen
 	return output;
 }
 
-CGOGN_IO_API std::istream& getline_safe(std::istream& is, std::string& str)
+CGOGN_IO_EXPORT std::istream& getline_safe(std::istream& is, std::string& str)
 {
 	str.clear();
 	std::istream::sentry se(is, true); // http://en.cppreference.com/w/cpp/io/basic_istream/sentry
@@ -400,23 +413,23 @@ CGOGN_IO_API std::istream& getline_safe(std::istream& is, std::string& str)
 		const auto c = sb->sbumpc();
 		switch (c)
 		{
-		case '\n':
-			return is;
-		case '\r':
-			if (sb->sgetc() == '\n')
-				sb->sbumpc();
-			return is;
-		case EOF: // Also handle the case when the last line has no line ending
-			if (str.empty())
-				is.setstate(std::ios::eofbit);
-			return is;
-		default:
-			str.push_back(static_cast<char>(c));
+			case '\n':
+				return is;
+			case '\r':
+				if (sb->sgetc() == '\n')
+					sb->sbumpc();
+				return is;
+			case EOF: // Also handle the case when the last line has no line ending
+				if (str.empty())
+					is.setstate(std::ios::eofbit);
+				return is;
+			default:
+				str.push_back(static_cast<char>(c));
 		}
 	}
 }
 
-CGOGN_IO_API std::istream& getline_safe(std::istream& is, std::string& str, char delim)
+CGOGN_IO_EXPORT std::istream& getline_safe(std::istream& is, std::string& str, char delim)
 {
 	str.clear();
 	std::istream::sentry se(is, true); // http://en.cppreference.com/w/cpp/io/basic_istream/sentry
@@ -429,18 +442,18 @@ CGOGN_IO_API std::istream& getline_safe(std::istream& is, std::string& str, char
 			return is;
 		switch (c)
 		{
-		case '\n':
-			return is;
-		case '\r':
-			if (sb->sgetc() == '\n')
-				sb->sbumpc();
-			return is;
-		case EOF: // Also handle the case when the last line has no line ending
-			if (str.empty())
-				is.setstate(std::ios::eofbit);
-			return is;
-		default:
-			str.push_back(static_cast<char>(c));
+			case '\n':
+				return is;
+			case '\r':
+				if (sb->sgetc() == '\n')
+					sb->sbumpc();
+				return is;
+			case EOF: // Also handle the case when the last line has no line ending
+				if (str.empty())
+					is.setstate(std::ios::eofbit);
+				return is;
+			default:
+				str.push_back(static_cast<char>(c));
 		}
 	}
 }

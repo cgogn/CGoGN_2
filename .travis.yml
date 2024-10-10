@@ -43,14 +43,16 @@ script:
   - mkdir build
   - cd build
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then  
-      cmake .. 
+      cmake ..
+        -DCMAKE_EXPORT_NO_PACKAGE_REGISTRY:BOOL=ON 
         -DCMAKE_CXX_COMPILER=g++-5 
         -DCMAKE_C_COMPILER=gcc-5 
         -DCGOGN_BUILD_TESTS:BOOL=ON 
         -DCGOGN_BUILD_EXAMPLES:BOOL=ON ; 
     fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then  
-      cmake .. 
+      cmake ..
+        -DCMAKE_EXPORT_NO_PACKAGE_REGISTRY:BOOL=ON 
         -DCMAKE_PREFIX_PATH:PATH=$(brew --prefix qt) 
         -DCGOGN_BUILD_TESTS:BOOL=ON
         -DCGOGN_BUILD_EXAMPLES:BOOL=ON ;
@@ -58,3 +60,4 @@ script:
   - make -j2
   - make test
   - sudo make install
+  - sudo make uninstall

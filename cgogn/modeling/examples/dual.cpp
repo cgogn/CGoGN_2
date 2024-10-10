@@ -112,7 +112,7 @@ public:
 
 		param_point_sprite_ = cgogn::rendering::ShaderPointSprite::generate_param();
 		param_point_sprite_->set_position_vbo(vbo_pos_.get());
-		param_point_sprite_->size_ = bb_.diag_size() / 500.0;
+		param_point_sprite_->size_ = cgogn::geometry::diagonal(bb_).norm() / 500.0;
 		param_point_sprite_->color_ = QColor(200, 20, 20);
 
 		if (this == viewer2)
@@ -220,8 +220,8 @@ public:
 		}
 		cgogn::geometry::compute_AABB(vertex_position_, bb_);
 
-		setSceneRadius(bb_.diag_size() / 2.0);
-		Vec3 center = bb_.center();
+		setSceneRadius(cgogn::geometry::diagonal(bb_).norm() / 2.0);
+		Vec3 center = cgogn::geometry::center(bb_);
 		setSceneCenter(qoglviewer::Vec(center[0], center[1], center[2]));
 		showEntireScene();
 	}
@@ -287,8 +287,8 @@ public:
 		cgogn::io::export_surface(map_, cgogn::io::ExportOptions::create().filename("dual.off").position_attribute(Vertex::ORBIT, "position").binary(false));
 
 		cgogn::geometry::compute_AABB(vertex_position_, bb_);
-		setSceneRadius(bb_.diag_size() / 2.0);
-		Vec3 center = bb_.center();
+		setSceneRadius(cgogn::geometry::diagonal(bb_).norm() / 2.0);
+		Vec3 center = cgogn::geometry::center(bb_);
 		setSceneCenter(qoglviewer::Vec(center[0], center[1], center[2]));
 		showEntireScene();
 	}

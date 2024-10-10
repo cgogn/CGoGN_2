@@ -24,7 +24,7 @@
 #ifndef CGOGN_IO_SET_EXPORT_EXPORT_H_
 #define CGOGN_IO_SET_EXPORT_EXPORT_H_
 
-#include <cgogn/io/dll.h>
+#include <cgogn/io/cgogn_io_export.h>
 
 #include <cgogn/io/mesh_io_gen.h>
 
@@ -94,7 +94,7 @@ private:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_IO_API PointSetExport<CMap0>;
+extern template class CGOGN_IO_EXPORT PointSetExport<CMap0>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
 
 

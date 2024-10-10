@@ -29,11 +29,11 @@
 
 #include <cgogn/core/utils/string.h>
 
-#include <cgogn/core/cmap/cmap3.h>
+#include <cgogn/core/cmap/cmap3_builder.h>
 #include <cgogn/geometry/types/geometry_traits.h>
 #include <cgogn/geometry/functions/orientation.h>
 
-#include <cgogn/io/dll.h>
+#include <cgogn/io/cgogn_io_export.h>
 #include <cgogn/io/c_locale.h>
 #include <cgogn/io/mesh_io_gen.h>
 #include <cgogn/io/io_utils.h>
@@ -114,9 +114,9 @@ namespace io
 template <typename MAP>
 class VolumeImport
 {
-public:
-
 	static_assert(MAP::DIMENSION == 3, "Must use map of dimension 3 in volume import");
+
+public:
 
 	using Self = VolumeImport<MAP>;
 
@@ -633,8 +633,8 @@ public:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_IO_API VolumeImport<CMap3>;
-extern template class CGOGN_IO_API VolumeFileImport<CMap3>;
+extern template class CGOGN_IO_EXPORT VolumeImport<CMap3>;
+extern template class CGOGN_IO_EXPORT VolumeFileImport<CMap3>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace io

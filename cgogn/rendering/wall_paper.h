@@ -26,7 +26,7 @@
 
 #include <cgogn/rendering/shaders/shader_texture.h>
 #include <cgogn/rendering/shaders/vbo.h>
-#include <cgogn/rendering/dll.h>
+#include <cgogn/rendering/cgogn_rendering_export.h>
 #include <QOpenGLFunctions_3_3_Core>
 
 namespace cgogn
@@ -52,7 +52,7 @@ namespace rendering
  *  wp_rend_->draw(proj,view,this);
  *
  */
-class CGOGN_RENDERING_API WallPaper
+class CGOGN_RENDERING_EXPORT WallPaper
 {
 protected:
 
@@ -63,7 +63,7 @@ protected:
 
 public:
 
-	class CGOGN_RENDERING_API Renderer
+	class CGOGN_RENDERING_EXPORT Renderer
 	{
 		friend class WallPaper;
 

@@ -23,7 +23,7 @@
 
 #include <gtest/gtest.h>
 
-#include <cgogn/core/cmap/cmap2_quad.h>
+#include <cgogn/core/cmap/cmap2_builder.h>
 
 namespace cgogn
 {

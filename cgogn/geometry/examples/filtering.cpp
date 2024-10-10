@@ -147,8 +147,8 @@ void Viewer::import(const std::string& surface_mesh)
 	filters_.set_filter<Vertex>([&] (Vertex v) { return vertex_position_[v][0] > 0; });
 
 	cgogn::geometry::compute_AABB(vertex_position_, bb_);
-	setSceneRadius(bb_.diag_size()/2.0);
-	Vec3 center = bb_.center();
+	setSceneRadius(cgogn::geometry::diagonal(bb_).norm()/2.0);
+	Vec3 center = cgogn::geometry::center(bb_);
 	setSceneCenter(qoglviewer::Vec(center[0], center[1], center[2]));
 	showEntireScene();
 }
@@ -229,7 +229,7 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 				return {float(std::abs(n[0])), float(std::abs(n[1])), float(std::abs(n[2]))};
 			});
 			update_bb();
-			setSceneRadius(bb_.diag_size()/2.0);
+			setSceneRadius(cgogn::geometry::diagonal(bb_).norm()/2.0);
 			break;
 		}
 		case Qt::Key_B:
@@ -243,7 +243,7 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 				return {float(std::abs(n[0])), float(std::abs(n[1])), float(std::abs(n[2]))};
 			});
 			update_bb();
-			setSceneRadius(bb_.diag_size()/2.0);
+			setSceneRadius(cgogn::geometry::diagonal(bb_).norm()/2.0);
 			break;
 		case Qt::Key_T:
 			cgogn::geometry::filter_taubin(map_, cell_cache_, vertex_position_, vertex_position2_);
@@ -255,7 +255,20 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 				return {float(std::abs(n[0])), float(std::abs(n[1])), float(std::abs(n[2]))};
 			});
 			update_bb();
-			setSceneRadius(bb_.diag_size()/2.0);
+			setSceneRadius(cgogn::geometry::diagonal(bb_).norm()/2.0);
+			break;
+		case Qt::Key_L:
+			cgogn::geometry::filter_laplacian(map_, cell_cache_, vertex_position_, vertex_position2_);
+//			map_.swap_attributes(vertex_position_, vertex_position2_);
+			cgogn::geometry::compute_normal(map_, vertex_position_, vertex_normal_);
+			cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
+			cgogn::rendering::update_vbo(vertex_normal_, vbo_norm_.get());
+			cgogn::rendering::update_vbo(vertex_normal_, vbo_color_.get(), [] (const Vec3& n) -> std::array<float,3>
+			{
+				return {float(std::abs(n[0])), float(std::abs(n[1])), float(std::abs(n[2]))};
+			});
+			update_bb();
+			setSceneRadius(cgogn::geometry::diagonal(bb_).norm()/2.0);
 			break;
 		default:
 			break;
@@ -339,7 +352,7 @@ void Viewer::init()
 	vbo_sphere_sz_ = cgogn::make_unique<cgogn::rendering::VBO>(1);
 	cgogn::rendering::update_vbo(vertex_normal_, vbo_sphere_sz_.get(), [&] (const Vec3& n) -> float
 	{
-		return bb_.diag_size()/1000.0 * (1.0 + 2.0*std::abs(n[2]));
+		return cgogn::geometry::diagonal(bb_).norm()/1000.0 * (1.0 + 2.0*std::abs(n[2]));
 	});
 
 	render_ = cgogn::make_unique<cgogn::rendering::MapRender>();
@@ -368,7 +381,7 @@ void Viewer::init()
 	param_normal_ = cgogn::rendering::ShaderVectorPerVertex::generate_param();
 	param_normal_->set_all_vbos(vbo_pos_.get(), vbo_norm_.get());
 	param_normal_->color_ = QColor(200,0,200);
-	param_normal_->length_ = bb_.diag_size()/50;
+	param_normal_->length_ = cgogn::geometry::diagonal(bb_).norm()/50;
 
 	param_phong_ = cgogn::rendering::ShaderPhongColor::generate_param();
 	param_phong_->set_all_vbos(vbo_pos_.get(), vbo_norm_.get(), vbo_color_.get());

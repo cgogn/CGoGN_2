@@ -25,6 +25,9 @@
 #define CGOGN_CORE_CMAP_CMAP2_BUILDER_H_
 
 #include <cgogn/core/cmap/map_base.h>
+#include <cgogn/core/cmap/cmap2.h>
+#include <cgogn/core/cmap/cmap2_tri.h>
+#include <cgogn/core/cmap/cmap2_quad.h>
 
 namespace cgogn
 {
@@ -170,6 +173,13 @@ private:
 
 	Map2& map_;
 };
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
+extern template class CGOGN_CORE_EXPORT CMap2Builder_T<CMap2>;
+extern template class CGOGN_CORE_EXPORT CMap2Builder_T<CMap2Tri>;
+extern template class CGOGN_CORE_EXPORT CMap2Builder_T<CMap2Quad>;
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
+
 
 } // namespace cgogn
 

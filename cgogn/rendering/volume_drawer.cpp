@@ -165,10 +165,11 @@ void VolumeDrawerGen::Renderer::set_thick_clipping_plane(const QVector4D& p, flo
 	set_clipping_plane2(p2);
 }
 
+VolumeDrawerTpl<false>::~VolumeDrawerTpl()
+{}
 
-
-template class CGOGN_RENDERING_API VolumeDrawerTpl<false>;
-template class CGOGN_RENDERING_API VolumeDrawerTpl<true>;
+VolumeDrawerTpl<true>::~VolumeDrawerTpl()
+{}
 
 } // namespace rendering
 

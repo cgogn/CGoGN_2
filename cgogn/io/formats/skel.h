@@ -40,139 +40,138 @@ namespace cgogn
 
 namespace io 
 {
-    
+
 ///
 /// livesu TVCG 2012
 ///
-template <typename VEC3>
-class SkelGraphImport : public GraphFileImport
+template <typename MAP, typename VEC3>
+class SkelGraphImport : public GraphFileImport<MAP>
 {
-
 public:
-	using Self = SkelGraphImport<VEC3>;
-	using Inherit = GraphFileImport;
-    using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
-    template <typename T>
-    using ChunkArray = typename Inherit::template ChunkArray<T>;
 
-	inline SkelGraphImport() {}
+	using Self = SkelGraphImport<MAP, VEC3>;
+	using Inherit = GraphFileImport<MAP>;
+	using Scalar = typename geometry::vector_traits<VEC3>::Scalar;
+	template <typename T>
+	using ChunkArray = typename Inherit::template ChunkArray<T>;
+
+	inline SkelGraphImport(MAP& map) : Inherit(map) {}
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(SkelGraphImport);
 	virtual ~SkelGraphImport() override {}
 
 protected:
-    virtual bool import_file_impl(const std::string& filename) override
-    {
-        std::ifstream fp(filename.c_str(), std::ios::in);
 
-        std::string line;
-        line.reserve(512);
+	virtual bool import_file_impl(const std::string& filename) override
+	{
+		std::ifstream fp(filename.c_str(), std::ios::in);
 
-        // read SKEL header
-        io::getline_safe(fp, line);
-        if (line.rfind("ID") == std::string::npos)
-        {
-				cgogn_log_error("SkelGraphImport::import_file_impl") << "File \"" << filename << "\" is not a valid skel file.";
-                return false;
-        }
+		std::string line;
+		line.reserve(512);
+
+		// read SKEL header
+		io::getline_safe(fp, line);
+		if (line.rfind("ID") == std::string::npos)
+		{
+			cgogn_log_error("SkelGraphImport::import_file_impl") << "File \"" << filename << "\" is not a valid skel file.";
+			return false;
+		}
 
 		std::set<std::pair<uint32,uint32>> unique_edges;
 
-        // read number of vertices
-        io::getline_safe(fp, line);
-        const uint32 nb_vertices = uint32((std::stoul(line)));
-        this->reserve(nb_vertices);
+		// read number of vertices
+		io::getline_safe(fp, line);
+		const uint32 nb_vertices = uint32((std::stoul(line)));
+
+		this->reserve(5 * nb_vertices);
 
 		ChunkArray<VEC3>* position = this->template add_vertex_attribute<VEC3>("position");
 		ChunkArray<Scalar>* radius = this->template add_vertex_attribute<Scalar>("radius");
 
-        std::vector<uint32> vertices_id;
-        vertices_id.reserve(nb_vertices);
+		std::vector<uint32> vertices_id;
+		vertices_id.reserve(nb_vertices);
 
-        std::vector<uint32> table;
-        table.reserve(64);
+		std::vector<uint32> table;
+		table.reserve(64);
 
-        for (uint32 i = 0; i < nb_vertices; ++i)
-        {
-            io::getline_safe(fp, line);
-            std::stringstream oss(line);
-
-            uint32 id, nb_neighboors;
-            float64 Cx, Cy, Cz, radi;
-
-            oss >> id;
-            oss >> Cx;
-            oss >> Cy;
-            oss >> Cz;
-            oss >> radi;
-
-            VEC3 pos{Scalar(Cx), Scalar(Cy), Scalar(Cz)};
-            const uint32 vertex_id = this->insert_line_vertex_container();
-
-            (*position)[vertex_id] = pos;
-            (*radius)[vertex_id] = Scalar(radi);
-
-            vertices_id.push_back(vertex_id);
-
-            //neighborhood connectivity
-            oss >> nb_neighboors;
-            table.clear();
-			uint32 index;
-            for(uint32 j = 0u ; j < nb_neighboors ; ++j)
-            {                
-                oss >> index;				
-                table.push_back(index);
-            }
-
-			for(uint32 j = 0u; j < nb_neighboors ; ++j)
-				unique_edges.emplace(std::make_pair(std::min(id,table[j]), std::max(id, table[j])));
-        }
-
-		for(auto& it : unique_edges)
+		for (uint32 i = 0; i < nb_vertices; ++i)
 		{
-			this->edges_nb_vertices_.push_back(2);
-			this->edges_vertex_indices_.push_back(it.first);
-			this->edges_vertex_indices_.push_back(it.second);
+			io::getline_safe(fp, line);
+			std::stringstream iss(line);
+
+			uint32 id, nb_neighbors;
+			float64 Cx, Cy, Cz, radi;
+
+			iss >> id;
+			iss >> Cx;
+			iss >> Cy;
+			iss >> Cz;
+			iss >> radi;
+
+			const uint32 vertex_id = this->insert_line_vertex_container();
+
+			(*position)[vertex_id] = { Scalar(Cx), Scalar(Cy), Scalar(Cz) };
+			(*radius)[vertex_id] = Scalar(radi);
+
+			vertices_id.push_back(vertex_id);
+
+			// neighborhood connectivity
+			iss >> nb_neighbors;
+			table.clear();
+			uint32 index;
+			for (uint32 j = 0u ; j < nb_neighbors ; ++j)
+			{
+				iss >> index;
+				table.push_back(index);
+			}
+
+			for (uint32 j = 0u; j < nb_neighbors ; ++j)
+				unique_edges.emplace(std::make_pair(std::min(id, table[j]), std::max(id, table[j])));
 		}
 
-        return true;
-    }
+		for (auto& it : unique_edges)
+			this->add_edge(vertices_id[it.first], vertices_id[it.second]);
+
+		return true;
+	}
 };
 
 template <typename MAP>
 class SkelGraphExport : public GraphExport<MAP>
 {
 public:
-    using Inherit = GraphExport<MAP>;
-    using Self = SkelGraphExport<MAP>;
-    using Map = typename Inherit::Map;
-    using Vertex = typename Inherit::Vertex;
-    using Edge = typename Inherit::Edge;
-    using ChunkArrayGen = typename Inherit::ChunkArrayGen;
-    template <typename T>
-    using VertexAttribute = typename Inherit::template VertexAttribute<T>;
-    using ChunkArrayContainer = typename Inherit::ChunkArrayContainer;
+
+	using Inherit = GraphExport<MAP>;
+	using Self = SkelGraphExport<MAP>;
+	using Map = typename Inherit::Map;
+	using Vertex = typename Inherit::Vertex;
+	using Edge = typename Inherit::Edge;
+	using ChunkArrayGen = typename Inherit::ChunkArrayGen;
+	template <typename T>
+	using VertexAttribute = typename Inherit::template VertexAttribute<T>;
+	using ChunkArrayContainer = typename Inherit::ChunkArrayContainer;
 
 protected:
-    virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& ) override
-    {
-        const ChunkArrayGen* radius_attribute(nullptr);
 
-        for(const ChunkArrayGen* vatt: this->vertex_attributes())
+	virtual void export_file_impl(const Map& map, std::ofstream& output, const ExportOptions& ) override
+	{
+		const ChunkArrayGen* radius_attribute(nullptr);
+
+		for(const ChunkArrayGen* vatt: this->vertex_attributes())
 		{
-            if(to_lower(vatt->name()) == "radius" || to_lower(vatt->name()) == "radii")
-                radius_attribute = vatt;
+			if(to_lower(vatt->name()) == "radius" || to_lower(vatt->name()) == "radii")
+				radius_attribute = vatt;
 		}
 
-        // set precision for float output
-        output << std::setprecision(12);
-        output << "ID Cx Cy Cz RADIUS #NEIGHBORS NEIGHBORS_LIST" << std::endl;
-        output << map.template nb_cells<Vertex::ORBIT>() << std::endl;
+		// set precision for float output
+		output << std::setprecision(12);
+		output << "ID Cx Cy Cz RADIUS #NEIGHBORS NEIGHBORS_LIST" << std::endl;
+		output << map.template nb_cells<Vertex::ORBIT>() << std::endl;
 
 		std::vector<uint32> neighbors;
 		neighbors.reserve(32);
 		map.foreach_cell([&] (Vertex v)
 		{
-//			//output << map.embedding(v) << " ";
+			//			//output << map.embedding(v) << " ";
 			output << this->vindices_[v] << " ";
 			this->position_attribute(Vertex::ORBIT)->export_element(map.embedding(v), output, false, false);
 			//output << " ";
@@ -190,18 +189,17 @@ protected:
 			output << std::endl;
 
 		}, *(this->cell_cache_));
-    }
+	}
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_IO_API SkelGraphImport<Eigen::Vector3d>;
-extern template class CGOGN_IO_API SkelGraphImport<Eigen::Vector3f>;
-extern template class CGOGN_IO_API SkelGraphImport<geometry::Vec_T<std::array<float64,3>>>;
-extern template class CGOGN_IO_API SkelGraphImport<geometry::Vec_T<std::array<float32,3>>>;
+extern template class CGOGN_IO_EXPORT SkelGraphImport<Eigen::Vector3d>;
+extern template class CGOGN_IO_EXPORT SkelGraphImport<Eigen::Vector3f>;
+extern template class CGOGN_IO_EXPORT SkelGraphImport<geometry::Vec_T<std::array<float64,3>>>;
+extern template class CGOGN_IO_EXPORT SkelGraphImport<geometry::Vec_T<std::array<float32,3>>>;
 
-extern template class CGOGN_IO_API SkelGraphExport<UndirectedGraph>;
+extern template class CGOGN_IO_EXPORT SkelGraphExport<UndirectedGraph>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
-
 
 } // namespace io
 

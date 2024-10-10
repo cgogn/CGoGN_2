@@ -25,6 +25,7 @@
 #define CGOGN_CORE_CMAP_CMAP1_BUILDER_H_
 
 #include <cgogn/core/cmap/map_base.h>
+#include <cgogn/core/cmap/cmap1.h>
 
 namespace cgogn
 {
@@ -52,7 +53,6 @@ public:
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CMap1Builder_T);
 	inline ~CMap1Builder_T() {}
 
-public:
 	template <Orbit ORBIT>
 	inline void create_embedding()
 	{

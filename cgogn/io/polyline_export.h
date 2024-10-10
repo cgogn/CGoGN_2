@@ -24,7 +24,7 @@
 #ifndef CGOGN_IO_POLYLINE_EXPORT_H_
 #define CGOGN_IO_POLYLINE_EXPORT_H_
 
-#include <cgogn/io/dll.h>
+#include <cgogn/io/cgogn_io_export.h>
 
 #include <cgogn/io/mesh_io_gen.h>
 
@@ -114,7 +114,7 @@ private:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_IO_API PolylineExport<CMap1>;
+extern template class CGOGN_IO_EXPORT PolylineExport<CMap1>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
 
 } // end namespace io

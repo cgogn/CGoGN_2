@@ -25,10 +25,12 @@
 #define CGOGN_CORE_CMAP_CMAP3_TETRA_H_
 
 #include <cgogn/core/cmap/map_base.h>
-#include <cgogn/core/cmap/cmap3_builder.h>
 
 namespace cgogn
 {
+
+template <typename MAP3>
+class CMap3Builder_T; // forward declaration
 
 template <typename MAP_TYPE>
 class CMap3Tetra_T : public MapBase<MAP_TYPE>
@@ -330,21 +332,6 @@ protected:
 			return Dart();
 		}
 		return add_tetra_topo_fp();
-	}
-
-	inline Dart add_prism_topo_fp(std::size_t size)
-	{
-		unused_parameters(size);
-		cgogn_message_assert(false, "Can create only tetra");
-		cgogn_log_warning("add_prism_topo_fp") << "Attempt to create a volume which is not a tetrahedron in CMap3Tetra";
-		return Dart();
-	}
-
-	inline Dart add_stamp_volume_topo_fp()
-	{
-		cgogn_message_assert(false, "Can create only tetra");
-		cgogn_log_warning("add_stamp_volume_topo_fp") << "Attempt to create a volume which is not a tetrahedron in CMap3Tetra";
-		return Dart();
 	}
 
 	/**
@@ -1638,22 +1625,22 @@ struct CMap3TetraType
 using CMap3Tetra = CMap3Tetra_T<CMap3TetraType>;
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_CORE_API CMap3Builder_T<CMap3Tetra>;
-extern template class CGOGN_CORE_API DartMarker<CMap3Tetra>;
-extern template class CGOGN_CORE_API DartMarkerStore<CMap3Tetra>;
-extern template class CGOGN_CORE_API DartMarkerNoUnmark<CMap3Tetra>;
-extern template class CGOGN_CORE_API CellMarker<CMap3Tetra, CMap3Tetra::Vertex::ORBIT>;
-extern template class CGOGN_CORE_API CellMarker<CMap3Tetra, CMap3Tetra::Edge::ORBIT>;
-extern template class CGOGN_CORE_API CellMarker<CMap3Tetra, CMap3Tetra::Face::ORBIT>;
-extern template class CGOGN_CORE_API CellMarker<CMap3Tetra, CMap3Tetra::Volume::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap3Tetra, CMap3Tetra::Vertex::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap3Tetra, CMap3Tetra::Edge::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap3Tetra, CMap3Tetra::Face::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap3Tetra, CMap3Tetra::Volume::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap3Tetra, CMap3Tetra::Vertex::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap3Tetra, CMap3Tetra::Edge::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap3Tetra, CMap3Tetra::Face::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap3Tetra, CMap3Tetra::Volume::ORBIT>;
+
+extern template class CGOGN_CORE_EXPORT DartMarker<CMap3Tetra>;
+extern template class CGOGN_CORE_EXPORT DartMarkerStore<CMap3Tetra>;
+extern template class CGOGN_CORE_EXPORT DartMarkerNoUnmark<CMap3Tetra>;
+extern template class CGOGN_CORE_EXPORT CellMarker<CMap3Tetra, CMap3Tetra::Vertex::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarker<CMap3Tetra, CMap3Tetra::Edge::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarker<CMap3Tetra, CMap3Tetra::Face::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarker<CMap3Tetra, CMap3Tetra::Volume::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerNoUnmark<CMap3Tetra, CMap3Tetra::Vertex::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerNoUnmark<CMap3Tetra, CMap3Tetra::Edge::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerNoUnmark<CMap3Tetra, CMap3Tetra::Face::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerNoUnmark<CMap3Tetra, CMap3Tetra::Volume::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerStore<CMap3Tetra, CMap3Tetra::Vertex::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerStore<CMap3Tetra, CMap3Tetra::Edge::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerStore<CMap3Tetra, CMap3Tetra::Face::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerStore<CMap3Tetra, CMap3Tetra::Volume::ORBIT>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace cgogn

@@ -24,7 +24,7 @@
 #ifndef CGOGN_RENDERING_SHADER_TRANSP_VOLUMES_H_
 #define CGOGN_RENDERING_SHADER_TRANSP_VOLUMES_H_
 
-#include <cgogn/rendering/dll.h>
+#include <cgogn/rendering/cgogn_rendering_export.h>
 
 #include <cgogn/rendering/shaders/vbo.h>
 #include <cgogn/rendering/shaders/shader_program.h>
@@ -71,7 +71,7 @@ public:
 };
 
 
-class CGOGN_RENDERING_API ShaderTransparentVolumes : public ShaderProgram
+class CGOGN_RENDERING_EXPORT ShaderTransparentVolumes : public ShaderProgram
 {
 	friend class ShaderParamTransparentVolumes;
 

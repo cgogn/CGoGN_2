@@ -79,6 +79,9 @@ public:
 	template <Orbit ORBIT>
 	using CellMarkerNoUnmark = typename cgogn::CellMarkerNoUnmark<ConcreteMap, ORBIT>;
 
+	using Inherit::remove_attribute;
+	using Inherit::has_attribute;
+
 	MapBase() :	Inherit() {}
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(MapBase);
 	~MapBase() {}
@@ -236,12 +239,6 @@ public:
 	 * Attributes management
 	 *******************************************************************************/
 
-	inline bool has_attribute(Orbit orbit, const std::string& att_name)
-	{
-		cgogn_message_assert(orbit < NB_ORBITS, "Unknown orbit parameter");
-		return this->attributes_[orbit].has_array(att_name);
-	}
-
 	/**
 	 * \brief add an attribute
 	 * @param attribute_name the name of the attribute to create
@@ -325,18 +322,6 @@ public:
 	inline bool remove_attribute(const Attribute_T<T>& ah)
 	{
 		return this->attributes_[ah.orbit()].remove_chunk_array(ah.data());
-	}
-
-	/**
-	 * \brief remove_attribute
-	 * @param orbit, the attribute orbit
-	 * @param att_name attribute name
-	 * @return true if remove succeed else false
-	 */
-	inline bool remove_attribute(Orbit orbit, const std::string& att_name)
-	{
-		cgogn_message_assert(orbit < NB_ORBITS, "Unknown orbit parameter");
-		return this->attributes_[orbit].remove_chunk_array(att_name);
 	}
 
 	template <typename T, Orbit ORBIT>

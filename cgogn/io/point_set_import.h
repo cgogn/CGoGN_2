@@ -32,9 +32,9 @@
 #include <cgogn/core/utils/name_types.h>
 #include <cgogn/core/utils/string.h>
 
-#include <cgogn/core/cmap/cmap0.h>
+#include <cgogn/core/cmap/cmap0_builder.h>
 
-#include <cgogn/io/dll.h>
+#include <cgogn/io/cgogn_io_export.h>
 #include <cgogn/io/c_locale.h>
 #include <cgogn/io/mesh_io_gen.h>
 #include <cgogn/io/data_io.h>
@@ -48,8 +48,9 @@ namespace io
 template <typename MAP>
 class PointSetImport
 {
-public:
 	static_assert(MAP::DIMENSION == 0, "Must use map of dimension 0 in point set import");
+
+public:
 
 	using Self = PointSetImport<MAP>;
 
@@ -67,6 +68,7 @@ public:
 	using DataInputGen = cgogn::io::DataInputGen;
 
 	inline PointSetImport(MAP& map) :
+		nb_vertices_(0u),
 		map_(map),
 		mbuild_(map)
 	{
@@ -131,21 +133,21 @@ protected:
 template <typename MAP>
 class PointSetFileImport : public PointSetImport<MAP>, public FileImport
 {
-		using Self = PointSetFileImport<MAP>;
-		using Inherit_Import = PointSetImport<MAP>;
-		using Inherit_File = FileImport;
+	using Self = PointSetFileImport<MAP>;
+	using Inherit_Import = PointSetImport<MAP>;
+	using Inherit_File = FileImport;
 
-		CGOGN_NOT_COPYABLE_NOR_MOVABLE(PointSetFileImport);
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(PointSetFileImport);
 
 public:
 
-		inline PointSetFileImport(MAP& map) : Inherit_Import(map), Inherit_File() {}
-		virtual ~PointSetFileImport() {}
+	inline PointSetFileImport(MAP& map) : Inherit_Import(map), Inherit_File() {}
+	virtual ~PointSetFileImport() {}
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_IO_API PointSetImport<CMap0>;
-extern template class CGOGN_IO_API PointSetFileImport<CMap0>;
+extern template class CGOGN_IO_EXPORT PointSetImport<CMap0>;
+extern template class CGOGN_IO_EXPORT PointSetFileImport<CMap0>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
 
 } // end namespace io

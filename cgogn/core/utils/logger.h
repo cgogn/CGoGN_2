@@ -46,7 +46,7 @@ namespace cgogn
 namespace logger
 {
 
-class CGOGN_CORE_API Logger final
+class CGOGN_CORE_EXPORT Logger final
 {
 public:
 

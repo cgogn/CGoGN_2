@@ -24,7 +24,7 @@
 #ifndef CGOGN_RENDERING_SHADERS_EXPLODE_VOLUMES_H_
 #define CGOGN_RENDERING_SHADERS_EXPLODE_VOLUMES_H_
 
-#include <cgogn/rendering/dll.h>
+#include <cgogn/rendering/cgogn_rendering_export.h>
 #include <cgogn/rendering/shaders/shader_program.h>
 #include <cgogn/rendering/shaders/vbo.h>
 
@@ -44,7 +44,7 @@ template <bool CPV>
 class ShaderParamExplodeVolumes
 {};
 
-class CGOGN_RENDERING_API ShaderExplodeVolumesGen : public ShaderProgram
+class CGOGN_RENDERING_EXPORT ShaderExplodeVolumesGen : public ShaderProgram
 {
 	template <bool CPV> friend class ShaderParamExplodeVolumes;
 
@@ -98,16 +98,12 @@ public:
 private:
 
 	ShaderExplodeVolumesTpl() : ShaderExplodeVolumesGen(CPV) {}
-	static ShaderExplodeVolumesTpl* instance_;
 };
-
-template <bool CPV>
-ShaderExplodeVolumesTpl<CPV>* ShaderExplodeVolumesTpl<CPV>::instance_ = nullptr;
 
 
 // COLOR UNIFORM PARAM
 template <>
-class ShaderParamExplodeVolumes<false> : public ShaderParam
+class CGOGN_RENDERING_EXPORT ShaderParamExplodeVolumes<false> : public ShaderParam
 {
 protected:
 
@@ -123,15 +119,13 @@ protected:
 
 public:
 
-	using ShaderType = ShaderExplodeVolumesTpl<false>;
-
 	QColor color_;
 	QVector4D plane_clip_;
 	QVector4D plane_clip2_;
 	QVector3D light_position_;
 	float32 explode_factor_;
 
-	ShaderParamExplodeVolumes(ShaderExplodeVolumesTpl<false>* sh) :
+	ShaderParamExplodeVolumes(ShaderExplodeVolumesGen* sh) :
 		ShaderParam(sh),
 		color_(255, 0, 0),
 		plane_clip_(0, 0, 0, 0),
@@ -156,7 +150,7 @@ public:
 
 // COLOR PER VERTEX PARAM
 template <>
-class ShaderParamExplodeVolumes<true> : public ShaderParam
+class CGOGN_RENDERING_EXPORT ShaderParamExplodeVolumes<true> : public ShaderParam
 {
 protected:
 
@@ -171,14 +165,12 @@ protected:
 
 public:
 
-	using ShaderType = ShaderExplodeVolumesTpl<true>;
-
 	QVector4D plane_clip_;
 	QVector4D plane_clip2_;
 	QVector3D light_position_;
 	float32 explode_factor_;
 
-	ShaderParamExplodeVolumes(ShaderExplodeVolumesTpl<true>* sh) :
+	ShaderParamExplodeVolumes(ShaderExplodeVolumesGen* sh) :
 		ShaderParam(sh),
 		plane_clip_(0, 0, 0, 0),
 		plane_clip2_(0, 0, 0, 0),
@@ -236,6 +228,7 @@ public:
 template <bool CPV>
 std::unique_ptr<typename ShaderExplodeVolumesTpl<CPV>::Param> ShaderExplodeVolumesTpl<CPV>::generate_param()
 {
+	static ShaderExplodeVolumesTpl* instance_ = nullptr;
 	if (!instance_)
 	{
 		instance_ = new ShaderExplodeVolumesTpl<CPV>();
@@ -244,17 +237,14 @@ std::unique_ptr<typename ShaderExplodeVolumesTpl<CPV>::Param> ShaderExplodeVolum
 	return cgogn::make_unique<Param>(instance_);
 }
 
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && !defined(CGOGN_RENDER_SHADERS_EXPLODE_VOLUME_CPP_)
+extern template class CGOGN_RENDERING_EXPORT ShaderExplodeVolumesTpl<false>;
+extern template class CGOGN_RENDERING_EXPORT ShaderExplodeVolumesTpl<true>;
+#endif
 
 using ShaderExplodeVolumes = ShaderExplodeVolumesTpl<false>;
 using ShaderExplodeVolumesColor = ShaderExplodeVolumesTpl<true>;
 
-
-#if !defined(CGOGN_RENDER_SHADERS_EXPLODE_VOLUME_CPP_)
-extern template class CGOGN_RENDERING_API ShaderExplodeVolumesTpl<false>;
-extern template class CGOGN_RENDERING_API ShaderExplodeVolumesTpl<true>;
-extern template class CGOGN_RENDERING_API ShaderParamExplodeVolumes<false>;
-extern template class CGOGN_RENDERING_API ShaderParamExplodeVolumes<true>;
-#endif
 
 } // namespace rendering
 

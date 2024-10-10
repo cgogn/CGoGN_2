@@ -336,14 +336,14 @@ protected:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_EXTERNAL_TEMPLATES_CPP_))
-extern template CGOGN_GEOMETRY_API class Collector_OneRing<Eigen::Vector3f, CMap2>;
-extern template CGOGN_GEOMETRY_API class Collector_OneRing<Eigen::Vector3d, CMap2>;
-extern template CGOGN_GEOMETRY_API class Collector_OneRing<Eigen::Vector3f, CMap3>;
-extern template CGOGN_GEOMETRY_API class Collector_OneRing<Eigen::Vector3d, CMap3>;
-extern template CGOGN_GEOMETRY_API class Collector_WithinSphere<Eigen::Vector3f, CMap2>;
-extern template CGOGN_GEOMETRY_API class Collector_WithinSphere<Eigen::Vector3d, CMap2>;
-extern template CGOGN_GEOMETRY_API class Collector_WithinSphere<Eigen::Vector3f, CMap3>;
-extern template CGOGN_GEOMETRY_API class Collector_WithinSphere<Eigen::Vector3d, CMap3>;
+extern template class CGOGN_GEOMETRY_EXPORT Collector_OneRing<Eigen::Vector3f, CMap2>;
+extern template class CGOGN_GEOMETRY_EXPORT Collector_OneRing<Eigen::Vector3d, CMap2>;
+extern template class CGOGN_GEOMETRY_EXPORT Collector_OneRing<Eigen::Vector3f, CMap3>;
+extern template class CGOGN_GEOMETRY_EXPORT Collector_OneRing<Eigen::Vector3d, CMap3>;
+extern template class CGOGN_GEOMETRY_EXPORT Collector_WithinSphere<Eigen::Vector3f, CMap2>;
+extern template class CGOGN_GEOMETRY_EXPORT Collector_WithinSphere<Eigen::Vector3d, CMap2>;
+extern template class CGOGN_GEOMETRY_EXPORT Collector_WithinSphere<Eigen::Vector3f, CMap3>;
+extern template class CGOGN_GEOMETRY_EXPORT Collector_WithinSphere<Eigen::Vector3d, CMap3>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace geometry

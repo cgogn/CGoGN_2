@@ -32,9 +32,10 @@
 #include <cgogn/core/utils/name_types.h>
 #include <cgogn/core/utils/string.h>
 
-#include <cgogn/core/cmap/cmap3.h>
+#include <cgogn/core/cmap/cmap2.h>
+#include <cgogn/core/cmap/cmap2_builder.h>
 
-#include <cgogn/io/dll.h>
+#include <cgogn/io/cgogn_io_export.h>
 #include <cgogn/io/c_locale.h>
 #include <cgogn/io/mesh_io_gen.h>
 #include <cgogn/io/data_io.h>
@@ -298,8 +299,8 @@ public:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_IO_API SurfaceImport<CMap2>;
-extern template class CGOGN_IO_API SurfaceFileImport<CMap2>;
+extern template class CGOGN_IO_EXPORT SurfaceImport<CMap2>;
+extern template class CGOGN_IO_EXPORT SurfaceFileImport<CMap2>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace io

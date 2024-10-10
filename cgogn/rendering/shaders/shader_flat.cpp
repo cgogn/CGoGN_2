@@ -97,14 +97,13 @@ const char* ShaderFlatGen::fragment_shader_source2_ =
 "in vec3 col;\n"
 "void main()\n"
 "{\n"
-"	vec3 N = normalize(cross(dFdx(pos),dFdy(pos)));\n"
-"	vec3 L = normalize(lightPosition-pos);\n"
-"	float lambert = dot(N,L);\n"
-"	if (gl_FrontFacing)\n"
-"		fragColor = ambiant_color+vec4(lambert*col,1.0);\n"
-"	else\n"
-"		if (cull_back_face) discard;\n"
-"		else fragColor = ambiant_color-vec4(lambert*col,1.0);\n"
+"    vec3 N = normalize(cross(dFdx(pos),dFdy(pos)));\n"
+"    vec3 L = normalize(lightPosition-pos);\n"
+"    float lambert = dot(N,L);\n"
+"    if ((gl_FrontFacing == false) && cull_back_face)\n"
+"        discard;\n"
+"    else\n"
+"        fragColor = ambiant_color+vec4(lambert*col,1.0);\n"
 "}\n";
 
 ShaderFlatGen::ShaderFlatGen(bool color_per_vertex)
@@ -166,10 +165,16 @@ void ShaderFlatGen::set_bf_culling(bool cull)
 	prg_.setUniformValue(unif_bf_culling_, cull);
 }
 
-template class CGOGN_RENDERING_API ShaderFlatTpl<false>;
-template class CGOGN_RENDERING_API ShaderFlatTpl<true>;
-template class CGOGN_RENDERING_API ShaderParamFlat<false>;
-template class CGOGN_RENDERING_API ShaderParamFlat<true>;
+ShaderParamFlat<false>::~ShaderParamFlat()
+{}
+
+ShaderParamFlat<true>::~ShaderParamFlat()
+{}
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES)
+template class CGOGN_RENDERING_EXPORT ShaderFlatTpl<false>;
+template class CGOGN_RENDERING_EXPORT ShaderFlatTpl<true>;
+#endif
 
 } // namespace rendering
 

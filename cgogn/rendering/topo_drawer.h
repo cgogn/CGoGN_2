@@ -24,7 +24,7 @@
 #ifndef CGOGN_RENDERING_TOPO_DRAWER_H_
 #define CGOGN_RENDERING_TOPO_DRAWER_H_
 
-#include <cgogn/rendering/dll.h>
+#include <cgogn/rendering/cgogn_rendering_export.h>
 
 #include <cgogn/rendering/shaders/shader_simple_color.h>
 #include <cgogn/rendering/shaders/shader_bold_line.h>
@@ -60,7 +60,7 @@ namespace rendering
  *  topo_rend_->draw(proj,view,this);
  *
  */
-class CGOGN_RENDERING_API TopoDrawer
+class CGOGN_RENDERING_EXPORT TopoDrawer
 {
 	using Vec3f = geometry::Vec_T<std::array<float32,3>>;
 
@@ -90,7 +90,7 @@ public:
 	auto update(const MAP& m, const VERTEX_ATTR& position)
 	-> typename std::enable_if<MAP::DIMENSION == 3, void>::type;
 
-	class CGOGN_RENDERING_API Renderer
+	class CGOGN_RENDERING_EXPORT Renderer
 	{
 		friend class TopoDrawer;
 

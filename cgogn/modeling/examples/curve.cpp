@@ -320,7 +320,7 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 
 		cgogn::rendering::update_vbo(vertex_position_, vbo_sphere_sz_.get(), [&] (const Vec3& n) -> float
 		{
-			return bb_.diag_size()/1000.0;
+			return cgogn::geometry::diagonal(bb_).norm()/1000.0;
 		});
 
 		render_->init_primitives(map_, cgogn::rendering::POINTS);
@@ -353,8 +353,8 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 		drawer_->end_list();
 
 
-		setSceneRadius(bb_.diag_size()/2.0);
-		Vec3 center = bb_.center();
+		setSceneRadius(cgogn::geometry::diagonal(bb_).norm()/2.0);
+		Vec3 center = cgogn::geometry::center(bb_);
 		setSceneCenter(qoglviewer::Vec(center[0], center[1], center[2]));
 
 	}

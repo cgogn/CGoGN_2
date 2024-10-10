@@ -41,7 +41,7 @@ inline auto centroid(
 	const VERTEX_ATTR& attribute
 ) -> typename std::enable_if<is_cell_type<CellType>::value, InsideTypeOf<VERTEX_ATTR>>::type
 {
-	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"attribute must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, "attribute must be a vertex attribute");
 
 	using VEC = InsideTypeOf<VERTEX_ATTR>;
 	VEC result;
@@ -56,8 +56,6 @@ inline auto centroid(
 	return result;
 }
 
-
-
 template <typename CellType, typename MAP, typename MASK,typename VERTEX_ATTR>
 inline void compute_centroid(
 	const MAP& map,
@@ -66,7 +64,7 @@ inline void compute_centroid(
 	Attribute<InsideTypeOf<VERTEX_ATTR>, CellType::ORBIT>& cell_centroid
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"attribute must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, "attribute must be a vertex attribute");
 
 	map.parallel_foreach_cell([&] (CellType c)
 	{
@@ -82,11 +80,10 @@ inline void compute_centroid(
 	Attribute<InsideTypeOf<VERTEX_ATTR>, CellType::ORBIT>& cell_centroid
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"attribute must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, "attribute must be a vertex attribute");
 
 	compute_centroid<CellType>(map, AllCellsFilter(), attribute, cell_centroid);
 }
-
 
 template <typename MAP, typename MASK, typename VERTEX_ATTR>
 inline auto centroid(
@@ -95,7 +92,7 @@ inline auto centroid(
 	const VERTEX_ATTR& attribute
 ) -> typename std::enable_if<!is_cell_type<MASK>::value, InsideTypeOf<VERTEX_ATTR>>::type
 {
-	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"attribute must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, "attribute must be a vertex attribute");
 
 	using VEC = InsideTypeOf<VERTEX_ATTR>;
 	std::vector<VEC> sum_per_thread(thread_pool()->nb_workers());
@@ -126,7 +123,7 @@ inline InsideTypeOf<VERTEX_ATTR> centroid(
 	const VERTEX_ATTR& attribute
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"attribute must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, "attribute must be a vertex attribute");
 
 	return centroid(map, AllCellsFilter(), attribute);
 }
@@ -138,7 +135,7 @@ typename MAP::Vertex central_vertex(
 	const VERTEX_ATTR& attribute
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"attribute must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, "attribute must be a vertex attribute");
 
 	using VEC = InsideTypeOf<VERTEX_ATTR>;
 	using Vertex = typename MAP::Vertex;
@@ -167,14 +164,13 @@ typename MAP::Vertex central_vertex(
 	return min_vertex_per_thread[min_pos];
 }
 
-
 template <typename MAP, typename VERTEX_ATTR>
 typename MAP::Vertex central_vertex(
 	const MAP& map,
 	const VERTEX_ATTR& attribute
 )
 {
-	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"attribute must be a vertex attribute");
+	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value, "attribute must be a vertex attribute");
 
 	return central_vertex(map, AllCellsFilter(), attribute);
 }

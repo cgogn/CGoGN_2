@@ -39,7 +39,7 @@ namespace cgogn
  * A CellFilters instance can be used as a parameter to map.foreach_cell()
  * They can set the filtering function used to filter each Orbit traversal
  */
-class CGOGN_CORE_API CellFilters
+class CGOGN_CORE_EXPORT CellFilters
 {
 public:
 
@@ -77,7 +77,7 @@ protected:
 };
 
 // dummy class for all cells traversal
-class CGOGN_CORE_API AllCellsFilter
+class CGOGN_CORE_EXPORT AllCellsFilter
 {
 public:
 
@@ -94,7 +94,7 @@ public:
  *  - template <typename CellType> const_iterator begin() const
  *" - template <typename CellType> const_iterator end() const
  */
-class CGOGN_CORE_API CellTraversor
+class CGOGN_CORE_EXPORT CellTraversor
 {
 public:
 
@@ -184,7 +184,7 @@ public:
 	{
 		static_assert(is_func_return_same<DartSelectionFunction, Dart>::value && is_func_parameter_same<DartSelectionFunction, CellType>::value, "Badly formed DartSelectionFunction");
 		static const Orbit ORBIT = CellType::ORBIT;
-        cgogn_message_assert(is_traversed<CellType>(), "Try to update a cell on a QuickTraversor that has not been built");
+		cgogn_message_assert(is_traversed<CellType>(), "Try to update a cell on a QuickTraversor that has not been built");
 		qt_attributes_[ORBIT][c.dart] = dart_select(c);
 	}
 
@@ -233,7 +233,7 @@ public:
 
 		const Self* const qt_ptr_;
 		Orbit orbit_;
-		const Attribute_T<Dart>::ChunkArrayContainer& ca_cont_;
+		Attribute_T<Dart>::ChunkArrayContainer& ca_cont_;
 		uint32 index_;
 
 		inline const_iterator(const Self* qt, Orbit orbit, uint32 i) :
@@ -441,6 +441,15 @@ public:
 	inline void add(CellType c)
 	{
 		this->add<CellType>(c, [] (CellType c) -> Dart { return c.dart; });
+	}
+
+	template <typename CellType>
+	inline void remove(CellType c)
+	{
+		static const Orbit ORBIT = CellType::ORBIT;
+		auto it = std::find_if(cells_[ORBIT].begin(), cells_[ORBIT].end(), [&] (Dart d) { return map_.same_cell(CellType(d), c); });
+		if (it != cells_[ORBIT].end())
+			cells_[ORBIT].erase(it);
 	}
 
 	template <typename CellType>

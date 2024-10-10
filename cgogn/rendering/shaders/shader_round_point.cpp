@@ -208,13 +208,15 @@ void ShaderRoundPointGen::set_plane_clip2(const QVector4D& plane)
 }
 
 
+template class CGOGN_RENDERING_EXPORT ShaderRoundPointTpl<false>;
+template class CGOGN_RENDERING_EXPORT ShaderRoundPointTpl<true>;
 
 
-template class CGOGN_RENDERING_API ShaderRoundPointTpl<false>;
-template class CGOGN_RENDERING_API ShaderRoundPointTpl<true>;
-template class CGOGN_RENDERING_API ShaderParamRoundPoint<false>;
-template class CGOGN_RENDERING_API ShaderParamRoundPoint<true>;
+ShaderParamRoundPoint<false>::~ShaderParamRoundPoint()
+{}
 
+ShaderParamRoundPoint<true>::~ShaderParamRoundPoint()
+{}
 
 } // namespace rendering
 

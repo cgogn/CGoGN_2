@@ -27,7 +27,7 @@
 #include <thread>
 #include <vector>
 
-#include <cgogn/core/dll.h>
+#include <cgogn/core/cgogn_core_export.h>
 #include <cgogn/core/utils/numerics.h>
 
 #include <cgogn/core/basic/dart.h>
@@ -42,9 +42,9 @@ class ThreadPool;
 template <typename T>
 class Buffers;
 
-CGOGN_CORE_API ThreadPool* thread_pool();
+CGOGN_CORE_EXPORT ThreadPool* thread_pool();
 
-CGOGN_CORE_API ThreadPool* external_thread_pool();
+CGOGN_CORE_EXPORT ThreadPool* external_thread_pool();
 
 
 const uint32 PARALLEL_BUFFER_SIZE = 1024u;
@@ -65,24 +65,24 @@ extern CGOGN_TLS uint32 thread_index_;
  * @param ind index of thread in the pool: 0,1,2,3,....
  * @param shift_marker_index 0 for main thread / 1 for internal thread_pool / 1+max_nb_workers for external thread
  */
-CGOGN_CORE_API void thread_start(uint32 ind, uint32 shift_marker_index);
+CGOGN_CORE_EXPORT void thread_start(uint32 ind, uint32 shift_marker_index);
 
 /**
  * @brief function to call at end of each thread which use a map
  */
-CGOGN_CORE_API void thread_stop();
+CGOGN_CORE_EXPORT void thread_stop();
 
-CGOGN_CORE_API Buffers<Dart>*   dart_buffers();
-CGOGN_CORE_API Buffers<uint32>* uint_buffers();
+CGOGN_CORE_EXPORT Buffers<Dart>*   dart_buffers();
+CGOGN_CORE_EXPORT Buffers<uint32>* uint_buffers();
 /**
  * @brief thread index in marker table (internal use only)
  */
-CGOGN_CORE_API uint32 current_thread_marker_index();
+CGOGN_CORE_EXPORT uint32 current_thread_marker_index();
 
 /**
  * @brief thread index [0..nb_workers] for use in code of lambdas
  */
-CGOGN_CORE_API uint32 current_thread_index();
+CGOGN_CORE_EXPORT uint32 current_thread_index();
 
 
 

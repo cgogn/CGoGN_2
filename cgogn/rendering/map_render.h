@@ -25,7 +25,7 @@
 #ifndef CGOGN_RENDERING_MAP_RENDER_H_
 #define CGOGN_RENDERING_MAP_RENDER_H_
 
-#include <cgogn/rendering/dll.h>
+#include <cgogn/rendering/cgogn_rendering_export.h>
 
 #include <cgogn/core/cmap/map_base.h> // impossible to include directly attribute.h !
 
@@ -52,9 +52,10 @@ enum DrawingType : uint8
 	SIZE_BUFFER
 };
 
-class CGOGN_RENDERING_API MapRender
+class CGOGN_RENDERING_EXPORT MapRender
 {
 protected:
+
 	std::array<std::unique_ptr<QOpenGLBuffer>, SIZE_BUFFER>	indices_buffers_;
 	std::array<bool, SIZE_BUFFER>							indices_buffers_uptodate_;
 	std::array<uint32, SIZE_BUFFER>							nb_indices_;
@@ -579,6 +580,7 @@ void create_indices_vertices_faces(
 		}
 		else
 		{
+            local_vert_indices.clear();
 			cgogn::geometry::append_ear_triangulation(m, f, position, local_vert_indices);
 			for (uint32 i : local_vert_indices)
 			{

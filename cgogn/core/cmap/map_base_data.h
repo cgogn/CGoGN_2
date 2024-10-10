@@ -59,7 +59,7 @@ template <typename T, Orbit ORBIT> class Attribute;
 /**
  * @brief The MapBaseData class
  */
-class CGOGN_CORE_API MapBaseData
+class CGOGN_CORE_EXPORT MapBaseData
 {
 public:
 
@@ -132,6 +132,12 @@ public:
 	}
 
 	inline const ChunkArrayContainer<uint32>& attribute_container(Orbit orbit) const
+	{
+		cgogn_message_assert(orbit < NB_ORBITS, "Unknown orbit parameter");
+		return attributes_[orbit];
+	}
+
+	inline ChunkArrayContainer<uint32>& attribute_container(Orbit orbit)
 	{
 		cgogn_message_assert(orbit < NB_ORBITS, "Unknown orbit parameter");
 		return attributes_[orbit];
@@ -223,6 +229,14 @@ public:
 		return (*embeddings_[ORBIT])[c.dart.index];
 	}
 
+	template <Orbit ORBIT>
+	inline bool is_valid_embedding(Cell<ORBIT> c) const
+	{
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+		cgogn_message_assert(is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
+		return (*embeddings_[ORBIT])[c.dart.index] != INVALID_INDEX;
+	}
+
 	inline uint32 embedding(Dart d, Orbit orb) const
 	{
 		cgogn_message_assert(orb < NB_ORBITS, "Unknown orbit parameter");
@@ -230,6 +244,35 @@ public:
 		cgogn_message_assert((*embeddings_[orb])[d.index] != INVALID_INDEX, "embedding result is INVALID_INDEX");
 
 		return (*embeddings_[orb])[d.index];
+	}
+
+
+	/*******************************************************************************
+	 * Attributes management
+	 *******************************************************************************/
+
+	/**
+	 * \brief has_attribute
+	 * @param orbit, the attribute orbit
+	 * @param att_name attribute name
+	 * @return true iff an attribute with the specified name and orbit exists
+	 */
+	inline bool has_attribute(Orbit orbit, const std::string& att_name)
+	{
+		cgogn_message_assert(orbit < NB_ORBITS, "Unknown orbit parameter");
+		return this->attributes_[orbit].has_array(att_name);
+	}
+
+	/**
+	 * \brief remove_attribute
+	 * @param orbit, the attribute orbit
+	 * @param att_name attribute name
+	 * @return true if remove succeed else false
+	 */
+	inline bool remove_attribute(Orbit orbit, const std::string& att_name)
+	{
+		cgogn_message_assert(orbit < NB_ORBITS, "Unknown orbit parameter");
+		return this->attributes_[orbit].remove_chunk_array(att_name);
 	}
 
 protected:
@@ -250,6 +293,19 @@ protected:
 			attributes_[ORBIT].unref_line(old);		// unref the old emb
 
 		(*embeddings_[ORBIT])[d.index] = emb;		// affect the embedding to the dart
+	}
+
+	template <class CellType>
+	inline void unset_embedding(Dart d)
+	{
+		static const Orbit ORBIT = CellType::ORBIT;
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+		cgogn_message_assert(is_embedded<ORBIT>(), "Invalid parameter: orbit not embedded");
+
+		const uint32 old = (*embeddings_[ORBIT])[d.index];
+		if (old != INVALID_INDEX)
+			attributes_[ORBIT].unref_line(old);			// unref the old emb
+		(*embeddings_[ORBIT])[d.index] = INVALID_INDEX;	// affect the embedding to the dart
 	}
 
 	template <class CellType>

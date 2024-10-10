@@ -25,10 +25,12 @@
 #define CGOGN_CORE_CMAP_CMAP3_H_
 
 #include <cgogn/core/cmap/cmap2.h>
-#include <cgogn/core/cmap/cmap3_builder.h>
 
 namespace cgogn
 {
+
+template <typename MAP3>
+class CMap3Builder_T; // forward declaration
 
 template <typename MAP_TYPE>
 class CMap3_T : public CMap2_T<MAP_TYPE>
@@ -850,7 +852,7 @@ public:
 
 protected:
 
-	bool merge_incident_faces_topo(Dart d)
+	bool merge_incident_faces_of_edge_topo(Dart d)
 	{
 		if (this->degree(Edge(d)) != 2u)
 			return false;
@@ -889,7 +891,7 @@ public:
 
 		const Dart f = this->phi1(e.dart);
 
-		if (merge_incident_faces_topo(e.dart))
+		if (merge_incident_faces_of_edge_topo(e.dart))
 		{
 			if (this->template is_embedded<Face2>())
 			{
@@ -1337,21 +1339,48 @@ public:
 		if (!this->unsew_volumes_topo(f.dart))
 			return;
 
+		// embedding of boundary
+		do
+		{
+			if (this->template is_embedded<Vertex>())
+				this->template set_orbit_embedding<Vertex>(Vertex(dit),this->embedding(Vertex(dit)));
+
+			if (this->template is_embedded<Edge>())
+				this->template set_orbit_embedding<Edge>(Edge(dit),this->embedding(Edge(dit)));
+			dit = this->phi1(dit);
+		} while (dit != f.dart);
+
+		if (this->template is_embedded<Face>())
+			this->template set_orbit_embedding<Face>(Face(dit),this->embedding(Face(dit)));
+
 		do
 		{
 			if (this->template is_embedded<Vertex>() && !this->same_orbit(Vertex(dit), Vertex(dd)))
+			{
 				this->new_orbit_embedding(Vertex(dd));
+				auto& cac = this->template non_const_attribute_container<Vertex::ORBIT>();
+				cac.copy_line(this->embedding(Vertex(dd)), this->embedding(Vertex(dit)), false, false);
+			}
 
 			dd = this->phi_1(dd);
 
 			if (this->template is_embedded<Edge>() && !this->same_orbit(Edge(dit), Edge(dd)))
+			{
 				this->new_orbit_embedding(Edge(dd));
+				auto& cac = this->template non_const_attribute_container<Edge::ORBIT>();
+				cac.copy_line(this->embedding(Edge(dd)), this->embedding(Edge(dit)), false, false);
+			}
 
 			dit = this->phi1(dit);
 		} while (dit != f.dart);
 
 		if (this->template is_embedded<Face>())
+		{
 			this->new_orbit_embedding(Face(dd));
+			auto& cac = this->template non_const_attribute_container<Face::ORBIT>();
+			cac.copy_line(this->embedding(Face(dd)), this->embedding(Face(dit)), false, false);
+		}
+
 	}
 
 protected:
@@ -2320,7 +2349,7 @@ public:
 		static_assert(is_func_parameter_same<FUNC, Volume>::value, "Wrong function cell parameter type");
 		DartMarkerStore marker_volume(*this);
 		marker_volume.mark_orbit(v);
-		foreach_incident_face(v, [&] (Edge inc_face) -> bool
+        foreach_incident_face(v, [&] (Face inc_face) -> bool
 		{
 			bool res_nested_lambda = true;
 			foreach_incident_volume(inc_face, [&] (Volume inc_vol) -> bool
@@ -2568,7 +2597,6 @@ public:
 
 		// close the map
 		// and mark new darts with the dartmarker
-		Builder mb(*this);
 		for (uint32 i = first; i != this->topology_.end(); this->topology_.next(i))
 		{
 			Dart d(i);
@@ -2627,26 +2655,25 @@ struct CMap3Type
 using CMap3 = CMap3_T<CMap3Type>;
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_CORE_API CMap3_T<CMap3Type>;
-extern template class CGOGN_CORE_API CMap3Builder_T<CMap3>;
-extern template class CGOGN_CORE_API DartMarker<CMap3>;
-extern template class CGOGN_CORE_API DartMarkerStore<CMap3>;
-extern template class CGOGN_CORE_API DartMarkerNoUnmark<CMap3>;
-extern template class CGOGN_CORE_API CellMarker<CMap3, CMap3::Vertex::ORBIT>;
-extern template class CGOGN_CORE_API CellMarker<CMap3, CMap3::Edge::ORBIT>;
-extern template class CGOGN_CORE_API CellMarker<CMap3, CMap3::Face::ORBIT>;
-extern template class CGOGN_CORE_API CellMarker<CMap3, CMap3::Volume::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap3, CMap3::Vertex::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap3, CMap3::Edge::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap3, CMap3::Face::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap3, CMap3::Volume::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap3, CMap3::Vertex::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap3, CMap3::Edge::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap3, CMap3::Face::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap3, CMap3::Volume::ORBIT>;
-extern template class CGOGN_CORE_API CellCache<CMap3>;
-extern template class CGOGN_CORE_API BoundaryCache<CMap3>;
-extern template class CGOGN_CORE_API QuickTraversor<CMap3>;
+extern template class CGOGN_CORE_EXPORT CMap3_T<CMap3Type>;
+extern template class CGOGN_CORE_EXPORT DartMarker<CMap3>;
+extern template class CGOGN_CORE_EXPORT DartMarkerStore<CMap3>;
+extern template class CGOGN_CORE_EXPORT DartMarkerNoUnmark<CMap3>;
+extern template class CGOGN_CORE_EXPORT CellMarker<CMap3, CMap3::Vertex::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarker<CMap3, CMap3::Edge::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarker<CMap3, CMap3::Face::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarker<CMap3, CMap3::Volume::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerNoUnmark<CMap3, CMap3::Vertex::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerNoUnmark<CMap3, CMap3::Edge::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerNoUnmark<CMap3, CMap3::Face::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerNoUnmark<CMap3, CMap3::Volume::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerStore<CMap3, CMap3::Vertex::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerStore<CMap3, CMap3::Edge::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerStore<CMap3, CMap3::Face::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerStore<CMap3, CMap3::Volume::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellCache<CMap3>;
+extern template class CGOGN_CORE_EXPORT BoundaryCache<CMap3>;
+extern template class CGOGN_CORE_EXPORT QuickTraversor<CMap3>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace cgogn

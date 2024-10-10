@@ -25,8 +25,8 @@
 #define CGOGN_GEOMETRY_ALGO_BOUNDING_BOX_H_
 
 #include <cgogn/geometry/types/aabb.h>
-#include <cgogn/geometry/types/obb.h>
-#include <cgogn/core/cmap/cmap3.h>
+#include <cgogn/core/basic/cell.h>
+#include <cgogn/core/utils/masks.h>
 
 namespace cgogn
 {
@@ -42,39 +42,22 @@ void compute_AABB(const ATTR& attr, AABB<array_data_type<ATTR>>& bb)
 		bb.add_point(p);
 }
 
-template <typename ATTR, typename MAP>
-void compute_AABB(const ATTR& attr, const MAP& map, AABB<array_data_type<ATTR>>& bb)
+template <typename ATTR, typename MAP, typename MASK>
+void compute_AABB(const ATTR& attr, const MAP& map, const MASK& mask, AABB<array_data_type<ATTR>>& bb)
 {
 	bb.reset();
 	map.foreach_cell([&] (Cell<ATTR::orb_> c)
 	{
 		bb.add_point(attr[c]);
-	});
+	},
+	mask);
 }
 
-template <typename ATTR>
-void compute_OBB(const ATTR& attr, OBB<array_data_type<ATTR>>& bb)
+template <typename ATTR, typename MAP>
+void compute_AABB(const ATTR& attr, const MAP& map, AABB<array_data_type<ATTR>>& bb)
 {
-	bb.reset();
-	bb.build(attr);
+	compute_AABB(attr, map, AllCellsFilter(), bb);
 }
-
-
-template <typename MAP, typename VERTEX_ATTR>
-void compute_OBB(const MAP& map, const VERTEX_ATTR& attr, OBB<InsideTypeOf<VERTEX_ATTR>>& bb)
-{
-	bb.reset();
-	bb.build_from_vertices(map, attr);
-}
-
-
-template <typename MAP, typename VERTEX_ATTR>
-void compute_OBB(const MAP& map, const VERTEX_ATTR& attr, typename MAP::ConnectedComponent cc, OBB<InsideTypeOf<VERTEX_ATTR>>& bb)
-{
-	bb.reset();
-	bb.build_from_triangles(map, attr, cc);
-}
-
 
 } // namespace geometry
 

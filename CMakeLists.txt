@@ -12,11 +12,13 @@ project(CGoGN
 foreach(p
 		CMP0048 # version
 		CMP0054 # CMake 3.1
+		CMP0072 # opengl
 		)
 	if(POLICY ${p})
 		cmake_policy(SET ${p} NEW)
 	endif()
 endforeach()
+
 
 #### Default build type
 if(NOT CMAKE_BUILD_TYPE)
@@ -55,7 +57,7 @@ endif()
 option(CGOGN_EXTERNAL_TEMPLATES "Use external templates to reduce compile time" OFF)
 
 ### C++ 11/14/17
-set(CGOGN_CPP_STD "11" CACHE STRING "The version of the c++ standard to use.")
+set(CGOGN_CPP_STD "17" CACHE STRING "The version of the c++ standard to use.")
 if (NOT MSVC)
 	set_property(CACHE CGOGN_CPP_STD PROPERTY STRINGS "11" "14" "17") # drop down list with cmake-gui
 endif(NOT MSVC)
@@ -65,9 +67,14 @@ if (CGOGN_CPP_STD STREQUAL "11")
 	set(CMAKE_CXX_STANDARD 11)
 elseif(CGOGN_CPP_STD STREQUAL "14")
 	set(CMAKE_CXX_STANDARD 14)
-else(CGOGN_CPP_STD STREQUAL "11")
+else(CGOGN_CPP_STD STREQUAL "17")
 	set(CMAKE_CXX_STANDARD 17)
 endif(CGOGN_CPP_STD STREQUAL "11")
+
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+option(BUILD_SHARED_LIBS "Build a shared library" ON)
 
 #### ThirdParty options
 set(CGOGN_THIRDPARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty)
@@ -198,5 +205,19 @@ foreach(subdir ${CGOGN_CONFIGURED_MODULES})
 		endif()
 	endif()
 endforeach()
+
+
+# uninstall target
+# see https://gitlab.kitware.com/cmake/community/wikis/FAQ#can-i-do-make-uninstall-with-cmake
+if(NOT TARGET uninstall)
+  configure_file(
+	  "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"
+	  "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
+	  IMMEDIATE @ONLY)
+
+  add_custom_target(uninstall
+	  COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+endif()
+
 
 unset(CGOGN_SYSTEM_MODULE_PATH)

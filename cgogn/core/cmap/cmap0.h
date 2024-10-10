@@ -25,10 +25,12 @@
 #define CGOGN_CORE_CMAP_CMAP0_H_
 
 #include <cgogn/core/cmap/map_base.h>
-#include <cgogn/core/cmap/cmap0_builder.h>
 
 namespace cgogn
 {
+
+template <typename MAP2>
+class CMap0Builder_T;
 
 template <typename MAP_TYPE>
 class CMap0_T : public MapBase<MAP_TYPE>
@@ -178,7 +180,7 @@ public:
 	template <Orbit ORBIT, typename FUNC>
 	inline void foreach_dart_of_orbit(Cell<ORBIT> c, const FUNC& f) const
 	{
-		static_assert(ORBIT == Orbit::DART, "Orbit not supported in a CMap0");
+		//static_assert(ORBIT == Orbit::DART, "Orbit not supported in a CMap0");
 		f(c.dart);
 	}
 
@@ -219,14 +221,14 @@ struct CMap0Type
 using CMap0 = CMap0_T<CMap0Type>;
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_CORE_API CMap0_T<CMap0Type>;
-extern template class CGOGN_CORE_API DartMarker<CMap0>;
-extern template class CGOGN_CORE_API DartMarkerStore<CMap0>;
-extern template class CGOGN_CORE_API DartMarkerNoUnmark<CMap0>;
-extern template class CGOGN_CORE_API CellMarker<CMap0, CMap0::Vertex::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap0, CMap0::Vertex::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap0, CMap0::Vertex::ORBIT>;
-extern template class CGOGN_CORE_API QuickTraversor<CMap0>;
+extern template class CGOGN_CORE_EXPORT CMap0_T<CMap0Type>;
+extern template class CGOGN_CORE_EXPORT DartMarker<CMap0>;
+extern template class CGOGN_CORE_EXPORT DartMarkerStore<CMap0>;
+extern template class CGOGN_CORE_EXPORT DartMarkerNoUnmark<CMap0>;
+extern template class CGOGN_CORE_EXPORT CellMarker<CMap0, CMap0::Vertex::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerNoUnmark<CMap0, CMap0::Vertex::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerStore<CMap0, CMap0::Vertex::ORBIT>;
+extern template class CGOGN_CORE_EXPORT QuickTraversor<CMap0>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace cgogn

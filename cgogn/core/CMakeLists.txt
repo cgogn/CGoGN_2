@@ -2,16 +2,18 @@ project(cgogn_core
 	LANGUAGES CXX
 )
 
+# Hide symbols by default
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN YES)
+
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
-add_library(${PROJECT_NAME} SHARED "")
-
+add_library(${PROJECT_NAME} "")
 add_library(cgogn::core ALIAS cgogn_core)
 
 target_sources(${PROJECT_NAME}
 	PRIVATE
-		"${CMAKE_CURRENT_LIST_DIR}/dll.h"
 		"${CMAKE_CURRENT_LIST_DIR}/basic/dart.h"
 		"${CMAKE_CURRENT_LIST_DIR}/basic/dart_marker.h"
 		"${CMAKE_CURRENT_LIST_DIR}/basic/cell.h"
@@ -22,7 +24,9 @@ target_sources(${PROJECT_NAME}
 		"${CMAKE_CURRENT_LIST_DIR}/cmap/map_base_data.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/cmap/map_base.h"
 		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap0.h"
+		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap0_builder.h"
 		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap1.h"
+		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap1_builder.h"
 		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap2.h"
 		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap2_builder.h"
 		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap3.h"
@@ -45,6 +49,7 @@ target_sources(${PROJECT_NAME}
 		"${CMAKE_CURRENT_LIST_DIR}/utils/assert.h"
 		"${CMAKE_CURRENT_LIST_DIR}/utils/assert.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/utils/buffers.h"
+		"${CMAKE_CURRENT_LIST_DIR}/utils/color_maps.h"
 		"${CMAKE_CURRENT_LIST_DIR}/utils/definitions.h"
 		"${CMAKE_CURRENT_LIST_DIR}/utils/endian.h"
 		"${CMAKE_CURRENT_LIST_DIR}/utils/unique_ptr.h"
@@ -185,11 +190,9 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC
 	$<$<CXX_COMPILER_ID:MSVC>:_USE_MATH_DEFINES>
 	$<$<CXX_COMPILER_ID:MSVC>:CGOGN_WIN_VER=${WIN_VERSION}>)
 
-
 if(CGOGN_USE_SIMD)
 	CGOGN_CHECK_FOR_SSE()
 endif(CGOGN_USE_SIMD)
-
 
 if(${CGOGN_USE_OPENMP})
 	if(OpenMP_FOUND OR OPENMP_FOUND OR OpenMP_CXX_FOUND)
@@ -209,8 +212,6 @@ if(${CGOGN_USE_OPENMP})
 		target_compile_definitions(${PROJECT_NAME} INTERFACE ${OpenMP_CXX_FLAGS})
 	endif()
 endif()
-
-
 
 # Profiler compilation flags
 if(CGOGN_WITH_GPROF)
@@ -250,16 +251,18 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 										DEBUG_POSTFIX "_d"
 										EXPORT_NAME core)
 
-target_compile_definitions(${PROJECT_NAME} PRIVATE "CGOGN_CORE_DLL_EXPORT")
-
 target_link_libraries(${PROJECT_NAME} PUBLIC Threads::Threads)
 
 target_include_directories(${PROJECT_NAME} PUBLIC
+	$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
 	$<BUILD_INTERFACE:${CGOGN_SOURCE_DIR}>
 	$<BUILD_INTERFACE:${CGOGN_THIRDPARTY_TERMCOLOR_INCLUDE_DIR}>
 	$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 	$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/cgogn/thirdparty>
 )
+
+# Write out cgogn_core_export.h to the current binary directory
+generate_export_header(cgogn_core)
 
 if(${CGOGN_EXTERNAL_TEMPLATES})
 	target_compile_definitions(${PROJECT_NAME} PUBLIC "CGOGN_USE_EXTERNAL_TEMPLATES")
@@ -275,16 +278,24 @@ else()
 endif()
 
 configure_file(${PROJECT_SOURCE_DIR}/cgogn_core.pc.in ${CMAKE_CURRENT_BINARY_DIR}/cgogn_core.pc @ONLY)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/cgogn_core.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/cgogn_core.pc
+	DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
+	COMPONENT cgogn_core_libraries
+)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
 	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cgogn/core
+	COMPONENT cgogn_core_headers
 	FILES_MATCHING PATTERN "*.h"
 	REGEX "(examples|tests)" EXCLUDE
 )
 
-cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}")
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/cgogn_core_export.h
+	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cgogn/core
+	COMPONENT cgogn_core_headers
+)
 
+cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}")
 
 # VisualStudio nice source organisation
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER cgogn)

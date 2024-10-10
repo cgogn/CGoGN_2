@@ -37,7 +37,7 @@
 #include <cgogn/rendering/shaders/vbo.h>
 #include <cgogn/rendering/shaders/shader_point_sprite.h>
 #include <cgogn/rendering/shaders/shader_round_point.h>
-
+#include <cgogn/rendering/shaders/shader_vector_per_vertex.h>
 #include <cgogn/rendering/drawer.h>
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
@@ -75,8 +75,11 @@ private:
 
 	std::unique_ptr<cgogn::rendering::MapRender> render_;
 	std::unique_ptr<cgogn::rendering::VBO> vbo_pos_;
+	std::unique_ptr<cgogn::rendering::VBO> vbo_normals_;
+
 	std::unique_ptr<cgogn::rendering::VBO> vbo_color_;
 	std::unique_ptr<cgogn::rendering::VBO> vbo_sphere_sz_;
+	std::unique_ptr<cgogn::rendering::ShaderVectorPerVertex::Param> param_normal_;
 	std::unique_ptr<cgogn::rendering::ShaderPointSpriteColorSize::Param> param_point_sprite_;
 
 	std::unique_ptr<cgogn::rendering::DisplayListDrawer> drawer_;
@@ -84,7 +87,7 @@ private:
 
 
 
-
+	bool normal_rendering_;
 	bool vertices_rendering_;
 	bool bb_rendering_;
 };
@@ -106,8 +109,8 @@ void Viewer::import(const std::string& surface_mesh)
 	}
 
 	cgogn::geometry::compute_AABB(vertex_position_, bb_);
-	setSceneRadius(bb_.diag_size()/2.0);
-	Vec3 center = bb_.center();
+	setSceneRadius(cgogn::geometry::diagonal(bb_).norm()/2.0);
+	Vec3 center = cgogn::geometry::center(bb_);
 	setSceneCenter(qoglviewer::Vec(center[0], center[1], center[2]));
 	showEntireScene();
 }
@@ -141,7 +144,8 @@ Viewer::Viewer() :
 	drawer_(nullptr),
 	drawer_rend_(nullptr),
 	vertices_rendering_(true),
-	bb_rendering_(true)
+	bb_rendering_(true),
+	normal_rendering_(false)
 {}
 
 void Viewer::keyPressEvent(QKeyEvent *ev)
@@ -177,6 +181,13 @@ void Viewer::draw()
 		param_point_sprite_->release();
 	}
 
+	if(normal_rendering_)
+	{
+		param_normal_->bind(proj,view);
+		render_->draw(cgogn::rendering::POINTS);
+		param_normal_->release();
+	}
+
 	if (bb_rendering_)
 		drawer_rend_->draw(proj,view);
 }
@@ -200,8 +211,22 @@ void Viewer::init()
 	vbo_sphere_sz_ = cgogn::make_unique<cgogn::rendering::VBO>(1);
 	cgogn::rendering::update_vbo(vertex_position_, vbo_sphere_sz_.get(), [&] (const Vec3& n) -> float
 	{
-		return bb_.diag_size()/1000.0;// * (1.0 + 2.0*std::abs(n[2]));
+		return cgogn::geometry::diagonal(bb_).norm()/1000.0;// * (1.0 + 2.0*std::abs(n[2]));
 	});
+
+	vbo_normals_ = cgogn::make_unique<cgogn::rendering::VBO>(3);
+
+	auto vertex_normals_ = map_.template get_attribute<Vec3, Map0::Vertex>("normal");
+	if (vertex_normals_.is_valid())
+	{
+		cgogn::rendering::update_vbo(vertex_normals_, vbo_normals_.get());
+
+		normal_rendering_ = true;
+	}
+	param_normal_ = cgogn::rendering::ShaderVectorPerVertex::generate_param();
+	param_normal_->set_all_vbos(vbo_pos_.get(), vbo_normals_.get());
+	param_normal_->color_ = QColor(200,0,200);
+	param_normal_->length_ = cgogn::geometry::diagonal(bb_).norm()/50;
 
 	render_ = cgogn::make_unique<cgogn::rendering::MapRender>();
 	render_->init_primitives(map_, cgogn::rendering::POINTS);

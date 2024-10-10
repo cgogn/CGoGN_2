@@ -24,7 +24,9 @@
 #ifndef CGOGN_CORE_CMAP_CMAP3_BUILDER_H_
 #define CGOGN_CORE_CMAP_CMAP3_BUILDER_H_
 
-#include <cgogn/core/cmap/map_base.h>
+#include <cgogn/core/cmap/cmap3.h>
+#include <cgogn/core/cmap/cmap3_tetra.h>
+#include <cgogn/core/cmap/cmap3_hexa.h>
 
 namespace cgogn
 {
@@ -79,21 +81,6 @@ public:
 		return map_.phi3_unsew(d);
 	}
 
-	inline Dart add_prism_topo_fp(std::size_t size)
-	{
-		return map_.add_prism_topo_fp(size);
-	}
-
-	inline Dart add_pyramid_topo_fp(std::size_t size)
-	{
-		return map_.add_pyramid_topo_fp(size);
-	}
-
-	inline Dart add_stamp_volume_topo_fp()
-	{
-		return map_.add_stamp_volume_topo_fp();
-	}
-
 	template <class CellType>
 	inline void set_embedding(Dart d, uint32 emb)
 	{
@@ -112,9 +99,63 @@ public:
 		return map_.new_orbit_embedding(c);
 	}
 
+	inline Dart add_prism_topo_fp(std::size_t size)
+	{
+		return map_.add_prism_topo_fp(size);
+	}
+
+	inline Dart add_pyramid_topo_fp(std::size_t size)
+	{
+		return map_.add_pyramid_topo_fp(size);
+	}
+
+	inline Dart add_stamp_volume_topo_fp()
+	{
+		return map_.add_stamp_volume_topo_fp();
+	}
+
 	inline void sew_volumes_fp(Dart v1, Dart v2)
 	{
 		map_.sew_volumes_fp(v1, v2);
+	}
+
+	inline void sew_volumes_topo(Face f1, Face f2)
+	{
+		map_.sew_volumes_topo(f1.dart, f2.dart);
+	}
+
+	inline Dart cut_face_topo(Dart d, Dart e)
+	{
+		return map_.cut_face_topo(d,e);
+	}
+
+	inline Dart cut_edge_topo(Dart d)
+	{
+		return map_.cut_edge_topo(d);
+	}
+
+	inline void merge_volumes_topo_fp(Dart v1, Dart v2)
+	{
+		using Map2 = typename Map3::Inherit;
+		map_.Map2::merge_volumes_topo(v1, v2);
+	}
+
+	inline void merge_incident_faces_fp(Dart d)
+	{
+		using Map2 = typename Map3::Inherit;
+		map_.Map2::merge_incident_faces_of_edge_topo(d);
+	}
+
+	inline Dart cut_face_topo_fp(Dart d, Dart e)
+	{
+		using Map2 = typename Map3::Inherit;
+		return map_.Map2::cut_face_topo(d,e);
+	}
+
+	inline Dart cut_edge_topo_fp(Dart d)
+	{
+		using Map2 = typename Map3::Inherit;
+		return map_.Map2::cut_edge_topo(d);
 	}
 
 	inline Dart close_hole_topo(Dart d)
@@ -143,6 +184,13 @@ private:
 
 	Map3& map_;
 };
+
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
+extern template class CGOGN_CORE_EXPORT CMap3Builder_T<CMap3>;
+//extern template class CGOGN_CORE_EXPORT CMap3Builder_T<CMap3Tetra>; // TODO : fix compilation
+//extern template class CGOGN_CORE_EXPORT CMap3Builder_T<CMap3Hexa>; // TODO : fix compilation
+#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
+
 
 } // namespace cgogn
 

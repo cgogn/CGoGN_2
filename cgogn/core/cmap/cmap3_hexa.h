@@ -25,10 +25,12 @@
 #define CGOGN_CORE_CMAP_CMAP3_HEXA_H_
 
 #include <cgogn/core/cmap/map_base.h>
-#include <cgogn/core/cmap/cmap3_builder.h>
 
 namespace cgogn
 {
+
+template <typename MAP3>
+class CMap3Builder_T; // forward declaration
 
 template <typename MAP_TYPE>
 class CMap3Hexa_T : public MapBase<MAP_TYPE>
@@ -329,30 +331,15 @@ protected:
 		return d;
 	}
 
-	inline Dart add_pyramid_topo_fp(std::size_t size)
-	{
-		unused_parameters(size);
-		cgogn_message_assert(false, "Can create only hexa");
-		cgogn_log_warning("add_prism_topo_fp") << "Attempt to create a volume which is not a hexahedron in CMap3Hexa";
-		return Dart();
-	}
-
 	inline Dart add_prism_topo_fp(std::size_t size)
 	{
-		cgogn_message_assert(size == 4u, "Can create only tetra");
+		cgogn_message_assert(size == 4u, "Can create only hexa");
 		if (size != 4)
 		{
-			cgogn_log_warning("add_pyramid_topo_fp") << "Attempt to create a volume which is not a hexahedron in CMap3Hexa";
+			cgogn_log_warning("add_prism_topo_fp") << "Attempt to create a volume which is not a hexahedron in CMap3Hexa";
 			return Dart();
 		}
 		return add_hexa_topo_fp();
-	}
-
-	inline Dart add_stamp_volume_topo_fp()
-	{
-		cgogn_message_assert(false, "Can create only tetra");
-		cgogn_log_warning("add_stamp_volume_topo_fp") << "Attempt to create a volume which is not a hexahedron in CMap3Hexa";
-		return Dart();
 	}
 
 	/**
@@ -1728,22 +1715,21 @@ struct CMap3HexaType
 using CMap3Hexa = CMap3Hexa_T<CMap3HexaType>;
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_CORE_API CMap3Builder_T<CMap3Hexa>;
-extern template class CGOGN_CORE_API DartMarker<CMap3Hexa>;
-extern template class CGOGN_CORE_API DartMarkerStore<CMap3Hexa>;
-extern template class CGOGN_CORE_API DartMarkerNoUnmark<CMap3Hexa>;
-extern template class CGOGN_CORE_API CellMarker<CMap3Hexa, CMap3Hexa::Vertex::ORBIT>;
-extern template class CGOGN_CORE_API CellMarker<CMap3Hexa, CMap3Hexa::Edge::ORBIT>;
-extern template class CGOGN_CORE_API CellMarker<CMap3Hexa, CMap3Hexa::Face::ORBIT>;
-extern template class CGOGN_CORE_API CellMarker<CMap3Hexa, CMap3Hexa::Volume::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap3Hexa, CMap3Hexa::Vertex::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap3Hexa, CMap3Hexa::Edge::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap3Hexa, CMap3Hexa::Face::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerNoUnmark<CMap3Hexa, CMap3Hexa::Volume::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap3Hexa, CMap3Hexa::Vertex::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap3Hexa, CMap3Hexa::Edge::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap3Hexa, CMap3Hexa::Face::ORBIT>;
-extern template class CGOGN_CORE_API CellMarkerStore<CMap3Hexa, CMap3Hexa::Volume::ORBIT>;
+extern template class CGOGN_CORE_EXPORT DartMarker<CMap3Hexa>;
+extern template class CGOGN_CORE_EXPORT DartMarkerStore<CMap3Hexa>;
+extern template class CGOGN_CORE_EXPORT DartMarkerNoUnmark<CMap3Hexa>;
+extern template class CGOGN_CORE_EXPORT CellMarker<CMap3Hexa, CMap3Hexa::Vertex::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarker<CMap3Hexa, CMap3Hexa::Edge::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarker<CMap3Hexa, CMap3Hexa::Face::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarker<CMap3Hexa, CMap3Hexa::Volume::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerNoUnmark<CMap3Hexa, CMap3Hexa::Vertex::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerNoUnmark<CMap3Hexa, CMap3Hexa::Edge::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerNoUnmark<CMap3Hexa, CMap3Hexa::Face::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerNoUnmark<CMap3Hexa, CMap3Hexa::Volume::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerStore<CMap3Hexa, CMap3Hexa::Vertex::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerStore<CMap3Hexa, CMap3Hexa::Edge::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerStore<CMap3Hexa, CMap3Hexa::Face::ORBIT>;
+extern template class CGOGN_CORE_EXPORT CellMarkerStore<CMap3Hexa, CMap3Hexa::Volume::ORBIT>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace cgogn

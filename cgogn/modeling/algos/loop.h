@@ -26,7 +26,7 @@
 
 #include <vector>
 
-#include <cgogn/modeling/dll.h>
+#include <cgogn/modeling/cgogn_modeling_export.h>
 #include <cgogn/core/basic/dart_marker.h>
 #include <cgogn/core/utils/masks.h>
 #include <cgogn/core/cmap/cmap3.h>
@@ -51,14 +51,10 @@ void loop(MAP& map, VERTEX_ATTR& position)
 
 	VERTEX_ATTR position2 = map.template add_attribute<VEC3, Vertex>("position_tempo_loop");
 
-	DartMarker<MAP> initial_edge_marker(map);
-
 	CellCache<MAP> initial_cache(map);
 	initial_cache.template build<Vertex>();
 	initial_cache.template build<Edge>();
 	initial_cache.template build<Face>();
-
-	map.foreach_cell([&] (Edge e) {	initial_edge_marker.mark_orbit(e); }, initial_cache);
 
 	// cut edges
 	map.foreach_cell([&] (Edge e) { map.cut_edge(e); }, initial_cache);
@@ -73,8 +69,8 @@ void loop(MAP& map, VERTEX_ATTR& position)
 		Vertex vl(map.phi_1(map.phi_1(e.dart)));
 
 		position2[nve] = Scalar(3.0/8.0) * (position[v1] + position[v2]) + Scalar(1.0/8.0) * (position[vr] + position[vl]);
-	}
-	, initial_cache);
+	},
+	initial_cache);
 
 	// compute new position of old vertices
 	map.foreach_cell([&] (Vertex v)
@@ -111,16 +107,11 @@ void loop(MAP& map, VERTEX_ATTR& position)
 	// add edges inside faces
 	map.foreach_cell([&] (Face f)
 	{
-		Dart d0 = f.dart;
-		if (initial_edge_marker.is_marked(d0))
-			d0 = map.phi1(d0);
-
+		Dart d0 = map.phi1(f.dart);
 		Dart d1 = map.template phi<11>(d0);
 		map.cut_face(d0, d1);
-
 		Dart d2 = map.template phi<11>(d1);
 		map.cut_face(d1, d2);
-
 		Dart d3 = map.template phi<11>(d2);
 		map.cut_face(d2, d3);
 	},
@@ -131,10 +122,10 @@ void loop(MAP& map, VERTEX_ATTR& position)
 }
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_EXTERNAL_TEMPLATES_CPP_))
-extern template CGOGN_MODELING_API void loop(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&);
-extern template CGOGN_MODELING_API void loop(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&);
-extern template CGOGN_MODELING_API void loop(CMap3&, CMap3::VertexAttribute<Eigen::Vector3f>&);
-extern template CGOGN_MODELING_API void loop(CMap3&, CMap3::VertexAttribute<Eigen::Vector3d>&);
+extern template CGOGN_MODELING_EXPORT void loop(CMap2&, CMap2::VertexAttribute<Eigen::Vector3f>&);
+extern template CGOGN_MODELING_EXPORT void loop(CMap2&, CMap2::VertexAttribute<Eigen::Vector3d>&);
+extern template CGOGN_MODELING_EXPORT void loop(CMap3&, CMap3::VertexAttribute<Eigen::Vector3f>&);
+extern template CGOGN_MODELING_EXPORT void loop(CMap3&, CMap3::VertexAttribute<Eigen::Vector3d>&);
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_MODELING_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace modeling

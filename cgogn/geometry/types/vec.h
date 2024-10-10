@@ -32,7 +32,7 @@
 #include <cgogn/core/utils/name_types.h>
 #include <cgogn/core/utils/assert.h>
 
-#include <cgogn/geometry/dll.h>
+#include <cgogn/geometry/cgogn_geometry_export.h>
 
 namespace cgogn
 {
@@ -229,8 +229,9 @@ public:
 	inline void normalize()
 	{
 		const Scalar norm_value = this->norm();
-		for (auto& c : data_)
-			c /= norm_value;
+		if(norm_value > Scalar(0))
+			for (auto& c : data_)
+				c /= norm_value;
 	}
 
 	inline void setZero()
@@ -289,8 +290,8 @@ private:
 };
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_EXTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_GEOMETRY_API Vec_T<std::array<float32,3>>;
-extern template class CGOGN_GEOMETRY_API Vec_T<std::array<float64,3>>;
+extern template class CGOGN_GEOMETRY_EXPORT Vec_T<std::array<float32,3>>;
+extern template class CGOGN_GEOMETRY_EXPORT Vec_T<std::array<float64,3>>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace geometry

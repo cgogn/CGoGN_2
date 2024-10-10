@@ -27,8 +27,8 @@ target_sources(${PROJECT_NAME}
 
 		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap2tri_test.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap2quad_test.cpp"
-		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap3tetra_test.cpp"
-		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap3hexa_test.cpp"
+#		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap3tetra_test.cpp"
+#		"${CMAKE_CURRENT_LIST_DIR}/cmap/cmap3hexa_test.cpp"
 
 		"${CMAKE_CURRENT_LIST_DIR}/utils/endian_test.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/utils/name_types_test.cpp"

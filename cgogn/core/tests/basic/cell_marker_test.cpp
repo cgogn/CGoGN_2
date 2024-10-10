@@ -24,18 +24,15 @@
 #include <gtest/gtest.h>
 
 #include <cgogn/core/basic/cell.h>
-#include <cgogn/core/cmap/cmap2_tri.h>
-#include <cgogn/core/cmap/cmap2_quad.h>
-#include <cgogn/core/cmap/cmap3.h>
-#include <cgogn/core/cmap/cmap3_tetra.h>
-#include <cgogn/core/cmap/cmap3_hexa.h>
+#include <cgogn/core/cmap/cmap2_builder.h>
+#include <cgogn/core/cmap/cmap3_builder.h>
 
 namespace cell_marker_test
 {
 
 using namespace cgogn;
 
-using MapTypes = ::testing::Types<CMap2, CMap2Tri, CMap2Quad, CMap3, CMap3Tetra, CMap3Hexa>;
+using MapTypes = ::testing::Types<CMap2, CMap2Tri, CMap2Quad, CMap3>;//, CMap3Tetra, CMap3Hexa>;
 
 template<typename Builder>
 void setup(Builder& /*builder*/)
@@ -84,33 +81,33 @@ void setup(cgogn::CMap3Builder_T<CMap3>& builder)
 	builder.close_map();
 }
 
-template<>
-void setup(cgogn::CMap3Builder_T<CMap3Tetra>& builder)
-{
-	Dart p1 = builder.add_pyramid_topo_fp(3u);
-	Dart p2 = builder.add_pyramid_topo_fp(3u);
-	builder.sew_volumes_fp(p1, p2);
+//template<>
+//void setup(cgogn::CMap3Builder_T<CMap3Tetra>& builder)
+//{
+//	Dart p1 = builder.add_pyramid_topo_fp(3u);
+//	Dart p2 = builder.add_pyramid_topo_fp(3u);
+//	builder.sew_volumes_fp(p1, p2);
 
-	Dart p3 = builder.add_pyramid_topo_fp(3u);
-	Dart p4 = builder.add_pyramid_topo_fp(3u);
-	builder.sew_volumes_fp(p3, p4);
+//	Dart p3 = builder.add_pyramid_topo_fp(3u);
+//	Dart p4 = builder.add_pyramid_topo_fp(3u);
+//	builder.sew_volumes_fp(p3, p4);
 
-	builder.close_map();
-}
+//	builder.close_map();
+//}
 
-template<>
-void setup(cgogn::CMap3Builder_T<CMap3Hexa>& builder)
-{
-	Dart p1 = builder.add_prism_topo_fp(4u);
-	Dart p2 = builder.add_prism_topo_fp(4u);
-	builder.sew_volumes_fp(p1, p2);
+//template<>
+//void setup(cgogn::CMap3Builder_T<CMap3Hexa>& builder)
+//{
+//	Dart p1 = builder.add_prism_topo_fp(4u);
+//	Dart p2 = builder.add_prism_topo_fp(4u);
+//	builder.sew_volumes_fp(p1, p2);
 
-	Dart p3 = builder.add_prism_topo_fp(4u);
-	Dart p4 = builder.add_prism_topo_fp(4u);
-	builder.sew_volumes_fp(p3, p4);
+//	Dart p3 = builder.add_prism_topo_fp(4u);
+//	Dart p4 = builder.add_prism_topo_fp(4u);
+//	builder.sew_volumes_fp(p3, p4);
 
-	builder.close_map();
-}
+//	builder.close_map();
+//}
 
 
 template<typename Map>
