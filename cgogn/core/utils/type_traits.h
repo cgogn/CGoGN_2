@@ -301,7 +301,8 @@ using array_data_type = typename internal::type_traits::array_data_type_helper<T
 template <typename T>
 inline typename std::enable_if<!(has_size_method<T>::value || has_rows_method<T>::value || has_cols_method<T>::value), uint32>::type nb_components(const T& );
 template <typename T>
-inline typename std::enable_if<has_size_method<T>::value && has_begin_method<T>::value, uint32>::type nb_components(const T& val);
+//inline typename std::enable_if<has_size_method<T>::value && has_begin_method<T>::value, uint32>::type nb_components(const T& val);
+inline typename std::enable_if<has_size_method<T>::value && !has_begin_method<T>::value && (!has_rows_method<T>::value || !has_cols_method<T>::value), uint32>::type nb_components(const T& val);
 template <typename T>
 inline typename std::enable_if<has_size_method<T>::value && !has_begin_method<T>::value && (!has_rows_method<T>::value || !has_cols_method<T>::value), uint32>::type nb_components(const T& val);
 template <typename T>
@@ -314,7 +315,7 @@ inline typename std::enable_if<!(has_size_method<T>::value || has_rows_method<T>
 }
 
 template <typename T>
-inline typename std::enable_if<has_size_method<T>::value && has_begin_method<T>::value, uint32>::type nb_components(const T& val)
+inline typename std::enable_if<has_size_method<T>::value && has_begin_method<T>::value && !has_rows_method<T>::value && !has_cols_method<T>::value, uint32>::type nb_components(const T& val)
 {
 	const uint32 size = uint32(val.size());
 	if (size == 0u)
